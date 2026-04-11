@@ -87,8 +87,8 @@ public class LibraryService
 
     /// <summary>
     /// Copies every manga whose FilePath is outside biblioteca to its collection folder
-    /// inside biblioteca, updates FilePath, and deletes the original file.
-    /// Returns the number of files migrated.
+    /// inside biblioteca and updates FilePath. The original file is NOT deleted.
+    /// Returns the number of files copied.
     /// </summary>
     public async Task<int> MigrateToLibraryAsync(IProgress<string>? progress = null)
     {
@@ -108,11 +108,7 @@ public class LibraryService
             progress?.Report(Path.GetFileName(manga.FilePath));
 
             var newPath = await CopyToLibraryAsync(manga.FilePath, folderName);
-            var oldPath = manga.FilePath;
             manga.FilePath = newPath;
-
-            try { await Task.Run(() => File.Delete(oldPath)); }
-            catch { /* ignore locked / already deleted */ }
 
             count++;
         }

@@ -71,7 +71,7 @@ public class StorageManagerViewModel : BaseViewModel
         _externalCount == 0
             ? "Todos los mangas ya están en la biblioteca local."
             : $"{_externalCount} archivo{(_externalCount != 1 ? "s" : "")} fuera de la biblioteca. " +
-              "Se copiarán a %APPDATA%\\Hakufu\\biblioteca y se eliminarán los originales.";
+              "Se copiarán a %APPDATA%\\Hakufu\\biblioteca (los originales no se borran).";
 
     // ── Commands ─────────────────────────────────────────────────────────────
 
@@ -179,8 +179,8 @@ public class StorageManagerViewModel : BaseViewModel
         int moved = await _library.MigrateToLibraryAsync(progress);
 
         MigrateProgressText = moved == 0
-            ? "No había archivos que mover."
-            : $"Listo — {moved} archivo{(moved != 1 ? "s" : "")} migrado{(moved != 1 ? "s" : "")}.";
+            ? "No había archivos que copiar."
+            : $"Listo — {moved} archivo{(moved != 1 ? "s" : "")} copiado{(moved != 1 ? "s" : "")}.";
 
         IsMigrating = false;
         ExternalCount = _library.CountExternalMangas();

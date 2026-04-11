@@ -9,9 +9,9 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Hakufu</AssemblyName>
     <RootNamespace>Hakufu</RootNamespace>
-    <Version>0.3.2</Version>
-    <AssemblyVersion>0.3.2.0</AssemblyVersion>
-    <FileVersion>0.3.2.0</FileVersion>
+    <Version>0.3.4</Version>
+    <AssemblyVersion>0.3.4.0</AssemblyVersion>
+    <FileVersion>0.3.4.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

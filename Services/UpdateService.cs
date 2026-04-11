@@ -69,11 +69,19 @@ public class UpdateService : IUpdateService
         // Copia updater.exe a temp para que no lo sobreescriba la extracción
         File.Copy(updaterSrc, updaterDst, overwrite: true);
 
-        // Lanza el updater desde temp con los argumentos necesarios:
-        // updater.exe <zipPath> <appDir> <appExe> <pid>
+        // Lanza el updater desde temp con los argumentos necesarios.
+        // Usamos ArgumentList para evitar problemas de quoting con rutas
+        // que terminan en backslash (AppContext.BaseDirectory incluye /).
         var appExe = Path.Combine(appDir, "Hakufu.exe");
-        var args   = $"\"{zipPath}\" \"{appDir}\" \"{appExe}\" {Environment.ProcessId}";
-        Process.Start(new ProcessStartInfo(updaterDst, args) { UseShellExecute = true });
+        var psi    = new ProcessStartInfo(updaterDst)
+        {
+            UseShellExecute = false   // evita SmartScreen y quoting del shell
+        };
+        psi.ArgumentList.Add(zipPath);
+        psi.ArgumentList.Add(appDir.TrimEnd('\\', '/'));
+        psi.ArgumentList.Add(appExe);
+        psi.ArgumentList.Add(Environment.ProcessId.ToString());
+        Process.Start(psi);
 
         Application.Current.Shutdown();
     }

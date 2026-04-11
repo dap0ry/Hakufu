@@ -18,6 +18,8 @@ public class JsonDataRepository : IDataRepository
         WriteIndented = true
     };
 
+    private static readonly SemaphoreSlim _saveLock = new(1, 1);
+
     public AppDataStore Current { get; private set; } = new();
 
     public async Task LoadAsync()
@@ -55,8 +57,19 @@ public class JsonDataRepository : IDataRepository
 
     public async Task SaveAsync()
     {
-        Directory.CreateDirectory(DataDir);
-        await using var stream = File.Create(DataFile);
-        await JsonSerializer.SerializeAsync(stream, Current, JsonOptions);
+        await _saveLock.WaitAsync();
+        try
+        {
+            Directory.CreateDirectory(DataDir);
+            var tmp = DataFile + ".tmp";
+            await using (var stream = File.Create(tmp))
+                await JsonSerializer.SerializeAsync(stream, Current, JsonOptions);
+            // Reemplaza atómicamente: evita corrupción si la app se cierra a medias
+            File.Move(tmp, DataFile, overwrite: true);
+        }
+        finally
+        {
+            _saveLock.Release();
+        }
     }
 }

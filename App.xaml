@@ -48,6 +48,9 @@
             <DataTemplate DataType="{x:Type vm:UpdateViewModel}">
                 <v:UpdateView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:StoreViewModel}">
+                <v:StoreView/>
+            </DataTemplate>
 
             <DataTemplate DataType="{x:Type vm:StorageManagerViewModel}">
                 <v:StorageManagerView/>

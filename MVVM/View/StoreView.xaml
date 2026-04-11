@@ -1,0 +1,236 @@
+<UserControl x:Class="Hakufu.MVVM.View.StoreView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="40,24,40,24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Style="{StaticResource GhostButton}"
+                        Content="← Inicio"
+                        Command="{Binding GoBackCommand}"
+                        Margin="0,0,24,0"/>
+
+                <TextBlock Grid.Column="1" Text="TIENDA"
+                           FontSize="11" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMuted}"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Column="2"
+                           Text="Los archivos descargados van a %APPDATA%\Hakufu\descargas"
+                           FontSize="10"
+                           Foreground="{DynamicResource TextMuted}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- ═══ BODY ═══ -->
+        <Grid Grid.Row="1">
+
+            <!-- ── Cargando ── -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+                <ProgressBar IsIndeterminate="True"
+                             Width="200" Height="2"
+                             BorderThickness="0"
+                             Background="{DynamicResource DividerBrush}"
+                             Foreground="{DynamicResource AccentColor}"/>
+                <TextBlock Text="Cargando catálogo..."
+                           FontSize="12"
+                           Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center"
+                           Margin="0,14,0,0"/>
+            </StackPanel>
+
+            <!-- ── Error ── -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="No se pudo cargar el catálogo"
+                           FontSize="14" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,8"/>
+                <TextBlock Text="{Binding ErrorText}"
+                           FontSize="11"
+                           Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           MaxWidth="360"
+                           TextAlignment="Center"
+                           Margin="0,0,0,20"/>
+                <Button Style="{StaticResource GhostButton}"
+                        Content="Reintentar"
+                        HorizontalAlignment="Center"
+                        Command="{Binding RetryCommand}"/>
+            </StackPanel>
+
+            <!-- ── Vacío ── -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="—"
+                           FontSize="32"
+                           Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,16"/>
+                <TextBlock Text="No hay manga disponible por el momento"
+                           FontSize="13"
+                           Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,6"/>
+                <TextBlock Text="Vuelve pronto o contribuye añadiendo entradas al catálogo en GitHub."
+                           FontSize="11"
+                           Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- ── Lista de manga ── -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding ShowItems, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{Binding Items}"
+                              Margin="40,32,40,40">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- ── TARJETA ── -->
+                            <Border Style="{StaticResource Card}"
+                                    Padding="20"
+                                    Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="96"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Portada -->
+                                    <Border Grid.Column="0"
+                                            Width="96" Height="136"
+                                            CornerRadius="4"
+                                            Background="{DynamicResource DividerBrush}"
+                                            ClipToBounds="True"
+                                            VerticalAlignment="Top">
+                                        <Image Source="{Binding CoverUrl}"
+                                               Stretch="UniformToFill"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Border>
+
+                                    <!-- Info -->
+                                    <Grid Grid.Column="2">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Título + autor -->
+                                        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                            <TextBlock Text="{Binding Title}"
+                                                       FontSize="16" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="0,0,0,3"/>
+                                            <TextBlock Text="{Binding Author}"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextMuted}"/>
+                                        </StackPanel>
+
+                                        <!-- Descripción + tags + meta -->
+                                        <StackPanel Grid.Row="1">
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       TextWrapping="Wrap"
+                                                       MaxHeight="52"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="0,0,0,8"/>
+
+                                            <TextBlock Text="{Binding TagsText}"
+                                                       FontSize="10" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource AccentColor}"
+                                                       Visibility="{Binding HasTags, Converter={StaticResource BoolToVisibility}}"
+                                                       Margin="0,0,0,6"/>
+
+                                            <TextBlock Text="{Binding MetaText}"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       Visibility="{Binding HasMeta, Converter={StaticResource BoolToVisibility}}"/>
+                                        </StackPanel>
+
+                                        <!-- Área de descarga -->
+                                        <Grid Grid.Row="2" Margin="0,16,0,0">
+
+                                            <!-- Estado: idle → botón descargar -->
+                                            <Button Style="{StaticResource PrimaryButton}"
+                                                    Content="Descargar"
+                                                    HorizontalAlignment="Left"
+                                                    Padding="20,9"
+                                                    Command="{Binding DownloadCommand}"
+                                                    Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}"/>
+
+                                            <!-- Estado: descargando → barra de progreso -->
+                                            <StackPanel Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVisibility}}">
+                                                <Grid Margin="0,0,0,6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding StatusText}"
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Progress, StringFormat={}{0:0}%}"
+                                                               FontSize="11" FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource TextPrimary}"
+                                                               VerticalAlignment="Center"/>
+                                                </Grid>
+                                                <ProgressBar Value="{Binding Progress}"
+                                                             Minimum="0" Maximum="100"
+                                                             Height="3"
+                                                             BorderThickness="0"
+                                                             Background="{DynamicResource DividerBrush}"
+                                                             Foreground="{DynamicResource AccentColor}"/>
+                                            </StackPanel>
+
+                                            <!-- Estado: descargado → botón abrir carpeta -->
+                                            <StackPanel Orientation="Horizontal"
+                                                        Visibility="{Binding IsDownloaded, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Text="✓ Descargado"
+                                                           FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource AccentColor}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,16,0"/>
+                                                <Button Style="{StaticResource GhostButton}"
+                                                        Content="Abrir carpeta"
+                                                        Padding="14,7"
+                                                        Command="{Binding OpenFolderCommand}"/>
+                                            </StackPanel>
+
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+        </Grid>
+    </Grid>
+</UserControl>

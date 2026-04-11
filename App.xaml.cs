@@ -30,6 +30,7 @@ public partial class App : Application
             var libraryService = new LibraryService(_repo);
             var profileService = new ProfileService(_repo);
             var updateService  = new UpdateService();
+            var storeService   = new StoreService();
 
             // Apply saved theme
             var savedTheme = _repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light;
@@ -43,7 +44,7 @@ public partial class App : Application
                 return type.Name switch
                 {
                     nameof(HomeViewModel) => new HomeViewModel(
-                        libraryService, coverService, navService!, updateService),
+                        libraryService, coverService, navService!, updateService, storeService),
 
                     nameof(LibraryViewModel) => new LibraryViewModel(
                         libraryService, coverService, dialogService, navService!),
@@ -62,6 +63,8 @@ public partial class App : Application
                     nameof(HelpViewModel) => new HelpViewModel(navService!),
 
                     nameof(UpdateViewModel) => new UpdateViewModel(updateService, navService!),
+
+                    nameof(StoreViewModel)  => new StoreViewModel(storeService, navService!),
 
                     _ => throw new InvalidOperationException($"Unknown ViewModel: {type.Name}")
                 };

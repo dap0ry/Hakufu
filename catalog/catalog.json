@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "ejemplo-1",
+      "title": "Ejemplo Manga",
+      "author": "Autor",
+      "description": "Añade aquí mangas editando este archivo en el repositorio de GitHub. Sube los ZIPs a GitHub Releases y pon la URL en downloadUrl.",
+      "coverUrl": "",
+      "downloadUrl": "",
+      "pages": 0,
+      "sizeMb": 0,
+      "tags": ["ejemplo"]
+    }
+  ]
+}

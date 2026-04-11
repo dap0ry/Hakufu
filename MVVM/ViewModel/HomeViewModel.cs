@@ -9,6 +9,7 @@ public class HomeViewModel : BaseViewModel
     private readonly ICoverService      _cover;
     private readonly INavigationService _nav;
     private readonly IUpdateService     _updateService;
+    private readonly IStoreService      _storeService;
 
     private string?       _lastMangaTitle;
     private BitmapSource? _lastMangaCover;
@@ -18,12 +19,13 @@ public class HomeViewModel : BaseViewModel
     public bool HasLastManga => LastMangaTitle is not null;
 
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
-                         IUpdateService updateService)
+                         IUpdateService updateService, IStoreService storeService)
     {
-        _library       = library;
-        _cover         = cover;
-        _nav           = nav;
+        _library      = library;
+        _cover        = cover;
+        _nav          = nav;
         _updateService = updateService;
+        _storeService  = storeService;
         _ = LoadLastMangaAsync();
     }
 
@@ -42,6 +44,7 @@ public class HomeViewModel : BaseViewModel
     public RelayCommand NavHelpCommand     => new(() => _nav.NavigateTo<HelpViewModel>());
 
     public RelayCommand NavUpdatesCommand => new(() => _nav.NavigateTo<UpdateViewModel>());
+    public RelayCommand NavStoreCommand   => new(() => _nav.NavigateTo<StoreViewModel>());
 
     public RelayCommand ContinueReadingCommand => new(() =>
     {

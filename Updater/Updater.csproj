@@ -17,6 +17,7 @@
     <!-- Keep the output small — no debug symbols needed in the package -->
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
 </Project>

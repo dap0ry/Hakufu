@@ -200,7 +200,7 @@
                                                                Foreground="{DynamicResource TextPrimary}"
                                                                VerticalAlignment="Center"/>
                                                 </Grid>
-                                                <ProgressBar Value="{Binding Progress}"
+                                                <ProgressBar Value="{Binding Progress, Mode=OneWay}"
                                                              Minimum="0" Maximum="100"
                                                              Height="3"
                                                              BorderThickness="0"

@@ -215,7 +215,7 @@
                                        FontSize="12"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,16"/>
-                            <TextBlock Text="Versión 1.0.0"
+                            <TextBlock Text="Versión 0.3.2"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,3"/>

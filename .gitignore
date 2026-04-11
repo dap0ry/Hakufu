@@ -1,0 +1,14 @@
+# Build output
+bin/
+obj/
+
+# IDE / Visual Studio
+.vs/
+*.user
+
+# Claude Code config
+.claude/
+
+# OS
+Thumbs.db
+.DS_Store

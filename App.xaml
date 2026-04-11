@@ -1,0 +1,62 @@
+<Application x:Class="Hakufu.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Hakufu.MVVM.ViewModel"
+             xmlns:v="clr-namespace:Hakufu.MVVM.View"
+             xmlns:conv="clr-namespace:Hakufu.Converters">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- [0] Active theme — swapped at runtime by ThemeService -->
+                <ResourceDictionary Source="Assets/Themes/LightTheme.xaml"/>
+                <!-- Global styles -->
+                <ResourceDictionary Source="Assets/Styles/GlobalStyles.xaml"/>
+                <ResourceDictionary Source="Assets/Styles/NavButton.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+            <conv:BoolToVisibilityConverter x:Key="InverseBoolToVisibility" Invert="True"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibility"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityInverse" VisibleWhenNull="True"/>
+            <conv:EqualityConverter x:Key="EqualityConverter"/>
+            <conv:PercentageWidthConverter x:Key="PercentageWidth"/>
+
+            <!-- ViewModel → View dispatch for ContentControl -->
+            <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+                <v:HomeView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:LibraryViewModel}">
+                <v:LibraryView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:CollectionDetailViewModel}">
+                <v:CollectionDetailView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ReaderViewModel}">
+                <v:ReaderView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ProfileViewModel}">
+                <v:ProfileView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+                <v:SettingsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:HelpViewModel}">
+                <v:HelpView/>
+            </DataTemplate>
+
+            <!-- Modal DataTemplates -->
+            <DataTemplate DataType="{x:Type vm:CreateCollectionViewModel}">
+                <v:CreateCollectionView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:MangaPickerViewModel}">
+                <v:MangaPickerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ConfirmDeleteViewModel}">
+                <v:ConfirmDeleteView/>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

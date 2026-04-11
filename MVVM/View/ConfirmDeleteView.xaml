@@ -1,0 +1,34 @@
+<UserControl x:Class="Hakufu.MVVM.View.ConfirmDeleteView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel MinWidth="360">
+
+        <!-- Title -->
+        <TextBlock Text="{Binding Title}"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimary}"
+                   Margin="0,0,0,12"/>
+
+        <!-- Message -->
+        <TextBlock Text="{Binding Message}"
+                   FontSize="13"
+                   Foreground="{DynamicResource TextMuted}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,32"/>
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Style="{StaticResource GhostButton}"
+                    Content="Cancelar"
+                    Padding="20,10"
+                    Margin="0,0,12,0"
+                    Command="{Binding CancelCommand}"/>
+            <Button Style="{StaticResource PrimaryButton}"
+                    Content="Eliminar"
+                    Padding="20,10"
+                    Command="{Binding ConfirmCommand}"/>
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

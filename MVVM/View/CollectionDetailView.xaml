@@ -1,0 +1,189 @@
+<UserControl x:Class="Hakufu.MVVM.View.CollectionDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Hakufu.MVVM.ViewModel"
+             xmlns:ctrl="clr-namespace:Hakufu.MVVM.View.Controls">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="32,28,32,20"
+                BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Back button -->
+                <Button Grid.Column="0"
+                        Style="{StaticResource GhostButton}"
+                        Content="← Biblioteca"
+                        Command="{Binding GoBackCommand}"
+                        Margin="0,0,20,0"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding CollectionName}"
+                           Style="{StaticResource TitleText}"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Normal mode -->
+                    <Button Style="{StaticResource GhostButton}"
+                            Content="Seleccionar"
+                            Padding="16,10"
+                            Margin="0,0,12,0"
+                            Command="{Binding ToggleSelectionModeCommand}"
+                            Visibility="{Binding IsSelectionMode, Converter={StaticResource InverseBoolToVisibility}}"/>
+                    <Button Style="{StaticResource PrimaryButton}"
+                            Content="Agregar manga"
+                            Command="{Binding AddMangaCommand}"
+                            Visibility="{Binding IsSelectionMode, Converter={StaticResource InverseBoolToVisibility}}"/>
+                    <!-- Selection mode -->
+                    <Button Style="{StaticResource GhostButton}"
+                            Content="Cancelar"
+                            Padding="16,10"
+                            Margin="0,0,12,0"
+                            Command="{Binding ToggleSelectionModeCommand}"
+                            Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}"/>
+                    <Button Style="{StaticResource PrimaryButton}"
+                            Padding="16,10"
+                            Command="{Binding DeleteSelectedCommand}"
+                            Visibility="{Binding IsSelectionMode, Converter={StaticResource BoolToVisibility}}">
+                        <Button.Content>
+                            <TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                <Run Text="Eliminar ("/>
+                                <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                                <Run Text=")"/>
+                            </TextBlock>
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Manga grid -->
+        <ScrollViewer Grid.Row="1" Padding="32,24,32,0"
+                      VerticalScrollBarVisibility="Auto">
+            <ctrl:AdaptiveItemsControl ItemsSource="{Binding Mangas}"
+                                       ColumnsCount="{Binding ItemsPerRow}">
+                <ctrl:AdaptiveItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid/>
+                    </ItemsPanelTemplate>
+                </ctrl:AdaptiveItemsControl.ItemsPanel>
+                <ctrl:AdaptiveItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:MangaCardViewModel}">
+                        <Border Margin="6" Cursor="Hand">
+                            <Border.InputBindings>
+                                <MouseBinding MouseAction="LeftClick"
+                                              Command="{Binding DataContext.CardClickCommand,
+                                                        RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              CommandParameter="{Binding}"/>
+                            </Border.InputBindings>
+                            <StackPanel>
+                                <!-- Cover + selection overlay -->
+                                <Grid>
+                                    <Border CornerRadius="6"
+                                            Background="{DynamicResource CardBackground}"
+                                            BorderBrush="{DynamicResource CardBorder}"
+                                            BorderThickness="1">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" ShadowDepth="2"
+                                                              BlurRadius="8" Opacity="0.12"/>
+                                        </Border.Effect>
+                                        <Image Source="{Binding Cover}"
+                                               Stretch="Uniform"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Border>
+                                    <!-- Selection tint -->
+                                    <Border CornerRadius="6"
+                                            Background="{DynamicResource AccentColor}"
+                                            Opacity="0.22"
+                                            Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}"/>
+                                    <!-- Checkmark -->
+                                    <Border Width="26" Height="26" CornerRadius="13"
+                                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                                            Margin="0,6,6,0"
+                                            Background="{DynamicResource AccentColor}"
+                                            Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="✓" Foreground="White"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Title -->
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="12"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="2,6,2,2"
+                                           ToolTip="{Binding Title}"/>
+
+                                <!-- Progress bar -->
+                                <Grid Height="3" Margin="2,0,2,4">
+                                    <Rectangle Fill="{DynamicResource ProgressTrack}" RadiusX="2" RadiusY="2"/>
+                                    <Rectangle Fill="{DynamicResource ProgressFill}" RadiusX="2" RadiusY="2"
+                                               HorizontalAlignment="Left">
+                                        <Rectangle.Width>
+                                            <MultiBinding Converter="{StaticResource PercentageWidth}">
+                                                <Binding Path="ProgressPct"/>
+                                                <Binding Path="ActualWidth"
+                                                         RelativeSource="{RelativeSource AncestorType=Grid}"/>
+                                            </MultiBinding>
+                                        </Rectangle.Width>
+                                    </Rectangle>
+                                </Grid>
+                            </StackPanel>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="0.85"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </DataTemplate>
+                </ctrl:AdaptiveItemsControl.ItemTemplate>
+            </ctrl:AdaptiveItemsControl>
+        </ScrollViewer>
+
+        <!-- Bottom slider bar -->
+        <Border Grid.Row="2" Padding="32,12"
+                Background="{DynamicResource AppBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="180"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource CaptionText}">
+                    <Run Text="{Binding Mangas.Count, Mode=OneWay}"/>
+                    <Run Text=" manga(s)"/>
+                </TextBlock>
+                <TextBlock Grid.Column="1" Text="Tamaño: "
+                           Style="{StaticResource CaptionText}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <Slider Grid.Column="2"
+                        Style="{StaticResource CompactSlider}"
+                        Minimum="3" Maximum="10" SmallChange="1" LargeChange="1"
+                        Value="{Binding ItemsPerRow}"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

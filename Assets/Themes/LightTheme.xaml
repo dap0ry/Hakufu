@@ -1,0 +1,49 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Backgrounds -->
+    <SolidColorBrush x:Key="AppBackground"      Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SidebarBackground"  Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="CardBackground"     Color="#FAFAFA"/>
+    <SolidColorBrush x:Key="HoverBackground"    Color="#EBEBEB"/>
+    <SolidColorBrush x:Key="SelectedBackground" Color="#E0E0E0"/>
+
+    <!-- Borders -->
+    <SolidColorBrush x:Key="CardBorder"         Color="#DEDEDE"/>
+    <SolidColorBrush x:Key="InputBorder"        Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="DividerBrush"       Color="#E8E8E8"/>
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="TextPrimary"        Color="#0A0A0A"/>
+    <SolidColorBrush x:Key="TextSecondary"      Color="#555555"/>
+    <SolidColorBrush x:Key="TextMuted"          Color="#999999"/>
+
+    <!-- Accent / Buttons -->
+    <SolidColorBrush x:Key="AccentColor"        Color="#0A0A0A"/>
+    <SolidColorBrush x:Key="ButtonBackground"   Color="#0A0A0A"/>
+    <SolidColorBrush x:Key="ButtonForeground"   Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ButtonHover"        Color="#333333"/>
+    <SolidColorBrush x:Key="ButtonBorder"       Color="#0A0A0A"/>
+
+    <!-- Overlay -->
+    <SolidColorBrush x:Key="OverlayBackground"  Color="#99000000"/>
+
+    <!-- Progress -->
+    <SolidColorBrush x:Key="ProgressFill"       Color="#0A0A0A"/>
+    <SolidColorBrush x:Key="ProgressTrack"      Color="#DDDDDD"/>
+
+    <!-- ScrollBar -->
+    <SolidColorBrush x:Key="ScrollBarThumb"     Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="ScrollBarTrack"     Color="Transparent"/>
+
+    <!-- Window chrome -->
+    <SolidColorBrush x:Key="TitleBarBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TitleBarForeground" Color="#0A0A0A"/>
+    <SolidColorBrush x:Key="WindowBorder"       Color="#DEDEDE"/>
+
+    <!-- Reader -->
+    <SolidColorBrush x:Key="ReaderBackground"   Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="ReaderBarBackground" Color="#0D0D0D"/>
+    <SolidColorBrush x:Key="ReaderForeground"   Color="#F0F0F0"/>
+
+</ResourceDictionary>

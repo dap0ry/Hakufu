@@ -1,0 +1,175 @@
+<UserControl x:Class="Hakufu.MVVM.View.ReaderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{DynamicResource ReaderBackground}"
+             Focusable="True">
+
+    <!-- Keyboard bindings for reader navigation -->
+    <UserControl.InputBindings>
+        <KeyBinding Key="Right" Command="{Binding NextPageCommand}"/>
+        <KeyBinding Key="Space" Command="{Binding NextPageCommand}"/>
+        <KeyBinding Key="Left"  Command="{Binding PrevPageCommand}"/>
+        <KeyBinding Key="Escape" Command="{Binding ExitZenModeCommand}"/>
+        <KeyBinding Key="F"     Command="{Binding ToggleZenModeCommand}"/>
+        <KeyBinding Key="F11"   Command="{Binding ToggleZenModeCommand}"/>
+        <KeyBinding Key="D1"    Command="{Binding ToggleTwoPageCommand}"/>
+        <KeyBinding Key="D2"    Command="{Binding ToggleTwoPageCommand}"/>
+    </UserControl.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>   <!-- top bar (hidden in zen) -->
+            <RowDefinition Height="*"/>       <!-- pages -->
+            <RowDefinition Height="Auto"/>   <!-- bottom bar (hidden in zen) -->
+        </Grid.RowDefinitions>
+
+        <!-- TOP BAR -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource ReaderBarBackground}"
+                Padding="20,10"
+                Visibility="{Binding IsZenMode, Converter={StaticResource InverseBoolToVisibility}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="{Binding MangaTitle}"
+                           Foreground="{DynamicResource ReaderForeground}"
+                           FontSize="14" FontWeight="Medium"
+                           VerticalAlignment="Center"/>
+                <Button Grid.Column="1"
+                        Style="{StaticResource GhostButton}"
+                        Content="Cerrar"
+                        Foreground="{DynamicResource ReaderForeground}"
+                        BorderBrush="#44FFFFFF"
+                        Command="{Binding CloseReaderCommand}"/>
+            </Grid>
+        </Border>
+
+        <!-- PAGE AREA -->
+        <Grid Grid.Row="1"
+              Background="{DynamicResource ReaderBackground}"
+              MouseLeftButtonDown="PageArea_MouseLeftButtonDown">
+
+            <!-- Two-page mode — pages joined with hairline separator -->
+            <Grid Visibility="{Binding IsTwoPageMode, Converter={StaticResource BoolToVisibility}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"
+                       Source="{Binding PageLeft}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Right"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Margin="8,8,0,8"/>
+                <Rectangle Grid.Column="1"
+                            Fill="Black"
+                            Opacity="0.18"
+                            VerticalAlignment="Stretch"/>
+                <Image Grid.Column="2"
+                       Source="{Binding PageRight}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Left"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Margin="0,8,8,8"/>
+            </Grid>
+
+            <!-- Single-page mode -->
+            <Image Visibility="{Binding IsTwoPageMode, Converter={StaticResource InverseBoolToVisibility}}"
+                   Source="{Binding PageLeft}"
+                   Stretch="Uniform"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Margin="8"/>
+
+            <!-- Zen hint toast -->
+            <Border HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,0,28"
+                    Padding="18,9"
+                    Background="#CC000000"
+                    CornerRadius="20"
+                    IsHitTestVisible="False"
+                    Visibility="{Binding ShowZenHint, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="Pulsa ESC para salir del modo zen"
+                           Foreground="#F0F0F0"
+                           FontSize="13"
+                           FontFamily="Segoe UI"/>
+            </Border>
+        </Grid>
+
+        <!-- BOTTOM BAR -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource ReaderBarBackground}"
+                Padding="20,10"
+                Visibility="{Binding IsZenMode, Converter={StaticResource InverseBoolToVisibility}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left nav -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button Style="{StaticResource IconButton}"
+                            Foreground="{DynamicResource ReaderForeground}"
+                            Command="{Binding PrevPageCommand}"
+                            Margin="0,0,8,0"
+                            ToolTip="Página anterior">
+                        <Path Data="M 10,2 L 2,8 L 10,14"
+                              Stroke="{DynamicResource ReaderForeground}"
+                              StrokeThickness="1.5" Width="12" Height="16" Fill="Transparent"/>
+                    </Button>
+                    <TextBlock Text="{Binding PageDisplay}"
+                               Foreground="{DynamicResource ReaderForeground}"
+                               FontSize="13" VerticalAlignment="Center"
+                               MinWidth="80" TextAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <Button Style="{StaticResource IconButton}"
+                            Foreground="{DynamicResource ReaderForeground}"
+                            Command="{Binding NextPageCommand}"
+                            ToolTip="Página siguiente">
+                        <Path Data="M 2,2 L 10,8 L 2,14"
+                              Stroke="{DynamicResource ReaderForeground}"
+                              StrokeThickness="1.5" Width="12" Height="16" Fill="Transparent"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Centre (spacer) -->
+                <Grid Grid.Column="1"/>
+
+                <!-- Right controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Style="{StaticResource GhostButton}"
+                            Foreground="{DynamicResource ReaderForeground}"
+                            BorderBrush="#44FFFFFF"
+                            FontSize="12"
+                            Padding="12,6"
+                            Margin="0,0,8,0"
+                            Content="1 pág."
+                            Command="{Binding ToggleTwoPageCommand}"
+                            Visibility="{Binding IsTwoPageMode, Converter={StaticResource BoolToVisibility}}"/>
+                    <Button Style="{StaticResource GhostButton}"
+                            Foreground="{DynamicResource ReaderForeground}"
+                            BorderBrush="#44FFFFFF"
+                            FontSize="12"
+                            Padding="12,6"
+                            Margin="0,0,8,0"
+                            Content="2 págs."
+                            Command="{Binding ToggleTwoPageCommand}"
+                            Visibility="{Binding IsTwoPageMode, Converter={StaticResource InverseBoolToVisibility}}"/>
+                    <Button Style="{StaticResource GhostButton}"
+                            Foreground="{DynamicResource ReaderForeground}"
+                            BorderBrush="#44FFFFFF"
+                            FontSize="12"
+                            Padding="12,6"
+                            Content="Zen"
+                            Command="{Binding ToggleZenModeCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

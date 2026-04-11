@@ -57,7 +57,7 @@ public partial class App : Application
                     nameof(ProfileViewModel) => new ProfileViewModel(
                         profileService, libraryService, coverService, dialogService, navService!),
 
-                    nameof(SettingsViewModel) => new SettingsViewModel(themeService, _repo, navService!),
+                    nameof(SettingsViewModel) => new SettingsViewModel(themeService, _repo, navService!, dialogService, libraryService),
 
                     nameof(HelpViewModel) => new HelpViewModel(navService!),
 

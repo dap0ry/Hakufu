@@ -8,6 +8,10 @@ public class LibraryService
 {
     private readonly IDataRepository _repo;
 
+    private static readonly string BibliotecaDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Hakufu", "biblioteca");
+
     public LibraryService(IDataRepository repo) => _repo = repo;
 
     public IReadOnlyList<Collection> GetCollections() => _repo.Current.Collections;
@@ -42,8 +46,17 @@ public class LibraryService
         Guid collectionId, string filePath, int totalPages, string coverCachePath,
         Guid? presetId = null)
     {
-        // Reuse existing manga record if same file path already added
-        var existing = _repo.Current.Mangas.FirstOrDefault(m => m.FilePath == filePath);
+        // Copy the file into biblioteca only if it is not already there
+        var localPath = filePath;
+        if (!filePath.StartsWith(BibliotecaDir, StringComparison.OrdinalIgnoreCase))
+        {
+            var col = GetCollection(collectionId);
+            if (col is not null)
+                localPath = await CopyToLibraryAsync(filePath, col.Name);
+        }
+
+        // Reuse existing manga record if same local path already added
+        var existing = _repo.Current.Mangas.FirstOrDefault(m => m.FilePath == localPath);
         Manga manga;
         if (existing is not null)
         {
@@ -51,25 +64,106 @@ public class LibraryService
         }
         else
         {
-            var title = Path.GetFileNameWithoutExtension(filePath);
+            var title = Path.GetFileNameWithoutExtension(localPath);
             manga = new Manga
             {
                 Id             = presetId ?? Guid.NewGuid(),
                 Title          = title,
-                FilePath       = filePath,
+                FilePath       = localPath,
                 TotalPages     = totalPages,
                 CoverCachePath = coverCachePath
             };
             _repo.Current.Mangas.Add(manga);
         }
 
-        var col = GetCollection(collectionId);
-        if (col is not null && !col.MangaIds.Contains(manga.Id))
+        var target = GetCollection(collectionId);
+        if (target is not null && !target.MangaIds.Contains(manga.Id))
         {
-            col.MangaIds.Add(manga.Id);
+            target.MangaIds.Add(manga.Id);
             await _repo.SaveAsync();
         }
         return manga;
+    }
+
+    /// <summary>
+    /// Copies every manga whose FilePath is outside biblioteca to its collection folder
+    /// inside biblioteca, updates FilePath, and deletes the original file.
+    /// Returns the number of files migrated.
+    /// </summary>
+    public async Task<int> MigrateToLibraryAsync(IProgress<string>? progress = null)
+    {
+        var toMigrate = _repo.Current.Mangas
+            .Where(m => !string.IsNullOrEmpty(m.FilePath) &&
+                        !m.FilePath.StartsWith(BibliotecaDir, StringComparison.OrdinalIgnoreCase) &&
+                        File.Exists(m.FilePath))
+            .ToList();
+
+        int count = 0;
+        foreach (var manga in toMigrate)
+        {
+            var collection = _repo.Current.Collections
+                .FirstOrDefault(c => c.MangaIds.Contains(manga.Id));
+            var folderName = collection?.Name ?? "sin_coleccion";
+
+            progress?.Report(Path.GetFileName(manga.FilePath));
+
+            var newPath = await CopyToLibraryAsync(manga.FilePath, folderName);
+            var oldPath = manga.FilePath;
+            manga.FilePath = newPath;
+
+            try { await Task.Run(() => File.Delete(oldPath)); }
+            catch { /* ignore locked / already deleted */ }
+
+            count++;
+        }
+
+        if (count > 0)
+            await _repo.SaveAsync();
+
+        return count;
+    }
+
+    /// <summary>
+    /// Returns how many manga files currently live outside biblioteca.
+    /// </summary>
+    public int CountExternalMangas() =>
+        _repo.Current.Mangas.Count(m =>
+            !string.IsNullOrEmpty(m.FilePath) &&
+            !m.FilePath.StartsWith(BibliotecaDir, StringComparison.OrdinalIgnoreCase) &&
+            File.Exists(m.FilePath));
+
+    private static async Task<string> CopyToLibraryAsync(string sourcePath, string collectionName)
+    {
+        var folderName = SanitizeFolderName(collectionName);
+        var destDir    = Path.Combine(BibliotecaDir, folderName);
+        Directory.CreateDirectory(destDir);
+
+        var fileName = Path.GetFileName(sourcePath);
+        var destPath = Path.Combine(destDir, fileName);
+
+        // Avoid overwriting a different file that happens to share the name
+        if (File.Exists(destPath) &&
+            !string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(destPath),
+                           StringComparison.OrdinalIgnoreCase))
+        {
+            var stem      = Path.GetFileNameWithoutExtension(fileName);
+            var ext       = Path.GetExtension(fileName);
+            var counter   = 1;
+            do { destPath = Path.Combine(destDir, $"{stem} ({counter++}){ext}"); }
+            while (File.Exists(destPath));
+        }
+
+        if (!File.Exists(destPath))
+            await Task.Run(() => File.Copy(sourcePath, destPath));
+
+        return destPath;
+    }
+
+    private static string SanitizeFolderName(string name)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var clean   = new string(name.Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray()).Trim();
+        return string.IsNullOrEmpty(clean) ? "sin_nombre" : clean;
     }
 
     public async Task RemoveMangaFromCollectionAsync(Guid collectionId, Guid mangaId)

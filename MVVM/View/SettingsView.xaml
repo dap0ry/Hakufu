@@ -108,6 +108,92 @@
                     </Grid>
                 </Border>
 
+                <!-- ── ESPACIO DE DISCO ── -->
+                <Border Style="{StaticResource Card}" Padding="24"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Espacio de disco usado"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- Aplicación -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Aplicación"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding AppSizeText}"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Divider -->
+                        <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="0,0,0,10"/>
+
+                        <!-- Archivos manga del usuario -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Mangas"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Archivos PDF / CBR / CBZ en tu equipo"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding MangasSizeText}"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Divider -->
+                        <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="0,0,0,10"/>
+
+                        <!-- Caché local Hakufu -->
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Caché de Hakufu"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Portadas y datos guardados en %APPDATA%"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding CachesSizeText}"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Button -->
+                        <Button Style="{StaticResource GhostButton}"
+                                Content="Gestionar espacio"
+                                HorizontalAlignment="Left"
+                                Padding="16,9"
+                                Command="{Binding OpenStorageManagerCommand}"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- ── ACERCA DE ── -->
                 <Border Style="{StaticResource Card}" Padding="24">
                     <Grid>

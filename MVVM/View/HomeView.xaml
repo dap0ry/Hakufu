@@ -123,15 +123,15 @@
                 </Viewbox>
 
                 <!-- ── NAV ITEMS ── -->
-                <!-- Width="800" asegura que el escalado sea width-constrained → sin centrado horizontal -->
                 <Viewbox Grid.Row="1" Stretch="Uniform"
-                         HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                         Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}"
                          Margin="0,16,0,16">
                 <StackPanel Width="800">
 
                     <Button Style="{StaticResource HomeNavItem}"
                             Tag="01"
-                            Margin="0,0,0,0"
+                            Margin="48,0,0,0"
                             Command="{Binding NavLibraryCommand}">
                         <StackPanel>
                             <TextBlock Text="01"
@@ -165,7 +165,7 @@
 
                     <Button Style="{StaticResource HomeNavItem}"
                             Tag="03"
-                            Margin="16,0,0,0"
+                            Margin="48,0,0,0"
                             Command="{Binding NavSettingsCommand}">
                         <StackPanel>
                             <TextBlock Text="03"
@@ -182,7 +182,7 @@
 
                     <Button Style="{StaticResource HomeNavItem}"
                             Tag="04"
-                            Margin="0,0,0,0"
+                            Margin="48,0,0,0"
                             Command="{Binding NavHelpCommand}">
                         <StackPanel>
                             <TextBlock Text="04"
@@ -199,7 +199,7 @@
 
                     <Button Style="{StaticResource HomeNavItem}"
                             Tag="05"
-                            Margin="32,0,0,0"
+                            Margin="48,0,0,0"
                             Command="{Binding NavUpdatesCommand}">
                         <StackPanel>
                             <TextBlock Text="05"

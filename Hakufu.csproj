@@ -2,15 +2,16 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Updater\**;Installer\**</DefaultItemExcludes>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AssemblyName>Hakufu</AssemblyName>
     <RootNamespace>Hakufu</RootNamespace>
-    <Version>0.1.0</Version>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <FileVersion>0.1.0.0</FileVersion>
+    <Version>0.3.0</Version>
+    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <FileVersion>0.3.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,5 +23,20 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
     <PackageReference Include="SharpCompress" Version="0.47.4" />
   </ItemGroup>
+
+  <!--
+    AfterPublish: compila updater.exe y lo copia a la carpeta de publicación.
+    Se ejecuta automáticamente al publicar desde Visual Studio o con dotnet publish.
+    Solo se activa cuando PublishDir está definido (es decir, en publish, no en build normal).
+  -->
+  <Target Name="PublishUpdater" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+    <Message Text="[AfterPublish] Compilando updater.exe..." Importance="High" />
+    <Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)Updater\Updater.csproj&quot; -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o &quot;$(MSBuildThisFileDirectory)obj\updater-temp&quot; --verbosity quiet" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)obj\updater-temp\updater.exe"
+          DestinationFolder="$(PublishDir)"
+          OverwriteReadOnlyFiles="true" />
+    <RemoveDir Directories="$(MSBuildThisFileDirectory)obj\updater-temp" />
+    <Message Text="[AfterPublish] updater.exe copiado a $(PublishDir)" Importance="High" />
+  </Target>
 
 </Project>

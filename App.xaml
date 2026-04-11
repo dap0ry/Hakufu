@@ -49,6 +49,10 @@
                 <v:UpdateView/>
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vm:StorageManagerViewModel}">
+                <v:StorageManagerView/>
+            </DataTemplate>
+
             <!-- Modal DataTemplates -->
             <DataTemplate DataType="{x:Type vm:CreateCollectionViewModel}">
                 <v:CreateCollectionView/>

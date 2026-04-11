@@ -4,7 +4,8 @@ namespace Hakufu.MVVM.ViewModel;
 
 public class UpdateViewModel : BaseViewModel
 {
-    private readonly IUpdateService _svc;
+    private readonly IUpdateService     _svc;
+    private readonly INavigationService _nav;
     private string? _downloadUrl;
 
     private string _currentVersion    = "";
@@ -69,9 +70,10 @@ public class UpdateViewModel : BaseViewModel
         private set => SetProperty(ref _statusMessage, value);
     }
 
-    public UpdateViewModel(IUpdateService svc)
+    public UpdateViewModel(IUpdateService svc, INavigationService nav)
     {
         _svc = svc;
+        _nav = nav;
         var v = svc.GetCurrentVersion();
         CurrentVersion = $"v{v.Major}.{v.Minor}.{v.Build}";
         _ = CheckAsync();
@@ -147,6 +149,8 @@ public class UpdateViewModel : BaseViewModel
             }
         },
         () => IsUpdateAvailable && _downloadUrl is not null && !IsDownloading);
+
+    public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 
     public RelayCommand CheckAgainCommand => new(
         () => _ = CheckAsync(),

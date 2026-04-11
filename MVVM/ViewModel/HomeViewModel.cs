@@ -1,6 +1,4 @@
-using System.Windows;
 using System.Windows.Media.Imaging;
-using Hakufu.MVVM.View;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -43,13 +41,7 @@ public class HomeViewModel : BaseViewModel
     public RelayCommand NavSettingsCommand => new(() => _nav.NavigateTo<SettingsViewModel>());
     public RelayCommand NavHelpCommand     => new(() => _nav.NavigateTo<HelpViewModel>());
 
-    public RelayCommand NavUpdatesCommand => new(() =>
-    {
-        var vm  = new UpdateViewModel(_updateService);
-        var win = new UpdateWindow { DataContext = vm,
-                                     Owner = Application.Current.MainWindow };
-        win.Show();
-    });
+    public RelayCommand NavUpdatesCommand => new(() => _nav.NavigateTo<UpdateViewModel>());
 
     public RelayCommand ContinueReadingCommand => new(() =>
     {

@@ -61,6 +61,8 @@ public partial class App : Application
 
                     nameof(HelpViewModel) => new HelpViewModel(navService!),
 
+                    nameof(UpdateViewModel) => new UpdateViewModel(updateService, navService!),
+
                     _ => throw new InvalidOperationException($"Unknown ViewModel: {type.Name}")
                 };
             }

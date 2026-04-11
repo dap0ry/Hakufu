@@ -171,58 +171,83 @@
                                                        Visibility="{Binding HasMeta, Converter={StaticResource BoolToVisibility}}"/>
                                         </StackPanel>
 
-                                        <!-- Área de descarga -->
-                                        <Grid Grid.Row="2" Margin="0,16,0,0">
+                                        <!-- Volúmenes -->
+                                        <ItemsControl Grid.Row="2"
+                                                      ItemsSource="{Binding Volumes}"
+                                                      Margin="0,14,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="{DynamicResource DividerBrush}"
+                                                            BorderThickness="0,1,0,0"
+                                                            Padding="0,10,0,0"
+                                                            Margin="0,0,0,0">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
 
-                                            <!-- Estado: idle → botón descargar -->
-                                            <Button Style="{StaticResource PrimaryButton}"
-                                                    Content="Descargar"
-                                                    HorizontalAlignment="Left"
-                                                    Padding="20,9"
-                                                    Command="{Binding DownloadCommand}"
-                                                    Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}"/>
+                                                            <!-- Label del tomo -->
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding Label}"
+                                                                       FontSize="12" FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource TextPrimary}"
+                                                                       VerticalAlignment="Center"/>
 
-                                            <!-- Estado: descargando → barra de progreso -->
-                                            <StackPanel Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVisibility}}">
-                                                <Grid Margin="0,0,0,6">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0"
-                                                               Text="{Binding StatusText}"
-                                                               FontSize="11"
-                                                               Foreground="{DynamicResource TextMuted}"
-                                                               VerticalAlignment="Center"/>
-                                                    <TextBlock Grid.Column="1"
-                                                               Text="{Binding Progress, StringFormat={}{0:0}%}"
-                                                               FontSize="11" FontWeight="SemiBold"
-                                                               Foreground="{DynamicResource TextPrimary}"
-                                                               VerticalAlignment="Center"/>
-                                                </Grid>
-                                                <ProgressBar Value="{Binding Progress, Mode=OneWay}"
-                                                             Minimum="0" Maximum="100"
-                                                             Height="3"
-                                                             BorderThickness="0"
-                                                             Background="{DynamicResource DividerBrush}"
-                                                             Foreground="{DynamicResource AccentColor}"/>
-                                            </StackPanel>
+                                                            <!-- Idle: botón descargar -->
+                                                            <Button Grid.Column="1"
+                                                                    Style="{StaticResource PrimaryButton}"
+                                                                    Content="Descargar"
+                                                                    Padding="16,7"
+                                                                    Command="{Binding DownloadCommand}"
+                                                                    Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}"/>
 
-                                            <!-- Estado: descargado → botón abrir carpeta -->
-                                            <StackPanel Orientation="Horizontal"
-                                                        Visibility="{Binding IsDownloaded, Converter={StaticResource BoolToVisibility}}">
-                                                <TextBlock Text="✓ Descargado"
-                                                           FontSize="11" FontWeight="SemiBold"
-                                                           Foreground="{DynamicResource AccentColor}"
-                                                           VerticalAlignment="Center"
-                                                           Margin="0,0,16,0"/>
-                                                <Button Style="{StaticResource GhostButton}"
-                                                        Content="Abrir carpeta"
-                                                        Padding="14,7"
-                                                        Command="{Binding OpenFolderCommand}"/>
-                                            </StackPanel>
+                                                            <!-- Descargando: barra + % -->
+                                                            <StackPanel Grid.Column="1"
+                                                                        Width="160"
+                                                                        Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVisibility}}">
+                                                                <Grid Margin="0,0,0,4">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0"
+                                                                               Text="{Binding StatusText}"
+                                                                               FontSize="10"
+                                                                               Foreground="{DynamicResource TextMuted}"
+                                                                               TextTrimming="CharacterEllipsis"/>
+                                                                    <TextBlock Grid.Column="1"
+                                                                               Text="{Binding Progress, StringFormat={}{0:0}%}"
+                                                                               FontSize="10" FontWeight="SemiBold"
+                                                                               Foreground="{DynamicResource TextPrimary}"/>
+                                                                </Grid>
+                                                                <ProgressBar Value="{Binding Progress, Mode=OneWay}"
+                                                                             Minimum="0" Maximum="100"
+                                                                             Height="3" BorderThickness="0"
+                                                                             Background="{DynamicResource DividerBrush}"
+                                                                             Foreground="{DynamicResource AccentColor}"/>
+                                                            </StackPanel>
 
-                                        </Grid>
+                                                            <!-- Descargado: check + abrir -->
+                                                            <StackPanel Grid.Column="1"
+                                                                        Orientation="Horizontal"
+                                                                        Visibility="{Binding IsDownloaded, Converter={StaticResource BoolToVisibility}}">
+                                                                <TextBlock Text="✓"
+                                                                           FontSize="11" FontWeight="SemiBold"
+                                                                           Foreground="{DynamicResource AccentColor}"
+                                                                           VerticalAlignment="Center"
+                                                                           Margin="0,0,10,0"/>
+                                                                <Button Style="{StaticResource GhostButton}"
+                                                                        Content="Abrir carpeta"
+                                                                        Padding="12,6"
+                                                                        Command="{Binding OpenFolderCommand}"/>
+                                                            </StackPanel>
+
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </Grid>
                                 </Grid>
                             </Border>

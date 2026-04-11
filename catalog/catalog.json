@@ -2,15 +2,24 @@
   "version": 1,
   "items": [
     {
-      "id": "ejemplo-1",
-      "title": "Ejemplo Manga",
-      "author": "Autor",
-      "description": "Añade aquí mangas editando este archivo en el repositorio de GitHub. Sube los ZIPs a GitHub Releases y pon la URL en downloadUrl.",
+      "id": "prophecy-copycat",
+      "title": "Prophecy: The Copycat",
+      "author": "Tetsuya Tsutsui",
+      "description": "Spin-off del manga Prophecy. «Escuchad la profecía para mañana». Con este mensaje, el terrorista «shinbunshi» anuncia en un sitio web de alojamiento de vídeos los delitos que va a cometer a modo de «castigo». ¡Ha surgido un imitador que lleva al extremo la serie de terribles sucesos que estremeció a la par que cautivó a todo Japón! ¡¡Un estudiante de bachillerato adopta la identidad de shinbunshi y se alza para escapar del abismo!!",
       "coverUrl": "",
-      "downloadUrl": "",
       "pages": 0,
       "sizeMb": 0,
-      "tags": ["ejemplo"]
+      "tags": ["thriller", "misterio"],
+      "volumes": [
+        {
+          "label": "Tomos 01-02",
+          "downloadUrl": "https://www.fireload.com/624e87b1a618a766/ProphecyCopy-T01-02.rar?pt=VDFsNFJVUnlaeTg0WjJGUU0wZGpNRnBxWnpSdVp6MDlPbWdSYlV0Q1J4cUdiMHZiQ2l6VEliOD0%3D"
+        },
+        {
+          "label": "Tomo 03",
+          "downloadUrl": "https://www.fireload.com/536d3de57e1e5ffc/ProphecyCopy-T03.rar?pt=YlUwM1JqWktNM3BKZDA1dGVtRkJhMEZxWjNaYWR6MDlPbWY5MlA2dHpGbWdzMm83UENZNzZuRT0%3D"
+        }
+      ]
     }
   ]
 }

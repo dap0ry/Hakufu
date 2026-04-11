@@ -1,8 +1,9 @@
 using System.IO;
-using System.IO.Compression;
 using System.Net.Http;
 using System.Text.Json;
 using Hakufu.MVVM.Model;
+using SharpCompress.Common;
+using SharpCompress.Readers;
 
 namespace Hakufu.Services;
 
@@ -34,7 +35,12 @@ public class StoreService : IStoreService
         CancellationToken ct = default)
     {
         var destDir = Path.Combine(DescargasDir, SanitizeFolderName(title));
-        var tempZip = Path.Combine(Path.GetTempPath(), $"hakufu_dl_{Guid.NewGuid():N}.zip");
+
+        // Conservar la extensión original para que SharpCompress detecte el formato
+        var urlPath = new Uri(url).AbsolutePath;
+        var ext     = Path.GetExtension(urlPath);                        // .rar, .zip, …
+        if (string.IsNullOrEmpty(ext)) ext = ".bin";
+        var tempFile = Path.Combine(Path.GetTempPath(), $"hakufu_dl_{Guid.NewGuid():N}{ext}");
 
         Directory.CreateDirectory(destDir);
 
@@ -50,7 +56,7 @@ public class StoreService : IStoreService
         long read  = 0;
 
         await using var src  = await response.Content.ReadAsStreamAsync(ct);
-        await using var dest = File.Create(tempZip);
+        await using var dest = File.Create(tempFile);
 
         int bytesRead;
         while ((bytesRead = await src.ReadAsync(buffer, ct)) > 0)
@@ -62,12 +68,21 @@ public class StoreService : IStoreService
         }
         dest.Close();
 
-        // ── Extracción ──────────────────────────────────────────────────────
+        // ── Extracción (ZIP, RAR, 7z, tar… — SharpCompress lo detecta solo) ─
         progress.Report((90, "Extrayendo archivos..."));
-        await Task.Run(() => ZipFile.ExtractToDirectory(tempZip, destDir, overwriteFiles: true), ct);
+        await Task.Run(() =>
+        {
+            using var stream = File.OpenRead(tempFile);
+            using var reader = ReaderFactory.OpenReader(stream);
+            reader.WriteAllToDirectory(destDir, new ExtractionOptions
+            {
+                ExtractFullPath = true,
+                Overwrite       = true
+            });
+        }, ct);
 
         // ── Limpieza ────────────────────────────────────────────────────────
-        try { File.Delete(tempZip); } catch { }
+        try { File.Delete(tempFile); } catch { }
 
         progress.Report((100, "¡Listo!"));
         return destDir;

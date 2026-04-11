@@ -9,15 +9,15 @@ public class JsonDataRepository : IDataRepository
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
 
     private static readonly string DataFile = Path.Combine(DataDir, "data.json");
+    private static readonly string TmpFile  = DataFile + ".tmp"; // solo para limpieza en LoadAsync
 
     private static readonly string OldDataDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Hakufu");
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true
-    };
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
+    // SemaphoreSlim(1,1) serializa escrituras; no usamos WaitAsync para evitar
+    // deadlock cuando OnExit llama GetAwaiter().GetResult() en el hilo UI.
     private static readonly SemaphoreSlim _saveLock = new(1, 1);
 
     public AppDataStore Current { get; private set; } = new();
@@ -33,6 +33,9 @@ public class JsonDataRepository : IDataRepository
                 File.Copy(oldFile, DataFile, overwrite: false);
         }
 
+        // Limpieza: elimina cualquier .tmp huérfano de versiones anteriores
+        try { if (File.Exists(TmpFile)) File.Delete(TmpFile); } catch { }
+
         if (!File.Exists(DataFile))
         {
             Current = new AppDataStore();
@@ -41,11 +44,13 @@ public class JsonDataRepository : IDataRepository
 
         try
         {
-            await using var stream = File.OpenRead(DataFile);
+            // FileShare.ReadWrite permite que SaveAsync escriba aunque este stream esté abierto
+            await using var stream = new FileStream(
+                DataFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite,
+                bufferSize: 4096, useAsync: true);
             Current = await JsonSerializer.DeserializeAsync<AppDataStore>(stream, JsonOptions)
                       ?? new AppDataStore();
 
-            // Ensure favorites always has 3 slots
             while (Current.Favorites.Count < 3)
                 Current.Favorites.Add(new() { SlotIndex = Current.Favorites.Count });
         }
@@ -57,15 +62,18 @@ public class JsonDataRepository : IDataRepository
 
     public async Task SaveAsync()
     {
-        await _saveLock.WaitAsync();
+        // SemaphoreSlim garantiza que solo un SaveAsync corre a la vez.
+        // ConfigureAwait(false) evita deadlock cuando OnExit llama
+        // GetAwaiter().GetResult() desde el hilo UI.
+        await _saveLock.WaitAsync().ConfigureAwait(false);
         try
         {
             Directory.CreateDirectory(DataDir);
-            var tmp = DataFile + ".tmp";
-            await using (var stream = File.Create(tmp))
-                await JsonSerializer.SerializeAsync(stream, Current, JsonOptions);
-            // Reemplaza atómicamente: evita corrupción si la app se cierra a medias
-            File.Move(tmp, DataFile, overwrite: true);
+            // FileShare.ReadWrite: permite lecturas concurrentes durante la escritura
+            await using var stream = new FileStream(
+                DataFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite,
+                bufferSize: 4096, useAsync: true);
+            await JsonSerializer.SerializeAsync(stream, Current, JsonOptions).ConfigureAwait(false);
         }
         finally
         {

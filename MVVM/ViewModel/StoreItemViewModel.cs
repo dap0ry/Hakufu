@@ -20,8 +20,8 @@ public class StoreItemViewModel : BaseViewModel
         get
         {
             var parts = new List<string>();
-            if (_item.Pages > 0) parts.Add($"{_item.Pages} págs.");
-            if (_item.SizeMb > 0) parts.Add($"{_item.SizeMb:0.#} MB");
+            if (_item.Pages > 0)   parts.Add($"{_item.Pages} págs.");
+            if (_item.SizeMb > 0)  parts.Add($"{_item.SizeMb:0.#} MB");
             return string.Join("  ·  ", parts);
         }
     }
@@ -32,6 +32,6 @@ public class StoreItemViewModel : BaseViewModel
     {
         _item = item;
         foreach (var vol in item.Volumes)
-            Volumes.Add(new StoreVolumeViewModel(vol, item.Title, store));
+            Volumes.Add(new StoreVolumeViewModel(vol, store));
     }
 }

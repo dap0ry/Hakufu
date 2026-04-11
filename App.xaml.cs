@@ -95,5 +95,8 @@ public partial class App : Application
             _repo.SaveAsync().GetAwaiter().GetResult();
         }
         base.OnExit(e);
+        // pdfium (Docnet.Core) keeps native threads alive; force-kill the process
+        // after all cleanup so the app doesn't linger in Task Manager.
+        Environment.Exit(e.ApplicationExitCode);
     }
 }

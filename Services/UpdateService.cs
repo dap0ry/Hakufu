@@ -35,9 +35,16 @@ public class UpdateService : IUpdateService
         IProgress<double> progress,
         CancellationToken ct = default)
     {
-        var appDir  = AppContext.BaseDirectory;
-        var zipPath = Path.Combine(appDir, "update.zip");
+        var appDir     = AppContext.BaseDirectory;
+        // Descargamos a %TEMP% para no tocar la carpeta de la app en ejecución
+        var tempDir    = Path.Combine(Path.GetTempPath(), "HakufuUpdate");
+        var zipPath    = Path.Combine(tempDir, "update.zip");
+        var updaterSrc = Path.Combine(appDir, "updater.exe");
+        var updaterDst = Path.Combine(tempDir, "updater.exe");
 
+        Directory.CreateDirectory(tempDir);
+
+        // Descarga
         using var response = await _http.GetAsync(
             url, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
@@ -57,14 +64,17 @@ public class UpdateService : IUpdateService
             if (total > 0)
                 progress.Report((double)read / total * 100);
         }
-
         dest.Close();
 
-        ZipFile.ExtractToDirectory(zipPath, appDir, overwriteFiles: true);
-        File.Delete(zipPath);
+        // Copia updater.exe a temp para que no lo sobreescriba la extracción
+        File.Copy(updaterSrc, updaterDst, overwrite: true);
 
-        var updaterPath = Path.Combine(appDir, "updater.exe");
-        Process.Start(new ProcessStartInfo(updaterPath) { UseShellExecute = true });
+        // Lanza el updater desde temp con los argumentos necesarios:
+        // updater.exe <zipPath> <appDir> <appExe> <pid>
+        var appExe = Path.Combine(appDir, "Hakufu.exe");
+        var args   = $"\"{zipPath}\" \"{appDir}\" \"{appExe}\" {Environment.ProcessId}";
+        Process.Start(new ProcessStartInfo(updaterDst, args) { UseShellExecute = true });
+
         Application.Current.Shutdown();
     }
 }

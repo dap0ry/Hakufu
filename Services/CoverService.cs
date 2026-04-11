@@ -11,7 +11,7 @@ namespace Hakufu.Services;
 public class CoverService : ICoverService
 {
     private static readonly string CoverDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "Hakufu", "covers");
 
     private static readonly SemaphoreSlim PdfLock = new(1, 1);

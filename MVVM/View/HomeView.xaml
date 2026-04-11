@@ -197,6 +197,23 @@
                         </StackPanel>
                     </Button>
 
+                    <Button Style="{StaticResource HomeNavItem}"
+                            Tag="05"
+                            Margin="32,0,0,0"
+                            Command="{Binding NavUpdatesCommand}">
+                        <StackPanel>
+                            <TextBlock Text="05"
+                                       FontSize="10" FontWeight="SemiBold"
+                                       FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="Actualizaciones"
+                                       FontSize="46" FontWeight="Light"
+                                       FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                        </StackPanel>
+                    </Button>
+
                 </StackPanel>
                 </Viewbox>
 

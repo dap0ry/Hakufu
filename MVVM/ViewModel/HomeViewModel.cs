@@ -1,4 +1,6 @@
+using System.Windows;
 using System.Windows.Media.Imaging;
+using Hakufu.MVVM.View;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -8,6 +10,7 @@ public class HomeViewModel : BaseViewModel
     private readonly LibraryService     _library;
     private readonly ICoverService      _cover;
     private readonly INavigationService _nav;
+    private readonly IUpdateService     _updateService;
 
     private string?       _lastMangaTitle;
     private BitmapSource? _lastMangaCover;
@@ -16,11 +19,13 @@ public class HomeViewModel : BaseViewModel
     public BitmapSource? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
     public bool HasLastManga => LastMangaTitle is not null;
 
-    public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav)
+    public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
+                         IUpdateService updateService)
     {
-        _library = library;
-        _cover   = cover;
-        _nav     = nav;
+        _library       = library;
+        _cover         = cover;
+        _nav           = nav;
+        _updateService = updateService;
         _ = LoadLastMangaAsync();
     }
 
@@ -37,6 +42,14 @@ public class HomeViewModel : BaseViewModel
     public RelayCommand NavProfileCommand  => new(() => _nav.NavigateTo<ProfileViewModel>());
     public RelayCommand NavSettingsCommand => new(() => _nav.NavigateTo<SettingsViewModel>());
     public RelayCommand NavHelpCommand     => new(() => _nav.NavigateTo<HelpViewModel>());
+
+    public RelayCommand NavUpdatesCommand => new(() =>
+    {
+        var vm  = new UpdateViewModel(_updateService);
+        var win = new UpdateWindow { DataContext = vm,
+                                     Owner = Application.Current.MainWindow };
+        win.Show();
+    });
 
     public RelayCommand ContinueReadingCommand => new(() =>
     {

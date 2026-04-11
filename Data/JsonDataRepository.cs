@@ -6,9 +6,12 @@ namespace Hakufu.Data;
 public class JsonDataRepository : IDataRepository
 {
     private static readonly string DataDir  = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Hakufu");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
 
     private static readonly string DataFile = Path.Combine(DataDir, "data.json");
+
+    private static readonly string OldDataDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Hakufu");
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -19,6 +22,15 @@ public class JsonDataRepository : IDataRepository
 
     public async Task LoadAsync()
     {
+        // One-time migration: %LOCALAPPDATA%\Hakufu → %APPDATA%\Hakufu
+        if (!Directory.Exists(DataDir) && Directory.Exists(OldDataDir))
+        {
+            Directory.CreateDirectory(DataDir);
+            var oldFile = Path.Combine(OldDataDir, "data.json");
+            if (File.Exists(oldFile))
+                File.Copy(oldFile, DataFile, overwrite: false);
+        }
+
         if (!File.Exists(DataFile))
         {
             Current = new AppDataStore();

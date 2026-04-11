@@ -29,6 +29,7 @@ public partial class App : Application
             var coverService  = new CoverService();
             var libraryService = new LibraryService(_repo);
             var profileService = new ProfileService(_repo);
+            var updateService  = new UpdateService();
 
             // Apply saved theme
             var savedTheme = _repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light;
@@ -42,7 +43,7 @@ public partial class App : Application
                 return type.Name switch
                 {
                     nameof(HomeViewModel) => new HomeViewModel(
-                        libraryService, coverService, navService!),
+                        libraryService, coverService, navService!, updateService),
 
                     nameof(LibraryViewModel) => new LibraryViewModel(
                         libraryService, coverService, dialogService, navService!),

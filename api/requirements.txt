@@ -1,0 +1,9 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+motor==3.6.0
+pydantic[email]==2.10.6
+python-jose[cryptography]==3.3.0
+bcrypt==5.0.0
+python-dotenv==1.0.1
+cloudinary==1.42.1
+python-multipart==0.0.20

@@ -231,22 +231,64 @@
                         </StackPanel>
                     </Button>
 
+                    <Button Style="{StaticResource HomeNavItem}"
+                            Tag="07"
+                            Margin="48,0,0,0"
+                            Command="{Binding NavFriendsCommand}">
+                        <StackPanel>
+                            <TextBlock Text="07"
+                                       FontSize="10" FontWeight="SemiBold"
+                                       FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="Amigos"
+                                       FontSize="46" FontWeight="Light"
+                                       FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                        </StackPanel>
+                    </Button>
+
                 </StackPanel>
                 </Viewbox>
 
                 <!-- ── FOOTER ── -->
-                <TextBlock Grid.Row="2"
-                           Foreground="{DynamicResource TextMuted}"
-                           FontSize="11"
-                           FontFamily="Segoe UI"
-                           Margin="56,0,0,48">
-                    <Hyperlink NavigateUri="https://danielpozarivera.es/"
-                               RequestNavigate="Hyperlink_RequestNavigate"
-                               Foreground="{DynamicResource TextMuted}"
-                               TextDecorations="None">
-                        por Daniel Poza Rivera
-                    </Hyperlink>
-                </TextBlock>
+                <StackPanel Grid.Row="2" Margin="56,0,0,40">
+
+                    <!-- Cuenta / Sesión -->
+                    <Button HorizontalAlignment="Left"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Padding="0"
+                            Margin="0,0,0,14"
+                            Command="{Binding NavAccountCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="→ "
+                                       Foreground="{DynamicResource AccentColor}"
+                                       FontSize="12"
+                                       FontFamily="Segoe UI"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SessionLabel}"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       FontSize="12"
+                                       FontFamily="Segoe UI"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Autor -->
+                    <TextBlock Foreground="{DynamicResource TextMuted}"
+                               FontSize="11"
+                               FontFamily="Segoe UI">
+                        <Hyperlink NavigateUri="https://danielpozarivera.es/"
+                                   RequestNavigate="Hyperlink_RequestNavigate"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   TextDecorations="None">
+                            por Daniel Poza Rivera
+                        </Hyperlink>
+                    </TextBlock>
+
+                </StackPanel>
             </Grid>
         </Border>
 

@@ -7,5 +7,6 @@ public class Manga
     public string FilePath       { get; set; } = string.Empty;
     public string CoverCachePath { get; set; } = string.Empty;
     public int    TotalPages     { get; set; }
-    public DateTime DateAdded    { get; set; } = DateTime.Now;
+    public DateTime DateAdded          { get; set; } = DateTime.Now;
+    public string   CloudinaryCoverUrl { get; set; } = string.Empty;
 }

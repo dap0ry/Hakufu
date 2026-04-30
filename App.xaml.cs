@@ -23,14 +23,16 @@ public partial class App : Application
             await _repo.LoadAsync();
 
             // ── Services ────────────────────────────────────────────
-            var themeService  = new ThemeService();
-            var dialogService = new DialogService();
-            var filePickerSvc = new FilePickerService();
-            var coverService  = new CoverService();
+            var themeService   = new ThemeService();
+            var dialogService  = new DialogService();
+            var filePickerSvc  = new FilePickerService();
+            var coverService   = new CoverService();
             var libraryService = new LibraryService(_repo);
             var profileService = new ProfileService(_repo);
             var updateService  = new UpdateService();
             var storeService   = new StoreService();
+            var sessionService = new SessionService();
+            var apiClient      = new HakufuApiClient(sessionService);
 
             // Apply saved theme
             var savedTheme = _repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light;
@@ -44,7 +46,9 @@ public partial class App : Application
                 return type.Name switch
                 {
                     nameof(HomeViewModel) => new HomeViewModel(
-                        libraryService, coverService, navService!, updateService, storeService),
+                        libraryService, coverService, navService!, updateService, storeService, sessionService),
+
+                    nameof(AccountViewModel) => new AccountViewModel(sessionService, apiClient, navService!),
 
                     nameof(LibraryViewModel) => new LibraryViewModel(
                         libraryService, coverService, dialogService, navService!),
@@ -65,6 +69,14 @@ public partial class App : Application
                     nameof(UpdateViewModel) => new UpdateViewModel(updateService, navService!),
 
                     nameof(StoreViewModel)  => new StoreViewModel(storeService, navService!),
+
+                    nameof(SyncViewModel) => new SyncViewModel(
+                        sessionService, apiClient, navService!, libraryService, coverService, _repo!),
+
+                    nameof(FriendsViewModel) => new FriendsViewModel(sessionService, apiClient, navService!),
+
+                    nameof(PublicProfileViewModel) when param is string username =>
+                        new PublicProfileViewModel(username, apiClient, navService!),
 
                     _ => throw new InvalidOperationException($"Unknown ViewModel: {type.Name}")
                 };

@@ -22,6 +22,7 @@
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityInverse" VisibleWhenNull="True"/>
             <conv:EqualityConverter x:Key="EqualityConverter"/>
             <conv:PercentageWidthConverter x:Key="PercentageWidth"/>
+            <conv:UrlToImageConverter x:Key="UrlToImage"/>
 
             <!-- ViewModel → View dispatch for ContentControl -->
             <DataTemplate DataType="{x:Type vm:HomeViewModel}">
@@ -50,6 +51,21 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:StoreViewModel}">
                 <v:StoreView/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:AccountViewModel}">
+                <v:AccountView/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:SyncViewModel}">
+                <v:SyncView/>
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:FriendsViewModel}">
+                <v:FriendsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:PublicProfileViewModel}">
+                <v:PublicProfileView/>
             </DataTemplate>
 
             <DataTemplate DataType="{x:Type vm:StorageManagerViewModel}">

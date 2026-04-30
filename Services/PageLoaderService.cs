@@ -48,6 +48,7 @@ public class PageLoaderService : IPageLoaderService
         TotalPages = _docReader.GetPageCount();
     }
 
+    
     private void InitArchive()
     {
         // Open once just to enumerate entry keys; re-open per-page to support RAR sequential reads

@@ -1,156 +1,99 @@
 <UserControl x:Class="Hakufu.MVVM.View.StoreView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ═══ HEADER ═══ -->
+        <!-- ═══ BARRA DE NAVEGACIÓN ═══ -->
         <Border Grid.Row="0"
                 Background="{DynamicResource SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="40,24,40,24">
+                Padding="10,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+
+                <!-- Volver al inicio de la app -->
                 <Button Grid.Column="0"
                         Style="{StaticResource GhostButton}"
                         Content="← Inicio"
                         Command="{Binding GoBackCommand}"
-                        Margin="0,0,24,0"/>
-                <TextBlock Grid.Column="1" Text="TIENDA"
-                           FontSize="11" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMuted}"
-                           VerticalAlignment="Center"/>
+                        Padding="12,7"
+                        Margin="0,0,8,0"/>
+
+                <!-- Controles del navegador -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,8,0">
+                    <Button x:Name="BtnBack"
+                            Style="{StaticResource IconButton}"
+                            Content="◀" FontSize="10"
+                            ToolTip="Atrás"
+                            Width="28" Height="28"
+                            Click="BtnBack_Click"/>
+                    <Button x:Name="BtnForward"
+                            Style="{StaticResource IconButton}"
+                            Content="▶" FontSize="10"
+                            ToolTip="Adelante"
+                            Width="28" Height="28"
+                            Click="BtnForward_Click"/>
+                    <Button x:Name="BtnRefresh"
+                            Style="{StaticResource IconButton}"
+                            Content="↺" FontSize="15"
+                            ToolTip="Recargar"
+                            Width="28" Height="28"
+                            Click="BtnRefresh_Click"/>
+                </StackPanel>
+
+                <!-- Barra de direcciones -->
+                <TextBox Grid.Column="2"
+                         Text="{Binding AddressBarText, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalContentAlignment="Center"
+                         Height="30">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding NavigateCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
             </Grid>
         </Border>
 
-        <!-- ═══ BODY ═══ -->
-        <Grid Grid.Row="1">
+        <!-- ═══ BARRA DE FAVORITOS ═══ -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="10,5">
+            <ItemsControl ItemsSource="{Binding Bookmarks}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource GhostButton}"
+                                Content="{Binding Label}"
+                                CommandParameter="{Binding Url}"
+                                Command="{Binding DataContext.NavigateToUrlCommand,
+                                          RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                Padding="10,4"
+                                FontSize="11"
+                                Margin="0,0,4,0"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
 
-            <!-- Catálogo vacío -->
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Text="—"
-                           FontSize="32"
-                           Foreground="{DynamicResource TextMuted}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,16"/>
-                <TextBlock Text="No hay manga disponible por el momento"
-                           FontSize="13"
-                           Foreground="{DynamicResource TextMuted}"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
+        <!-- ═══ NAVEGADOR EMBEBIDO ═══ -->
+        <wv2:WebView2 Grid.Row="2" x:Name="WebBrowser"/>
 
-            <!-- Lista de manga -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          Visibility="{Binding IsEmpty, Converter={StaticResource InverseBoolToVisibility}}">
-                <ItemsControl ItemsSource="{Binding Items}"
-                              Margin="40,32,40,40">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Style="{StaticResource Card}"
-                                    Padding="20"
-                                    Margin="0,0,0,16">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="96"/>
-                                        <ColumnDefinition Width="16"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <!-- Portada -->
-                                    <Border Grid.Column="0"
-                                            Width="96" Height="136"
-                                            CornerRadius="4"
-                                            Background="{DynamicResource DividerBrush}"
-                                            ClipToBounds="True"
-                                            VerticalAlignment="Top">
-                                        <Image Source="{Binding CoverUrl}"
-                                               Stretch="UniformToFill"
-                                               RenderOptions.BitmapScalingMode="HighQuality"/>
-                                    </Border>
-
-                                    <!-- Info -->
-                                    <StackPanel Grid.Column="2">
-
-                                        <!-- Título + autor -->
-                                        <TextBlock Text="{Binding Title}"
-                                                   FontSize="16" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextPrimary}"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   Margin="0,0,0,3"/>
-                                        <TextBlock Text="{Binding Author}"
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   Margin="0,0,0,10"/>
-
-                                        <!-- Descripción -->
-                                        <TextBlock Text="{Binding Description}"
-                                                   FontSize="12"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   TextWrapping="Wrap"
-                                                   MaxHeight="60"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   Margin="0,0,0,8"/>
-
-                                        <!-- Tags -->
-                                        <TextBlock Text="{Binding TagsText}"
-                                                   FontSize="10" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource AccentColor}"
-                                                   Visibility="{Binding HasTags, Converter={StaticResource BoolToVisibility}}"
-                                                   Margin="0,0,0,6"/>
-
-                                        <!-- Meta (páginas / tamaño) -->
-                                        <TextBlock Text="{Binding MetaText}"
-                                                   FontSize="10"
-                                                   Foreground="{DynamicResource TextMuted}"
-                                                   Visibility="{Binding HasMeta, Converter={StaticResource BoolToVisibility}}"
-                                                   Margin="0,0,0,0"/>
-
-                                        <!-- Volúmenes / links de descarga -->
-                                        <ItemsControl ItemsSource="{Binding Volumes}"
-                                                      Margin="0,14,0,0">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="{DynamicResource DividerBrush}"
-                                                            BorderThickness="0,1,0,0"
-                                                            Padding="0,10,0,0">
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Grid.Column="0"
-                                                                       Text="{Binding Label}"
-                                                                       FontSize="12" FontWeight="SemiBold"
-                                                                       Foreground="{DynamicResource TextPrimary}"
-                                                                       VerticalAlignment="Center"/>
-                                                            <Button Grid.Column="1"
-                                                                    Style="{StaticResource PrimaryButton}"
-                                                                    Content="Descargar"
-                                                                    Padding="16,7"
-                                                                    Command="{Binding OpenLinkCommand}"/>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-
-        </Grid>
     </Grid>
 </UserControl>

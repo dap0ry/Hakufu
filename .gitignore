@@ -11,6 +11,9 @@ output/
 # Claude Code config
 .claude/
 
+# Secrets
+.env
+
 # OS
 Thumbs.db
 .DS_Store

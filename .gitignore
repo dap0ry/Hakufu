@@ -11,6 +11,18 @@ output/
 # Claude Code config
 .claude/
 
+# Python
+api/.venv/
+__pycache__/
+*.pyc
+
+# Release zips
+*.zip
+
+# Misc
+cls
+uvicorn
+
 # Secrets
 .env
 

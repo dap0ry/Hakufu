@@ -19,8 +19,12 @@ public class HomeViewModel : BaseViewModel
     public BitmapSource? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
     public bool HasLastManga => LastMangaTitle is not null;
 
-    public bool   IsLoggedIn   => _session.IsLoggedIn;
-    public string SessionLabel => _session.IsLoggedIn ? $"Sesión: {_session.Username}" : "Cuenta";
+    public bool    IsLoggedIn     => _session.IsLoggedIn;
+    public string  SessionLabel   => _session.IsLoggedIn ? _session.Username! : "Cuenta";
+    public string? AvatarUrl      => _session.AvatarUrl;
+    public bool    HasAvatar      => !string.IsNullOrEmpty(_session.AvatarUrl);
+    public bool    ShowAvatarArea => _session.IsLoggedIn;
+    public string  SessionInitial => _session.Username?.Length > 0 ? _session.Username[0].ToString().ToUpper() : "?";
 
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
                          IUpdateService updateService, IStoreService storeService,

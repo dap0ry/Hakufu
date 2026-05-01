@@ -69,7 +69,8 @@ public class AccountViewModel : BaseViewModel
         try
         {
             var result = await _api.LoginAsync(LoginUsername.Trim(), LoginPassword);
-            _session.SetSession(result.Username, result.AccessToken);
+            var avatar = await FetchAvatarAsync(result.Username);
+            _session.SetSession(result.Username, result.AccessToken, avatar);
             _nav.NavigateTo<HomeViewModel>();
         }
         catch (Exception ex) { ErrorMessage = ex.Message; }
@@ -84,10 +85,21 @@ public class AccountViewModel : BaseViewModel
         {
             var result = await _api.RegisterAsync(
                 RegUsername.Trim(), RegEmail.Trim(), RegPassword, RegPasswordConfirm);
-            _session.SetSession(result.Username, result.AccessToken);
+            var avatar = await FetchAvatarAsync(result.Username);
+            _session.SetSession(result.Username, result.AccessToken, avatar);
             _nav.NavigateTo<HomeViewModel>();
         }
         catch (Exception ex) { ErrorMessage = ex.Message; }
         finally { IsLoading = false; }
+    }
+
+    private async Task<string?> FetchAvatarAsync(string username)
+    {
+        try
+        {
+            var profile = await _api.GetPublicProfileAsync(username);
+            return string.IsNullOrEmpty(profile?.AvatarUrl) ? null : profile.AvatarUrl;
+        }
+        catch { return null; }
     }
 }

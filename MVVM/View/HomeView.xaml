@@ -248,47 +248,70 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- ── 08 CUENTA ── -->
+                    <Button Style="{StaticResource HomeNavItem}"
+                            Tag="08"
+                            Margin="48,0,0,0"
+                            Command="{Binding NavAccountCommand}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+                            <!-- Avatar circular (solo cuando hay sesión) -->
+                            <Grid Width="44" Height="44"
+                                  Margin="0,0,22,0"
+                                  VerticalAlignment="Center"
+                                  Visibility="{Binding ShowAvatarArea, Converter={StaticResource BoolToVisibility}}">
+                                <!-- Foto real -->
+                                <Border CornerRadius="22" ClipToBounds="True"
+                                        Visibility="{Binding HasAvatar, Converter={StaticResource BoolToVisibility}}">
+                                    <Image Source="{Binding AvatarUrl, Converter={StaticResource UrlToImage}}"
+                                           Stretch="UniformToFill"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
+                                <!-- Inicial (fallback sin foto) -->
+                                <Border CornerRadius="22"
+                                        Background="{DynamicResource CardBorder}"
+                                        Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}">
+                                    <TextBlock Text="{Binding SessionInitial}"
+                                               FontSize="18" FontWeight="SemiBold"
+                                               FontFamily="Segoe UI"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Etiqueta + nombre -->
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="08"
+                                           FontSize="10" FontWeight="SemiBold"
+                                           FontFamily="Segoe UI"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           Margin="0,0,0,4"/>
+                                <TextBlock Text="{Binding SessionLabel}"
+                                           FontSize="46" FontWeight="Light"
+                                           FontFamily="Segoe UI"
+                                           Foreground="{DynamicResource TextPrimary}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+
                 </StackPanel>
                 </Viewbox>
 
                 <!-- ── FOOTER ── -->
-                <StackPanel Grid.Row="2" Margin="56,0,0,40">
-
-                    <!-- Cuenta / Sesión -->
-                    <Button HorizontalAlignment="Left"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            Padding="0"
-                            Margin="0,0,0,14"
-                            Command="{Binding NavAccountCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="→ "
-                                       Foreground="{DynamicResource AccentColor}"
-                                       FontSize="12"
-                                       FontFamily="Segoe UI"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding SessionLabel}"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       FontSize="12"
-                                       FontFamily="Segoe UI"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Autor -->
-                    <TextBlock Foreground="{DynamicResource TextMuted}"
-                               FontSize="11"
-                               FontFamily="Segoe UI">
-                        <Hyperlink NavigateUri="https://danielpozarivera.es/"
-                                   RequestNavigate="Hyperlink_RequestNavigate"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   TextDecorations="None">
-                            por Daniel Poza Rivera
-                        </Hyperlink>
-                    </TextBlock>
-
-                </StackPanel>
+                <TextBlock Grid.Row="2"
+                           Foreground="{DynamicResource TextMuted}"
+                           FontSize="11"
+                           FontFamily="Segoe UI"
+                           Margin="56,0,0,40"
+                           VerticalAlignment="Bottom">
+                    <Hyperlink NavigateUri="https://danielpozarivera.es/"
+                               RequestNavigate="Hyperlink_RequestNavigate"
+                               Foreground="{DynamicResource TextMuted}"
+                               TextDecorations="None">
+                        por Daniel Poza Rivera
+                    </Hyperlink>
+                </TextBlock>
             </Grid>
         </Border>
 

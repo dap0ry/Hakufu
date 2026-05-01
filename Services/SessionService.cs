@@ -11,19 +11,22 @@ public class SessionService : ISessionService
 
     private string? _username;
     private string? _token;
+    private string? _avatarUrl;
 
     public string? Username   => _username;
     public string? Token      => _token;
+    public string? AvatarUrl  => _avatarUrl;
     public bool    IsLoggedIn => _username is not null && _token is not null;
 
     public SessionService() => TryLoad();
 
-    public void SetSession(string username, string token)
+    public void SetSession(string username, string token, string? avatarUrl = null)
     {
-        _username = username;
-        _token    = token;
+        _username  = username;
+        _token     = token;
+        _avatarUrl = avatarUrl;
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-        File.WriteAllText(FilePath, JsonSerializer.Serialize(new { username, token }));
+        File.WriteAllText(FilePath, JsonSerializer.Serialize(new { username, token, avatarUrl }));
     }
 
     public void ClearSession()
@@ -39,8 +42,9 @@ public class SessionService : ISessionService
         try
         {
             var doc = JsonDocument.Parse(File.ReadAllText(FilePath));
-            _username = doc.RootElement.GetProperty("username").GetString();
-            _token    = doc.RootElement.GetProperty("token").GetString();
+            _username  = doc.RootElement.GetProperty("username").GetString();
+            _token     = doc.RootElement.GetProperty("token").GetString();
+            _avatarUrl = doc.RootElement.TryGetProperty("avatarUrl", out var av) ? av.GetString() : null;
         }
         catch { ClearSession(); }
     }

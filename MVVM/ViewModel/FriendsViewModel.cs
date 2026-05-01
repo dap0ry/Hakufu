@@ -41,7 +41,10 @@ public class FriendsViewModel : BaseViewModel
         _session = session;
         _api     = api;
         _nav     = nav;
-        if (_session.IsLoggedIn) _ = LoadAsync();
+        if (_session.IsLoggedIn)
+            _ = LoadAsync();
+        else
+            _nav.NavigateTo<AccountViewModel>();
     }
 
     private async Task LoadAsync()

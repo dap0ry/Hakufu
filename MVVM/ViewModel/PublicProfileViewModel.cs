@@ -10,8 +10,8 @@ public class PublicProfileViewModel : BaseViewModel
 
     public string ProfileUsername { get; }
 
-    private string  _bio         = "";
-    private int     _mangasCount;
+    private string  _bio            = "";
+    private int     _completedCount;
     private string  _totalUsage  = "0 min";
     private string? _currentlyReadingTitle;
     private string? _currentlyReadingCover;
@@ -24,7 +24,7 @@ public class PublicProfileViewModel : BaseViewModel
     private bool    _isHistoryExpanded;
 
     public string  Bio                   { get => _bio;                   private set => SetProperty(ref _bio, value); }
-    public int     MangasCount           { get => _mangasCount;           private set => SetProperty(ref _mangasCount, value); }
+    public int     CompletedCount        { get => _completedCount;        private set => SetProperty(ref _completedCount, value); }
     public string  TotalUsage            { get => _totalUsage;            private set => SetProperty(ref _totalUsage, value); }
     public string? CurrentlyReadingTitle { get => _currentlyReadingTitle; private set => SetProperty(ref _currentlyReadingTitle, value); }
     public string? CurrentlyReadingCover { get => _currentlyReadingCover; private set => SetProperty(ref _currentlyReadingCover, value); }
@@ -73,7 +73,6 @@ public class PublicProfileViewModel : BaseViewModel
             if (profile is null) { ErrorMessage = "Perfil no encontrado o es privado."; return; }
 
             Bio         = profile.Bio;
-            MangasCount = profile.MangasCount;
             TotalUsage  = FormatDuration(TimeSpan.FromSeconds(profile.TotalUsageSeconds));
 
             if (profile.CurrentlyReading is { } cr)
@@ -89,6 +88,7 @@ public class PublicProfileViewModel : BaseViewModel
             var sorted = profile.ReadingHistory
                 .OrderByDescending(h => h.CompletedAt)
                 .ToList();
+            CompletedCount = sorted.Count;
 
             if (sorted.Count > 0)
             {

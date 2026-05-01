@@ -1,0 +1,37 @@
+# Build output — generated files, no source value
+bin/
+obj/
+publish/
+output/
+
+# IDE
+.vs/
+*.user
+
+# Python env
+api/.venv/
+__pycache__/
+*.pyc
+
+# Assets with no text content
+Assets/Icons/
+*.zip
+*.hyb
+*.dll
+*.exe
+*.dylib
+*.so
+*.pdb
+*.pdf
+*.cbr
+*.cbz
+*.png
+*.jpg
+*.jpeg
+*.ico
+*.gif
+
+# Secrets / OS
+.env
+Thumbs.db
+.DS_Store

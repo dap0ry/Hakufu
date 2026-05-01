@@ -75,11 +75,11 @@
                             <DropShadowEffect Color="Black" ShadowDepth="0" BlurRadius="14" Opacity="0.07"/>
                         </Border.Effect>
                         <StackPanel>
-                            <TextBlock Text="{Binding MangasCount}"
+                            <TextBlock Text="{Binding CompletedCount}"
                                        FontSize="32" FontWeight="Bold"
                                        Foreground="{DynamicResource TextPrimary}"
                                        Margin="0,0,0,6"/>
-                            <TextBlock Text="mangas en biblioteca"
+                            <TextBlock Text="tomos leídos completos"
                                        FontSize="11" Foreground="{DynamicResource TextMuted}"/>
                         </StackPanel>
                     </Border>

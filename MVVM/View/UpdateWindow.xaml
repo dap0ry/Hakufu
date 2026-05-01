@@ -133,30 +133,12 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Download progress bar -->
-                <StackPanel Margin="0,24,0,0"
-                            Visibility="{Binding IsDownloading,
-                                Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="{Binding DownloadProgress, StringFormat={}{0:F0}%}"
-                               FontSize="11"
-                               FontFamily="Segoe UI"
-                               Foreground="{DynamicResource TextMuted}"
-                               HorizontalAlignment="Right"
-                               Margin="0,0,0,6"/>
-                    <ProgressBar Value="{Binding DownloadProgress, Mode=OneWay}"
-                                 Minimum="0" Maximum="100"
-                                 Height="4"
-                                 Foreground="{DynamicResource ProgressFill}"
-                                 Background="{DynamicResource ProgressTrack}"
-                                 BorderThickness="0"/>
-                </StackPanel>
-
                 <!-- Buttons -->
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Margin="0,32,0,0">
                     <Button Style="{StaticResource PrimaryButton}"
-                            Content="Descargar e instalar"
+                            Content="Ir a la descarga"
                             Padding="24,11"
                             Command="{Binding DownloadCommand}"
                             Visibility="{Binding IsUpdateAvailable,
@@ -168,6 +150,53 @@
                             Visibility="{Binding IsUpdateAvailable,
                                 Converter={StaticResource InverseBoolToVisibility}}"/>
                 </StackPanel>
+
+                <!-- Instrucciones de instalación -->
+                <Border Margin="0,32,0,0" Padding="24,20"
+                        Background="{DynamicResource CardBackground}"
+                        BorderBrush="{DynamicResource CardBorder}"
+                        BorderThickness="1" CornerRadius="8"
+                        Visibility="{Binding IsUpdateAvailable,
+                            Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Text="CÓMO INSTALAR"
+                                   FontSize="9" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   Margin="0,0,0,14"/>
+                        <StackPanel>
+                            <TextBlock FontSize="12" FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       TextWrapping="Wrap" Margin="0,0,0,8">
+                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="1."/>
+                                <Run Text=" Descarga el archivo "/>
+                                <Run FontWeight="SemiBold" Text=".zip"/>
+                                <Run Text=" desde la página que se abrirá."/>
+                            </TextBlock>
+                            <TextBlock FontSize="12" FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       TextWrapping="Wrap" Margin="0,0,0,8">
+                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="2."/>
+                                <Run Text=" Cierra Hakufu."/>
+                            </TextBlock>
+                            <TextBlock FontSize="12" FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       TextWrapping="Wrap" Margin="0,0,0,8">
+                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="3."/>
+                                <Run Text=" Descomprime el "/>
+                                <Run FontWeight="SemiBold" Text=".zip"/>
+                                <Run Text=" en la misma carpeta donde tienes "/>
+                                <Run FontWeight="SemiBold" Text="Hakufu.exe"/>
+                                <Run Text=" y reemplaza los archivos cuando te lo pida."/>
+                            </TextBlock>
+                            <TextBlock FontSize="12" FontFamily="Segoe UI"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       TextWrapping="Wrap">
+                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="4."/>
+                                <Run Text=" Abre Hakufu de nuevo. ¡Listo!"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
             </StackPanel>
         </ScrollViewer>

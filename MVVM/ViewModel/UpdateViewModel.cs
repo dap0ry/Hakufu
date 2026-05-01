@@ -129,26 +129,11 @@ public class UpdateViewModel : BaseViewModel
         }
     }
 
-    public AsyncRelayCommand DownloadCommand => new(
-        async () =>
-        {
-            if (_downloadUrl is null) return;
-            IsDownloading  = true;
-            DownloadProgress = 0;
-            HasError       = false;
-            try
-            {
-                var progress = new Progress<double>(v => DownloadProgress = v);
-                await _svc.DownloadAndInstallAsync(_downloadUrl, progress);
-            }
-            catch (Exception ex)
-            {
-                StatusMessage = $"Error al descargar: {ex.Message}";
-                HasError      = true;
-                IsDownloading = false;
-            }
-        },
-        () => IsUpdateAvailable && _downloadUrl is not null && !IsDownloading);
+    public RelayCommand DownloadCommand => new(
+        () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+            _downloadUrl ?? "https://github.com/dap0ry/Hakufu/releases/latest")
+            { UseShellExecute = true }),
+        () => IsUpdateAvailable);
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 

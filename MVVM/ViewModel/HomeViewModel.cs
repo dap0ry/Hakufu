@@ -11,6 +11,7 @@ public class HomeViewModel : BaseViewModel
     private readonly IUpdateService     _updateService;
     private readonly IStoreService      _storeService;
     private readonly ISessionService    _session;
+    private readonly HakufuApiClient    _api;
 
     private string?       _lastMangaTitle;
     private BitmapSource? _lastMangaCover;
@@ -28,7 +29,7 @@ public class HomeViewModel : BaseViewModel
 
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
                          IUpdateService updateService, IStoreService storeService,
-                         ISessionService session)
+                         ISessionService session, HakufuApiClient api)
     {
         _library       = library;
         _cover         = cover;
@@ -36,16 +37,34 @@ public class HomeViewModel : BaseViewModel
         _updateService = updateService;
         _storeService  = storeService;
         _session       = session;
-        _ = LoadLastMangaAsync();
+        _api           = api;
+        _ = LoadAsync();
     }
 
-    private async Task LoadLastMangaAsync()
+    private async Task LoadAsync()
     {
         var last = _library.GetLastReadManga();
-        if (last is null) { LastMangaTitle = null; LastMangaCover = null; return; }
-        LastMangaTitle = last.Title;
-        LastMangaCover = await _cover.GetCoverAsync(last);
-        OnPropertyChanged(nameof(HasLastManga));
+        if (last is not null)
+        {
+            LastMangaTitle = last.Title;
+            LastMangaCover = await _cover.GetCoverAsync(last);
+            OnPropertyChanged(nameof(HasLastManga));
+        }
+
+        if (_session.IsLoggedIn && string.IsNullOrEmpty(_session.AvatarUrl))
+        {
+            try
+            {
+                var profile = await _api.GetPublicProfileAsync(_session.Username!);
+                if (!string.IsNullOrEmpty(profile?.AvatarUrl))
+                {
+                    _session.SetSession(_session.Username!, _session.Token!, profile.AvatarUrl);
+                    OnPropertyChanged(nameof(AvatarUrl));
+                    OnPropertyChanged(nameof(HasAvatar));
+                }
+            }
+            catch { }
+        }
     }
 
     public RelayCommand NavLibraryCommand  => new(() => _nav.NavigateTo<LibraryViewModel>());

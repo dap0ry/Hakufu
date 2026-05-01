@@ -46,7 +46,7 @@ public partial class App : Application
                 return type.Name switch
                 {
                     nameof(HomeViewModel) => new HomeViewModel(
-                        libraryService, coverService, navService!, updateService, storeService, sessionService),
+                        libraryService, coverService, navService!, updateService, storeService, sessionService, apiClient),
 
                     nameof(AccountViewModel) => new AccountViewModel(sessionService, apiClient, navService!),
 

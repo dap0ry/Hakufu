@@ -8,7 +8,7 @@ namespace Hakufu.Services;
 
 public class HakufuApiClient
 {
-    private const string BaseUrl = "https://hakufuapi.onrender.com";
+    private const string BaseUrl = "https://hakufuweb.vercel.app/api";
     private readonly ISessionService _session;
     private readonly HttpClient      _http = new() { BaseAddress = new Uri(BaseUrl) };
 

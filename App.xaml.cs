@@ -33,6 +33,7 @@ public partial class App : Application
             var storeService   = new StoreService();
             var sessionService = new SessionService();
             var apiClient      = new HakufuApiClient(sessionService);
+            var driveService   = new GoogleDriveService(sessionService);
 
             // Apply saved theme
             var savedTheme = _repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light;
@@ -72,6 +73,9 @@ public partial class App : Application
 
                     nameof(SyncViewModel) => new SyncViewModel(
                         sessionService, apiClient, navService!, libraryService, coverService, _repo!),
+
+                    nameof(BackupViewModel) => new BackupViewModel(
+                        driveService, apiClient, navService!, _repo!),
 
                     nameof(FriendsViewModel) => new FriendsViewModel(sessionService, apiClient, navService!),
 

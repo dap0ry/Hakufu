@@ -182,28 +182,7 @@ public class SyncViewModel : BaseViewModel
 
             ProgressText = "Subiendo datos de biblioteca…";
 
-            var history = _repo.Current.History.Select(h =>
-            {
-                var m = mangas.FirstOrDefault(x => x.Id == h.MangaId);
-                return new HakufuApiClient.HistorySyncItem(
-                    h.MangaId.ToString(),
-                    m?.Title             ?? "",
-                    m?.CloudinaryCoverUrl ?? "",
-                    h.CompletedAt);
-            }).ToList();
-
-            var payload = new HakufuApiClient.LibrarySyncPayload(
-                Mangas: mangas.Select(m => new HakufuApiClient.MangaSyncItem(
-                    m.Id.ToString(), m.Title, m.TotalPages,
-                    m.CloudinaryCoverUrl, m.DateAdded)).ToList(),
-                Collections: collections.Select(c => new HakufuApiClient.CollectionSyncItem(
-                    c.Id.ToString(), c.Name, c.Description,
-                    c.MangaIds.Select(id => id.ToString()).ToList(), c.CreatedAt)).ToList(),
-                ReadingProgress: _repo.Current.Progress.Select(p => new HakufuApiClient.ProgressSyncItem(
-                    p.MangaId.ToString(), p.CurrentPage, p.LastRead)).ToList(),
-                ReadingHistory: history,
-                TotalUsageSeconds: _repo.Current.TotalUsageSeconds);
-
+            var payload = SyncPayloadBuilder.Build(_repo);
             await _api.SyncUploadAsync(payload);
             await _repo.SaveAsync();
 
@@ -269,7 +248,8 @@ public class SyncViewModel : BaseViewModel
     public AsyncRelayCommand ConfirmUploadCommand   => new(DoUploadAsync,   () => !IsBusy);
     public AsyncRelayCommand ConfirmDownloadCommand => new(DoDownloadAsync, () => !IsBusy);
 
-    public RelayCommand BackCommand   => new(() => _nav.NavigateTo<HomeViewModel>());
+    public RelayCommand BackCommand         => new(() => _nav.NavigateTo<HomeViewModel>());
+    public RelayCommand NavigateBackupCommand => new(() => _nav.NavigateTo<BackupViewModel>());
     public RelayCommand LogoutCommand => new(() =>
     {
         _session.ClearSession();

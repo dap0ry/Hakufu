@@ -1,0 +1,242 @@
+<UserControl x:Class="Hakufu.MVVM.View.BackupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="40,22,40,22">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Style="{StaticResource GhostButton}"
+                        Content="← Cuenta"
+                        Command="{Binding BackCommand}"
+                        Margin="0,0,24,0"/>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="COPIA DE SEGURIDAD"
+                               FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,0,0,2"/>
+                    <TextBlock Text="Tus mangas en Google Drive"
+                               Style="{StaticResource CaptionText}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ BODY ═══ -->
+        <ScrollViewer Grid.Row="1"
+                      Padding="40,36,40,40"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+
+                <!-- Progreso -->
+                <Border CornerRadius="8" Padding="16,14" Margin="0,0,0,24"
+                        Background="{DynamicResource CardBackground}"
+                        BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <ProgressBar IsIndeterminate="True" Height="3"
+                                     Foreground="{DynamicResource AccentColor}"
+                                     Background="Transparent"
+                                     Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding ProgressText}"
+                                   FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Mensaje de estado -->
+                <Border CornerRadius="8" Padding="16,14" Margin="0,0,0,24"
+                        BorderThickness="1"
+                        Visibility="{Binding StatusMessage, Converter={StaticResource NullToVisibility}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background"   Value="{DynamicResource CardBackground}"/>
+                            <Setter Property="BorderBrush"  Value="{DynamicResource CardBorder}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSuccess}" Value="True">
+                                    <Setter Property="BorderBrush" Value="#3EA76A"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsSuccess}" Value="False">
+                                    <Setter Property="BorderBrush" Value="#E05C5C"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               FontSize="12" Foreground="{DynamicResource TextPrimary}"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- ── CONEXIÓN ── -->
+                <TextBlock Text="CONEXIÓN"
+                           FontSize="10" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMuted}"
+                           Margin="0,0,0,12"/>
+
+                <Border CornerRadius="10" Padding="28,24" Margin="0,0,0,32"
+                        Background="{DynamicResource CardBackground}"
+                        BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" ShadowDepth="0" BlurRadius="14" Opacity="0.07"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Google Drive: " FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Conectado" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="#3EA76A"
+                                       Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibility}}"/>
+                            <TextBlock Text="No conectado" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Visibility="{Binding IsNotConnected, Converter={StaticResource BoolToVisibility}}"/>
+                        </StackPanel>
+                        <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
+                                   TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,20">
+                            Conecta tu propia cuenta de Google. Hakufu solo accede a los archivos que él mismo crea en tu Drive (carpeta "Hakufu Backups"), nada más.
+                        </TextBlock>
+
+                        <StackPanel Orientation="Horizontal"
+                                    Visibility="{Binding IsNotConnected, Converter={StaticResource BoolToVisibility}}">
+                            <Button Style="{StaticResource PrimaryButton}"
+                                    Content="Conectar Google Drive"
+                                    Padding="22,10" Margin="0,0,10,0"
+                                    Command="{Binding ConnectCommand}"/>
+                            <Button Style="{StaticResource GhostButton}"
+                                    Content="Comprobar conexión"
+                                    Padding="22,10"
+                                    Command="{Binding RefreshStatusCommand}"/>
+                        </StackPanel>
+
+                        <Button Style="{StaticResource GhostButton}"
+                                Content="Desconectar"
+                                HorizontalAlignment="Left" Padding="22,10"
+                                Command="{Binding DisconnectCommand}"
+                                Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibility}}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- El resto solo tiene sentido si ya está conectado -->
+                <StackPanel Visibility="{Binding IsConnected, Converter={StaticResource BoolToVisibility}}">
+
+                    <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,32"/>
+
+                    <!-- ── SUBIR ── -->
+                    <TextBlock Text="SUBIR A DRIVE"
+                               FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,0,0,12"/>
+
+                    <Border CornerRadius="10" Padding="28,24" Margin="0,0,0,32"
+                            Background="{DynamicResource CardBackground}"
+                            BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" ShadowDepth="0" BlurRadius="14" Opacity="0.07"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="Copia de seguridad de tu manga"
+                                       FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
+                                       TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,20">
+                                Sube los archivos (PDF/CBZ/CBR) que aún no estén respaldados. Los ya subidos no se vuelven a enviar. También puedes leerlos desde la web con esta misma cuenta.
+                            </TextBlock>
+
+                            <Button Style="{StaticResource PrimaryButton}"
+                                    Content="Subir copia de seguridad"
+                                    HorizontalAlignment="Left" Padding="22,10"
+                                    Command="{Binding RequestBackupCommand}"
+                                    Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}"/>
+
+                            <StackPanel Visibility="{Binding IsConfirmingBackup, Converter={StaticResource BoolToVisibility}}">
+                                <Border CornerRadius="6" Padding="12,10" Margin="0,0,0,14"
+                                        Background="#1AE0A640" BorderBrush="#E0A640" BorderThickness="1">
+                                    <TextBlock FontSize="12" Foreground="#E0A640" TextWrapping="Wrap">
+                                        Esto puede tardar bastante si tienes muchos mangas o son grandes. ¿Continuar?
+                                    </TextBlock>
+                                </Border>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource PrimaryButton}"
+                                            Content="Sí, subir ahora"
+                                            Padding="22,10" Margin="0,0,10,0"
+                                            Command="{Binding ConfirmBackupCommand}"/>
+                                    <Button Style="{StaticResource GhostButton}"
+                                            Content="Cancelar"
+                                            Padding="22,10"
+                                            Command="{Binding CancelCommand}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,32"/>
+
+                    <!-- ── TRAER ── -->
+                    <TextBlock Text="TRAER DESDE DRIVE"
+                               FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,0,0,12"/>
+
+                    <Border CornerRadius="10" Padding="28,24"
+                            Background="{DynamicResource CardBackground}"
+                            BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" ShadowDepth="0" BlurRadius="14" Opacity="0.07"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="Restaurar tu copia de seguridad"
+                                       FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
+                                       TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,20">
+                                Descarga desde Drive cualquier manga respaldado que no tengas ya en este equipo. Útil tras reinstalar Hakufu o en un PC nuevo.
+                            </TextBlock>
+
+                            <Button Style="{StaticResource PrimaryButton}"
+                                    Content="Traer copia de seguridad"
+                                    HorizontalAlignment="Left" Padding="22,10"
+                                    Command="{Binding RequestRestoreCommand}"
+                                    Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}"/>
+
+                            <StackPanel Visibility="{Binding IsConfirmingRestore, Converter={StaticResource BoolToVisibility}}">
+                                <Border CornerRadius="6" Padding="12,10" Margin="0,0,0,14"
+                                        Background="#1AE0A640" BorderBrush="#E0A640" BorderThickness="1">
+                                    <TextBlock FontSize="12" Foreground="#E0A640" TextWrapping="Wrap">
+                                        Se descargarán los archivos que falten en este equipo. También puede tardar según el tamaño.
+                                    </TextBlock>
+                                </Border>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource PrimaryButton}"
+                                            Content="Sí, traer ahora"
+                                            Padding="22,10" Margin="0,0,10,0"
+                                            Command="{Binding ConfirmRestoreCommand}"/>
+                                    <Button Style="{StaticResource GhostButton}"
+                                            Content="Cancelar"
+                                            Padding="22,10"
+                                            Command="{Binding CancelCommand}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

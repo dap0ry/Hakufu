@@ -8,7 +8,7 @@ namespace Hakufu.Services;
 
 public class HakufuApiClient
 {
-    private const string BaseUrl = "https://hakufuweb.vercel.app/api";
+    internal const string BaseUrl = "https://hakufuweb.vercel.app/api";
     private readonly ISessionService _session;
     private readonly HttpClient      _http = new() { BaseAddress = new Uri(BaseUrl) };
 
@@ -30,7 +30,8 @@ public class HakufuApiClient
         [property: JsonPropertyName("title")]                string   Title,
         [property: JsonPropertyName("total_pages")]          int      TotalPages,
         [property: JsonPropertyName("cover_cloudinary_url")] string   CoverCloudinaryUrl,
-        [property: JsonPropertyName("date_added")]           DateTime DateAdded);
+        [property: JsonPropertyName("date_added")]           DateTime DateAdded,
+        [property: JsonPropertyName("drive_file_id")]        string   DriveFileId = "");
 
     public record CollectionSyncItem(
         [property: JsonPropertyName("id")]          string       Id,

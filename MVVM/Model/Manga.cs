@@ -9,4 +9,8 @@ public class Manga
     public int    TotalPages     { get; set; }
     public DateTime DateAdded          { get; set; } = DateTime.Now;
     public string   CloudinaryCoverUrl { get; set; } = string.Empty;
+
+    // Id del archivo en Google Drive una vez respaldado (ver BackupViewModel).
+    // Vacío = todavía no se ha subido.
+    public string   DriveFileId        { get; set; } = string.Empty;
 }

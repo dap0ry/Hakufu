@@ -154,6 +154,13 @@ public partial class StoreView : UserControl
                 if (string.IsNullOrEmpty(args.Uri)) return;
                 if (!Uri.TryCreate(args.Uri, UriKind.Absolute, out var uri)) return;
 
+                // Solo http/https pueden acabar en Process.Start — estas páginas están
+                // cargadas de publicidad hostil, y un popup puede intentar abrir
+                // cualquier esquema de URI (file:, o el de otra app instalada) para
+                // lanzar programas locales. Cualquier otra cosa se descarta aquí,
+                // antes incluso de mirar el dominio.
+                if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) return;
+
                 var host = uri.Host.ToLowerInvariant();
 
                 // Publicidad/tracking conocido → bloqueado silenciosamente

@@ -11,6 +11,7 @@ public class BackupViewModel : BaseViewModel
     private readonly HakufuApiClient     _api;
     private readonly INavigationService  _nav;
     private readonly IDataRepository     _repo;
+    private readonly ICoverService       _cover;
 
     private static readonly string LibraryDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu", "library");
@@ -42,12 +43,14 @@ public class BackupViewModel : BaseViewModel
     public string? StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
     public bool    IsSuccess     { get => _isSuccess;     private set => SetProperty(ref _isSuccess,     value); }
 
-    public BackupViewModel(IGoogleDriveService drive, HakufuApiClient api, INavigationService nav, IDataRepository repo)
+    public BackupViewModel(IGoogleDriveService drive, HakufuApiClient api, INavigationService nav,
+                           IDataRepository repo, ICoverService cover)
     {
         _drive = drive;
         _api   = api;
         _nav   = nav;
         _repo  = repo;
+        _cover = cover;
         _ = RefreshStatusAsync();
     }
 
@@ -168,6 +171,27 @@ public class BackupViewModel : BaseViewModel
                 var fileName = $"{SanitizeDriveName(manga.Title)}{ext}";
                 manga.DriveFileId = await _drive.UploadFileAsync(
                     token, collectionFolderId, fileName, MimeTypeFor(ext), manga.FilePath, progress);
+
+                // La copia de seguridad solo sube el archivo a Drive — sin esto,
+                // un manga respaldado solo por aquí (sin pasar nunca por
+                // "Sincronización") se queda sin CloudinaryCoverUrl, y por eso
+                // no aparecía portada en el perfil público ni en el de amigos.
+                if (string.IsNullOrEmpty(manga.CloudinaryCoverUrl))
+                {
+                    try
+                    {
+                        var bmp = await _cover.GetCoverAsync(manga);
+                        var bytes = bmp is null ? null : await CoverUploadHelper.ToJpegAsync(bmp);
+                        if (bytes is not null)
+                        {
+                            manga.CloudinaryCoverUrl = await _api.UploadCoverAsync(
+                                CoverUploadHelper.Slugify(CollectionFolderNameFor(manga)),
+                                CoverUploadHelper.Slugify(manga.Title),
+                                manga.Id.ToString(), bytes);
+                        }
+                    }
+                    catch { /* la portada es un extra — si falla, seguimos con el respaldo */ }
+                }
 
                 // Guardar tras cada archivo (no al final): si algo interrumpe la
                 // subida a mitad, los archivos que sí llegaron a Drive quedan

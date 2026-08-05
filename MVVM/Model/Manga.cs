@@ -13,4 +13,8 @@ public class Manga
     // Id del archivo en Google Drive una vez respaldado (ver BackupViewModel).
     // Vacío = todavía no se ha subido.
     public string   DriveFileId        { get; set; } = string.Empty;
+
+    // Posición cuando el orden de la colección es "personalizado" (ver
+    // ReorderMangaViewModel). Sin usar en los demás modos de orden.
+    public int      CustomOrder        { get; set; } = 0;
 }

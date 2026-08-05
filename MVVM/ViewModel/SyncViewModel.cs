@@ -1,7 +1,5 @@
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Media.Imaging;
 using Hakufu.Data;
 using Hakufu.Services;
 using Microsoft.Win32;
@@ -125,25 +123,6 @@ public class SyncViewModel : BaseViewModel
 
     public AsyncRelayCommand UploadAvatarCommand => new(DoUploadAvatarAsync, () => !IsBusy);
 
-    private static string Slugify(string text) =>
-        Regex.Replace(text.ToLowerInvariant().Trim(), @"[^a-z0-9]+", "-").Trim('-');
-
-    private static async Task<byte[]?> ToJpegAsync(BitmapSource bmp)
-    {
-        return await Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            try
-            {
-                var encoder = new JpegBitmapEncoder { QualityLevel = 80 };
-                encoder.Frames.Add(BitmapFrame.Create(bmp));
-                using var ms = new MemoryStream();
-                encoder.Save(ms);
-                return (byte[]?)ms.ToArray();
-            }
-            catch { return null; }
-        });
-    }
-
     private async Task DoUploadAsync()
     {
         IsBusy        = true;
@@ -165,15 +144,15 @@ public class SyncViewModel : BaseViewModel
                 {
                     var bmp = await _cover.GetCoverAsync(manga);
                     if (bmp is null) continue;
-                    var bytes = await ToJpegAsync(bmp);
+                    var bytes = await CoverUploadHelper.ToJpegAsync(bmp);
                     if (bytes is null) continue;
 
                     // Place in collection folder; uncategorized mangas go to sin-coleccion
                     var col    = collections.FirstOrDefault(c => c.MangaIds.Contains(manga.Id));
-                    var colSlug = col is not null ? Slugify(col.Name) : "sin-coleccion";
+                    var colSlug = col is not null ? CoverUploadHelper.Slugify(col.Name) : "sin-coleccion";
 
                     var url = await _api.UploadCoverAsync(
-                        colSlug, Slugify(manga.Title),
+                        colSlug, CoverUploadHelper.Slugify(manga.Title),
                         manga.Id.ToString(), bytes);
                     manga.CloudinaryCoverUrl = url;
                 }

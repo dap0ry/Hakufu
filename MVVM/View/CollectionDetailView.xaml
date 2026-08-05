@@ -35,6 +35,23 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <!-- Normal mode -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0"
+                                Visibility="{Binding IsSelectionMode, Converter={StaticResource InverseBoolToVisibility}}">
+                        <TextBlock Text="Ordenar:" VerticalAlignment="Center"
+                                   Style="{StaticResource CaptionText}" Margin="0,0,8,0"/>
+                        <Button Style="{StaticResource GhostButton}" Content="Nombre"
+                                Padding="12,7" Margin="0,0,4,0" FontSize="11"
+                                Command="{Binding SortByNameCommand}"
+                                Opacity="{Binding IsSortByName, Converter={StaticResource BoolToOpacity}}"/>
+                        <Button Style="{StaticResource GhostButton}" Content="Fecha"
+                                Padding="12,7" Margin="0,0,4,0" FontSize="11"
+                                Command="{Binding SortByDateCommand}"
+                                Opacity="{Binding IsSortByDate, Converter={StaticResource BoolToOpacity}}"/>
+                        <Button Style="{StaticResource GhostButton}" Content="Personalizado"
+                                Padding="12,7" FontSize="11"
+                                Command="{Binding OpenReorderCommand}"
+                                Opacity="{Binding IsSortByCustom, Converter={StaticResource BoolToOpacity}}"/>
+                    </StackPanel>
                     <Button Style="{StaticResource GhostButton}"
                             Content="Seleccionar"
                             Padding="16,10"

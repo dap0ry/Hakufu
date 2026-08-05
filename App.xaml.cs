@@ -8,8 +8,10 @@ namespace Hakufu;
 
 public partial class App : Application
 {
-    private IDataRepository? _repo;
-    private DateTime _sessionStart;
+    private IDataRepository?  _repo;
+    private DateTime          _sessionStart;
+    private ITrayIconService? _trayIcon;
+    private MainWindow?       _mainWindowRef;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -75,7 +77,7 @@ public partial class App : Application
                         sessionService, apiClient, navService!, libraryService, coverService, _repo!),
 
                     nameof(BackupViewModel) => new BackupViewModel(
-                        driveService, apiClient, navService!, _repo!),
+                        driveService, apiClient, navService!, _repo!, coverService),
 
                     nameof(FriendsViewModel) => new FriendsViewModel(sessionService, apiClient, navService!),
 
@@ -91,8 +93,17 @@ public partial class App : Application
             // ── Main window ─────────────────────────────────────────
             var mainVm = new MainWindowViewModel(navService, dialogService);
             var window = new MainWindow { DataContext = mainVm };
-            MainWindow = window;
+            MainWindow     = window;
+            _mainWindowRef = window;
             window.Show();
+
+            // ── Bandeja del sistema ──────────────────────────────────
+            // La X de la ventana la oculta (ver MainWindow.Window_Closing);
+            // esto es lo que permite recuperarla o cerrar la app de verdad.
+            _trayIcon = new TrayIconService();
+            _trayIcon.Initialize(
+                onRestore: () => _mainWindowRef?.RestoreFromTray(),
+                onExit:    () => _mainWindowRef?.RequestExit());
         }
         catch (Exception ex)
         {
@@ -110,6 +121,9 @@ public partial class App : Application
             _repo.Current.TotalUsageSeconds += elapsed;
             _repo.SaveAsync().GetAwaiter().GetResult();
         }
+        // Sin esto el icono se queda "fantasma" en la bandeja tras salir —
+        // Environment.Exit no ejecuta Dispose de forma fiable.
+        _trayIcon?.Dispose();
         base.OnExit(e);
         // pdfium (Docnet.Core) keeps native threads alive; force-kill the process
         // after all cleanup so the app doesn't linger in Task Manager.

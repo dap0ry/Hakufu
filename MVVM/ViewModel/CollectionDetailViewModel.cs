@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -14,9 +15,25 @@ public class CollectionDetailViewModel : BaseViewModel
 
     private string _collectionName = string.Empty;
     private int    _itemsPerRow    = 6;
+    private string _sortMode       = "date";
 
     public string CollectionName { get => _collectionName; private set => SetProperty(ref _collectionName, value); }
     public int    ItemsPerRow    { get => _itemsPerRow;    set => SetProperty(ref _itemsPerRow, value); }
+
+    public string SortMode
+    {
+        get => _sortMode;
+        private set
+        {
+            SetProperty(ref _sortMode, value);
+            OnPropertyChanged(nameof(IsSortByName));
+            OnPropertyChanged(nameof(IsSortByDate));
+            OnPropertyChanged(nameof(IsSortByCustom));
+        }
+    }
+    public bool IsSortByName   => SortMode == "name";
+    public bool IsSortByDate   => SortMode == "date";
+    public bool IsSortByCustom => SortMode == "custom";
 
     public ObservableCollection<MangaCardViewModel> Mangas { get; } = [];
 
@@ -48,13 +65,14 @@ public class CollectionDetailViewModel : BaseViewModel
 
         var col = _library.GetCollection(_collectionId);
         CollectionName = col?.Name ?? string.Empty;
+        _sortMode = _library.SortMode;
         _ = LoadMangasAsync();
     }
 
     private async Task LoadMangasAsync()
     {
         Mangas.Clear();
-        foreach (var manga in _library.GetMangasInCollection(_collectionId))
+        foreach (var manga in Sorted(_library.GetMangasInCollection(_collectionId)))
         {
             var vm = new MangaCardViewModel(manga, _library.GetProgress(manga.Id));
             Mangas.Add(vm);
@@ -62,6 +80,35 @@ public class CollectionDetailViewModel : BaseViewModel
         }
         await Task.CompletedTask;
     }
+
+    private IEnumerable<Manga> Sorted(IEnumerable<Manga> mangas) => SortMode switch
+    {
+        "name" => mangas.OrderBy(m => m.Title, StringComparer.CurrentCultureIgnoreCase),
+        "custom" => mangas.OrderBy(m => m.CustomOrder),
+        _ => mangas.OrderByDescending(m => m.DateAdded), // "date"
+    };
+
+    private async Task SetSortModeAsync(string mode)
+    {
+        SortMode = mode;
+        _library.SortMode = mode;
+        await _library.SaveAsync();
+        await LoadMangasAsync();
+    }
+
+    public AsyncRelayCommand SortByNameCommand   => new(() => SetSortModeAsync("name"));
+    public AsyncRelayCommand SortByDateCommand   => new(() => SetSortModeAsync("date"));
+
+    public RelayCommand OpenReorderCommand => new(() =>
+    {
+        var ordered = Sorted(_library.GetMangasInCollection(_collectionId)).ToList();
+        _dialog.ShowModal(new ReorderMangaViewModel(ordered, _dialog, async () =>
+        {
+            for (var i = 0; i < ordered.Count; i++)
+                ordered[i].CustomOrder = i;
+            await SetSortModeAsync("custom");
+        }));
+    });
 
     public RelayCommand AddMangaCommand => new(async () =>
     {

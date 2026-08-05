@@ -197,4 +197,12 @@ public class LibraryService
         if (latest is null) return null;
         return GetManga(latest.MangaId);
     }
+
+    public string SortMode
+    {
+        get => _repo.Current.LibrarySortMode;
+        set => _repo.Current.LibrarySortMode = value;
+    }
+
+    public Task SaveAsync() => _repo.SaveAsync();
 }

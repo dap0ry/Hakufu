@@ -1,0 +1,65 @@
+<UserControl x:Class="Hakufu.MVVM.View.ReorderMangaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Width="420">
+
+        <TextBlock Text="Orden personalizado"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimary}"
+                   Margin="0,0,0,6"/>
+        <TextBlock Text="Usa las flechas para mover cada manga. Se guarda al pulsar &quot;Guardar orden&quot;."
+                   FontSize="12"
+                   Foreground="{DynamicResource TextMuted}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,18"/>
+
+        <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto" Margin="0,0,0,24">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource CardBackground}"
+                                BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                                CornerRadius="8" Padding="14,10" Margin="0,0,0,6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Title}"
+                                           FontSize="13" Foreground="{DynamicResource TextPrimary}"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Style="{StaticResource IconButton}"
+                                            Content="▲" FontSize="9" Width="26" Height="26"
+                                            Margin="0,0,4,0"
+                                            Command="{Binding DataContext.MoveUpCommand,
+                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource IconButton}"
+                                            Content="▼" FontSize="9" Width="26" Height="26"
+                                            Command="{Binding DataContext.MoveDownCommand,
+                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Style="{StaticResource GhostButton}"
+                    Content="Cancelar"
+                    Padding="20,10"
+                    Margin="0,0,12,0"
+                    Command="{Binding CancelCommand}"/>
+            <Button Style="{StaticResource PrimaryButton}"
+                    Content="Guardar orden"
+                    Padding="20,10"
+                    Command="{Binding SaveCommand}"/>
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

@@ -16,4 +16,7 @@ public class AppDataStore
     public List<ReadingHistoryEntry> History         { get; set; } = [];
     public string                    ActiveTheme     { get; set; } = "Light";
     public long                      TotalUsageSeconds { get; set; } = 0;
+
+    // "name" | "date" | "custom" — recordado entre sesiones.
+    public string                    LibrarySortMode { get; set; } = "date";
 }

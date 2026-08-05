@@ -23,6 +23,7 @@
             <conv:EqualityConverter x:Key="EqualityConverter"/>
             <conv:PercentageWidthConverter x:Key="PercentageWidth"/>
             <conv:UrlToImageConverter x:Key="UrlToImage"/>
+            <conv:BoolToOpacityConverter x:Key="BoolToOpacity"/>
 
             <!-- ViewModel → View dispatch for ContentControl -->
             <DataTemplate DataType="{x:Type vm:HomeViewModel}">
@@ -85,6 +86,9 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ConfirmDeleteViewModel}">
                 <v:ConfirmDeleteView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ReorderMangaViewModel}">
+                <v:ReorderMangaView/>
             </DataTemplate>
 
         </ResourceDictionary>

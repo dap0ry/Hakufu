@@ -4,71 +4,33 @@
 
     <UserControl.Resources>
 
-        <!-- ── Creative nav-item: divisor + número ghost + flecha hover ── -->
-        <Style x:Key="HomeNavItem" TargetType="Button">
-            <Setter Property="Background"                Value="Transparent"/>
-            <Setter Property="BorderThickness"            Value="0"/>
-            <Setter Property="HorizontalAlignment"        Value="Stretch"/>
+        <!-- ── Tile de navegación: icono vectorial + etiqueta, resalta en hover ── -->
+        <Style x:Key="NavTile" TargetType="Button">
+            <Setter Property="Background"         Value="Transparent"/>
+            <Setter Property="BorderThickness"    Value="1"/>
+            <Setter Property="BorderBrush"        Value="{DynamicResource CardBorder}"/>
+            <Setter Property="Cursor"              Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding"                    Value="0"/>
-            <Setter Property="Cursor"                     Value="Hand"/>
+            <Setter Property="Padding"             Value="18,16"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Root"
-                                BorderBrush="{DynamicResource DividerBrush}"
-                                BorderThickness="0,1,0,0"
-                                Padding="0,18,32,18"
-                                Background="Transparent">
-                            <Grid>
-                                <!-- Ghost number — huge, barely visible -->
-                                <TextBlock x:Name="Ghost"
-                                           Text="{Binding Tag,
-                                                  RelativeSource={RelativeSource TemplatedParent}}"
-                                           FontSize="88" FontWeight="Black"
-                                           FontFamily="Segoe UI"
-                                           Foreground="{DynamicResource TextPrimary}"
-                                           Opacity="0.04"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Left"
-                                           IsHitTestVisible="False"/>
-
-                                <!-- Content: number label + name -->
-                                <ContentPresenter x:Name="Content"
-                                                  HorizontalAlignment="Left"
-                                                  VerticalAlignment="Center"
-                                                  Opacity="0.45"
-                                                  Margin="0,0,0,0"/>
-
-                                <!-- Arrow ─ appears on hover -->
-                                <TextBlock x:Name="Arrow"
-                                           Text="→"
-                                           FontSize="18"
-                                           FontFamily="Segoe UI"
-                                           Foreground="{DynamicResource AccentColor}"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Center"
-                                           Opacity="0"/>
-
-                                <!-- Accent underline ─ expands on hover -->
-                                <Rectangle x:Name="Underline"
-                                           Height="2"
-                                           Fill="{DynamicResource AccentColor}"
-                                           VerticalAlignment="Bottom"
-                                           HorizontalAlignment="Left"
-                                           Width="0"/>
-                            </Grid>
+                                Background="{DynamicResource CardBackground}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Content"   Property="Opacity"  Value="1"/>
-                                <Setter TargetName="Arrow"     Property="Opacity"  Value="1"/>
-                                <Setter TargetName="Ghost"     Property="Opacity"  Value="0.07"/>
-                                <Setter TargetName="Underline" Property="Width"    Value="40"/>
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource HoverBackground}"/>
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Content" Property="Opacity" Value="0.65"/>
-                                <Setter TargetName="Arrow"   Property="Opacity" Value="0.65"/>
+                                <Setter TargetName="Root" Property="Opacity" Value="0.8"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -76,12 +38,21 @@
             </Setter>
         </Style>
 
+        <!-- Fondo de icono: cuadrado redondeado con tinte de acento -->
+        <Style x:Key="IconBadge" TargetType="Border">
+            <Setter Property="Width"   Value="40"/>
+            <Setter Property="Height"  Value="40"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+            <Setter Property="Opacity" Value="0.14"/>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="55*"/>  <!-- Left — nav -->
-            <ColumnDefinition Width="45*"/>  <!-- Right — continue reading -->
+            <ColumnDefinition Width="52*"/>  <!-- Left — nav -->
+            <ColumnDefinition Width="48*"/>  <!-- Right — continue reading -->
         </Grid.ColumnDefinitions>
 
         <!-- ═══════════════════════════════════════════════ -->
@@ -91,220 +62,182 @@
                 Background="{DynamicResource SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
                 BorderThickness="0,0,1,0">
-            <Grid>
+            <Grid Margin="56,40,56,32">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>   <!-- title -->
-                    <RowDefinition Height="*"/>      <!-- nav items -->
+                    <RowDefinition Height="Auto"/>   <!-- hero actions -->
+                    <RowDefinition Height="*"/>       <!-- tile grid -->
                     <RowDefinition Height="Auto"/>   <!-- footer -->
                 </Grid.RowDefinitions>
 
                 <!-- ── TÍTULO ── -->
-                <Viewbox Grid.Row="0" Stretch="Uniform"
-                         HorizontalAlignment="Stretch"
-                         Margin="40,24,40,0">
-                    <StackPanel Width="460">
-                        <TextBlock FontFamily="Segoe UI" TextTrimming="None">
-                            <Run Text="HAKU"
-                                 FontSize="96" FontWeight="Black"
-                                 Foreground="{DynamicResource TextPrimary}"/>
-                            <Run Text="FU"
-                                 FontSize="96" FontWeight="Black"
-                                 Foreground="{DynamicResource AccentColor}"/>
-                        </TextBlock>
-                        <Rectangle Height="4" Width="72"
-                                   HorizontalAlignment="Left"
-                                   Fill="{DynamicResource AccentColor}"
-                                   Margin="2,6,0,0"/>
-                        <TextBlock Text="Tu biblioteca de manga"
-                                   FontFamily="Segoe UI" FontSize="13"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   Margin="2,8,0,0"/>
-                    </StackPanel>
-                </Viewbox>
+                <StackPanel Grid.Row="0" Margin="0,0,0,36">
+                    <TextBlock FontFamily="Segoe UI">
+                        <Run Text="HAKU" FontSize="52" FontWeight="Black" Foreground="{DynamicResource TextPrimary}"/>
+                        <Run Text="FU"   FontSize="52" FontWeight="Black" Foreground="{DynamicResource AccentColor}"/>
+                    </TextBlock>
+                    <Rectangle Height="4" Width="56" HorizontalAlignment="Left"
+                               Fill="{DynamicResource AccentColor}" Margin="2,6,0,0"/>
+                    <TextBlock Text="Tu biblioteca de manga"
+                               FontSize="13" Foreground="{DynamicResource TextMuted}"
+                               Margin="2,10,0,0"/>
+                </StackPanel>
 
-                <!-- ── NAV ITEMS ── -->
-                <Viewbox Grid.Row="1" Stretch="Uniform"
-                         HorizontalAlignment="Left" VerticalAlignment="Center"
-                         Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}"
-                         Margin="0,16,0,16">
-                <StackPanel Width="800">
+                <!-- ── ACCIÓN PRINCIPAL ── -->
+                <Button Grid.Row="1" Style="{StaticResource NavTile}"
+                        Command="{Binding NavLibraryCommand}"
+                        Margin="0,0,0,10" Padding="22,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18">
+                            <Canvas Width="22" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Rectangle Canvas.Left="0" Canvas.Top="2" Width="6" Height="16" RadiusX="1" RadiusY="1" Fill="{DynamicResource AccentColor}"/>
+                                <Rectangle Canvas.Left="8" Canvas.Top="0" Width="6" Height="18" RadiusX="1" RadiusY="1" Fill="{DynamicResource AccentColor}"/>
+                                <Rectangle Canvas.Left="16" Canvas.Top="3" Width="6" Height="15" RadiusX="1" RadiusY="1" Fill="{DynamicResource AccentColor}"/>
+                            </Canvas>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
+                            <TextBlock Text="Biblioteca" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Tus colecciones y mangas" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="→" FontSize="18" Foreground="{DynamicResource AccentColor}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
 
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="01"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavLibraryCommand}">
-                        <StackPanel>
-                            <TextBlock Text="01"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="Biblioteca"
-                                       FontSize="46" FontWeight="Light"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextPrimary}"/>
+                <!-- ── CUADRÍCULA DE ACCESOS ── -->
+                <UniformGrid Grid.Row="2" Columns="2" Rows="4" Margin="0,16,0,0">
+
+                    <!-- Perfil -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource IconBadge}">
+                                <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Ellipse Canvas.Left="4" Canvas.Top="0" Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
+                                    <Path Data="M 0,16 C 0,11 16,11 16,16" Fill="{DynamicResource AccentColor}"/>
+                                </Canvas>
+                            </Border>
+                            <TextBlock Text="Perfil" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="02"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavProfileCommand}">
-                        <StackPanel>
-                            <TextBlock Text="02"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="Perfil"
-                                       FontSize="46" FontWeight="Light"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextPrimary}"/>
+                    <!-- Amigos -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavFriendsCommand}" Margin="6,0,0,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource IconBadge}">
+                                <Canvas Width="20" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Ellipse Canvas.Left="0" Canvas.Top="0" Width="12" Height="12" Fill="{DynamicResource AccentColor}" Opacity="0.85"/>
+                                    <Ellipse Canvas.Left="8" Canvas.Top="0" Width="12" Height="12" Fill="{DynamicResource AccentColor}"/>
+                                </Canvas>
+                            </Border>
+                            <TextBlock Text="Amigos" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="03"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavSettingsCommand}">
-                        <StackPanel>
-                            <TextBlock Text="03"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="Ajustes"
-                                       FontSize="46" FontWeight="Light"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextPrimary}"/>
+                    <!-- Tienda -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavStoreCommand}" Margin="0,0,6,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource IconBadge}">
+                                <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M 2,4 L 14,4 L 13,16 L 3,16 Z" Fill="{DynamicResource AccentColor}"/>
+                                    <Path Data="M 5,4 C 5,0 11,0 11,4" Stroke="{DynamicResource CardBackground}" StrokeThickness="1.5" Fill="Transparent"/>
+                                </Canvas>
+                            </Border>
+                            <TextBlock Text="Tienda" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="04"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavHelpCommand}">
-                        <StackPanel>
-                            <TextBlock Text="04"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="Ayuda"
-                                       FontSize="46" FontWeight="Light"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextPrimary}"/>
+                    <!-- Actualizaciones -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavUpdatesCommand}" Margin="6,0,0,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource IconBadge}">
+                                <TextBlock Text="⟳" FontSize="18" FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentColor}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Actualizaciones" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="05"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavUpdatesCommand}">
-                        <StackPanel>
-                            <TextBlock Text="05"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="Actualizaciones"
-                                       FontSize="46" FontWeight="Light"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextPrimary}"/>
+                    <!-- Ajustes -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavSettingsCommand}" Margin="0,0,6,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource IconBadge}">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="16">
+                                    <Rectangle Height="2.5" Width="16" Fill="{DynamicResource AccentColor}" Margin="0,0,0,4" RadiusX="1" RadiusY="1"/>
+                                    <Rectangle Height="2.5" Width="11" Fill="{DynamicResource AccentColor}" HorizontalAlignment="Left" Margin="0,0,0,4" RadiusX="1" RadiusY="1"/>
+                                    <Rectangle Height="2.5" Width="14" Fill="{DynamicResource AccentColor}" HorizontalAlignment="Left" RadiusX="1" RadiusY="1"/>
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="Ajustes" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="06"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavStoreCommand}">
-                        <StackPanel>
-                            <TextBlock Text="06"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="Tienda"
-                                       FontSize="46" FontWeight="Light"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextPrimary}"/>
+                    <!-- Ayuda -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavHelpCommand}" Margin="6,0,0,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource IconBadge}">
+                                <TextBlock Text="?" FontSize="18" FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentColor}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Ayuda" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="07"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavFriendsCommand}">
-                        <StackPanel>
-                            <TextBlock Text="07"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="Amigos"
-                                       FontSize="46" FontWeight="Light"
-                                       FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextPrimary}"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- ── 08 CUENTA ── -->
-                    <Button Style="{StaticResource HomeNavItem}"
-                            Tag="08"
-                            Margin="48,0,0,0"
-                            Command="{Binding NavAccountCommand}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-
-                            <!-- Avatar circular (solo cuando hay sesión) -->
-                            <Grid Width="44" Height="44"
-                                  Margin="0,0,22,0"
-                                  VerticalAlignment="Center"
+                    <!-- Cuenta (avatar real si hay sesión) -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavAccountCommand}" Margin="0,0,6,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="40" Height="40"
                                   Visibility="{Binding ShowAvatarArea, Converter={StaticResource BoolToVisibility}}">
-                                <!-- Foto real -->
-                                <Border CornerRadius="22" ClipToBounds="True"
+                                <Border CornerRadius="20" ClipToBounds="True"
                                         Visibility="{Binding HasAvatar, Converter={StaticResource BoolToVisibility}}">
                                     <Image Source="{Binding AvatarUrl, Converter={StaticResource UrlToImage}}"
-                                           Stretch="UniformToFill"
-                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                           Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 </Border>
-                                <!-- Inicial (fallback sin foto) -->
-                                <Border CornerRadius="22"
-                                        Background="{DynamicResource CardBorder}"
-                                        Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}">
-                                    <TextBlock Text="{Binding SessionInitial}"
-                                               FontSize="18" FontWeight="SemiBold"
-                                               FontFamily="Segoe UI"
-                                               Foreground="{DynamicResource TextSecondary}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"/>
-                                </Border>
+                                <Border CornerRadius="20" Background="{DynamicResource AccentColor}" Opacity="0.18"
+                                        Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
+                                <TextBlock Text="{Binding SessionInitial}"
+                                           FontSize="15" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentColor}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
                             </Grid>
-
-                            <!-- Etiqueta + nombre -->
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="08"
-                                           FontSize="10" FontWeight="SemiBold"
-                                           FontFamily="Segoe UI"
-                                           Foreground="{DynamicResource TextMuted}"
-                                           Margin="0,0,0,4"/>
-                                <TextBlock Text="{Binding SessionLabel}"
-                                           FontSize="46" FontWeight="Light"
-                                           FontFamily="Segoe UI"
-                                           Foreground="{DynamicResource TextPrimary}"/>
-                            </StackPanel>
+                            <Border Style="{StaticResource IconBadge}"
+                                    Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}">
+                                <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Ellipse Canvas.Left="4" Canvas.Top="0" Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
+                                    <Path Data="M 0,16 C 0,11 16,11 16,16" Fill="{DynamicResource AccentColor}"/>
+                                </Canvas>
+                            </Border>
+                            <TextBlock Text="{Binding SessionLabel}" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>
                     </Button>
 
-                </StackPanel>
-                </Viewbox>
+                </UniformGrid>
 
                 <!-- ── FOOTER ── -->
-                <TextBlock Grid.Row="2"
+                <TextBlock Grid.Row="3"
                            Foreground="{DynamicResource TextMuted}"
                            FontSize="11"
-                           FontFamily="Segoe UI"
-                           Margin="56,0,0,40"
-                           VerticalAlignment="Bottom">
+                           Margin="0,20,0,0">
                     <Hyperlink NavigateUri="https://danielpozarivera.es/"
                                RequestNavigate="Hyperlink_RequestNavigate"
                                Foreground="{DynamicResource TextMuted}"
@@ -320,19 +253,25 @@
         <!-- ═══════════════════════════════════════════════ -->
         <Grid Grid.Column="1" Background="{DynamicResource AppBackground}" ClipToBounds="True">
 
+            <!-- Patrón decorativo de fondo: círculos suaves con el color de acento -->
+            <Canvas IsHitTestVisible="False">
+                <Ellipse Canvas.Right="-120" Canvas.Top="-120" Width="360" Height="360"
+                         Fill="{DynamicResource AccentColor}" Opacity="0.05"/>
+                <Ellipse Canvas.Right="40" Canvas.Bottom="-160" Width="300" Height="300"
+                         Fill="{DynamicResource AccentColor}" Opacity="0.04"/>
+            </Canvas>
+
             <!-- Estado vacío -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         Visibility="{Binding HasLastManga, Converter={StaticResource InverseBoolToVisibility}}">
-                <TextBlock Text="—"
-                           FontSize="32"
-                           Foreground="{DynamicResource TextMuted}"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,16"/>
+                <Border Width="72" Height="72" CornerRadius="36"
+                        Background="{DynamicResource AccentColor}" Opacity="0.12"
+                        HorizontalAlignment="Center" Margin="0,0,0,20"/>
                 <TextBlock Text="Sin lectura reciente"
                            Style="{StaticResource SubtitleText}"
-                           Foreground="{DynamicResource TextMuted}"
+                           Foreground="{DynamicResource TextPrimary}"
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="Abre Biblioteca para empezar"
+                <TextBlock Text="Abre Biblioteca para empezar a leer"
                            Style="{StaticResource CaptionText}"
                            HorizontalAlignment="Center"
                            Margin="0,8,0,0"/>
@@ -387,7 +326,6 @@
                                Foreground="{DynamicResource TextMuted}"
                                FontSize="9"
                                FontWeight="SemiBold"
-                               FontFamily="Segoe UI"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,8"/>
 
@@ -395,7 +333,6 @@
                     <TextBlock Text="{Binding LastMangaTitle}"
                                FontSize="17"
                                FontWeight="Medium"
-                               FontFamily="Segoe UI"
                                Foreground="{DynamicResource TextPrimary}"
                                TextAlignment="Center"
                                TextTrimming="CharacterEllipsis"

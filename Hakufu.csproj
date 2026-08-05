@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms> <!-- solo para el icono de la bandeja del sistema (NotifyIcon) -->
     <AssemblyName>Hakufu</AssemblyName>
     <RootNamespace>Hakufu</RootNamespace>
     <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
@@ -15,6 +16,16 @@
     <FileVersion>0.6.0.0</FileVersion>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
+
+  <!--
+    UseWindowsForms=true (solo para NotifyIcon en TrayIconService) hace que el
+    SDK añada "using System.Windows.Forms;" implícito a TODO el proyecto, lo
+    que choca con "UserControl"/"Application" de WPF en cada vista. Se quita
+    aquí el using global; TrayIconService.cs pone el suyo propio, local.
+  -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Images\**\*.png" />

@@ -110,7 +110,18 @@ public class SettingsViewModel : BaseViewModel
     public RelayCommand OpenStorageManagerCommand => new(() =>
         _dialog.ShowModal(new StorageManagerViewModel(_dialog, _library)));
 
+    public string VersionText =>
+        $"Versión {System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "?"}";
+
     // ── Navigation ───────────────────────────────────────────────────────────
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
+
+    // Cierra Hakufu de verdad (termina el proceso) — a diferencia de la X de
+    // la ventana, que solo la oculta en la bandeja del sistema.
+    public RelayCommand ExitApplicationCommand => new(() =>
+    {
+        if (System.Windows.Application.Current.MainWindow is Hakufu.MainWindow mw)
+            mw.RequestExit();
+    });
 }

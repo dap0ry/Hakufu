@@ -9,24 +9,20 @@ namespace Hakufu.MVVM.View;
 
 public partial class StoreView : UserControl
 {
-    // ── Dominios de descarga legítimos → se abren en el navegador del sistema ──
-    private static readonly HashSet<string> DownloadDomains = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "mediafire.com", "drive.google.com", "mega.nz", "mega.co.nz",
-        "dropbox.com", "1fichier.com", "gofile.io", "catbox.moe",
-        "sendspace.com", "uptobox.com", "uploadhaven.com", "mixdrop.co",
-        "racaty.net", "pixeldrain.com", "filejoker.net", "rapidgator.net",
-        "buzzheavier.com", "terabox.com", "bayfiles.com", "dailyuploads.net",
-        "zippyshare.com", "4shared.com", "onedrive.live.com", "sharepoint.com",
-        "workupload.com", "krakenfiles.com", "anonfiles.com", "fileditch.com",
-        "hexupload.net", "mp4upload.com", "streamtape.com", "doodstream.com",
-    };
-
     // ── Dominios de los sitios de manga → popups navegan dentro de la app ──
     private static readonly HashSet<string> MangaSiteDomains = new(StringComparer.OrdinalIgnoreCase)
     {
         "tomosmanga.com", "lexmangas.com", "mangaycomics.com",
     };
+
+    // ── Páginas de entrada, probadas en orden: si una está caída se prueba la siguiente ──
+    private static readonly string[] EntryPages =
+    {
+        "https://lexmangas.com/",
+        "https://mangaycomics.com/",
+        "https://tomosmanga.com/",
+    };
+    private int _entryPageIndex;
 
     // ── Redes publicitarias y trackers bloqueados por dominio ──
     private static readonly HashSet<string> BlockedDomains = new(StringComparer.OrdinalIgnoreCase)
@@ -146,6 +142,12 @@ public partial class StoreView : UserControl
             var core = WebBrowser.CoreWebView2;
 
             // ── Gestión de ventanas emergentes ──────────────────────────────
+            // Política: bloqueamos solo lo que sabemos que es publicidad/tracking
+            // (BlockedDomains). Todo lo demás que no sea el propio sitio de manga
+            // se trata como descarga/enlace legítimo y se abre en el navegador del
+            // sistema — los sitios de manga rotan constantemente los dominios de
+            // sus mirrors de descarga, y mantener un allowlist a mano los rompe
+            // en cuanto aparece un dominio nuevo.
             core.NewWindowRequested += (_, args) =>
             {
                 args.Handled = true;
@@ -154,14 +156,11 @@ public partial class StoreView : UserControl
 
                 var host = uri.Host.ToLowerInvariant();
 
-                // Descarga legítima → abrir en el navegador del sistema
-                foreach (var domain in DownloadDomains)
+                // Publicidad/tracking conocido → bloqueado silenciosamente
+                foreach (var domain in BlockedDomains)
                 {
                     if (host == domain || host.EndsWith("." + domain))
-                    {
-                        Process.Start(new ProcessStartInfo(args.Uri) { UseShellExecute = true });
                         return;
-                    }
                 }
 
                 // Mismo sitio de manga → navegar dentro de la app
@@ -174,7 +173,30 @@ public partial class StoreView : UserControl
                     }
                 }
 
-                // Todo lo demás (anuncios) → bloqueado silenciosamente
+                // Cualquier otra cosa (mirrors de descarga, acortadores, etc.)
+                // → abrir en el navegador del sistema
+                Process.Start(new ProcessStartInfo(args.Uri) { UseShellExecute = true });
+            };
+
+            // ── Descargas directas (navegación, no popup) ───────────────────
+            core.DownloadStarting += (_, args) =>
+            {
+                var downloads = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                downloads = Path.Combine(downloads, "Downloads");
+                Directory.CreateDirectory(downloads);
+
+                var name = string.IsNullOrWhiteSpace(args.ResultFilePath)
+                    ? Path.GetFileName(new Uri(args.DownloadOperation.Uri).LocalPath)
+                    : Path.GetFileName(args.ResultFilePath);
+                if (string.IsNullOrWhiteSpace(name)) name = "descarga";
+
+                var dest = Path.Combine(downloads, name);
+                var i = 1;
+                while (File.Exists(dest))
+                    dest = Path.Combine(downloads, $"{Path.GetFileNameWithoutExtension(name)} ({i++}){Path.GetExtension(name)}");
+
+                args.ResultFilePath = dest;
+                args.Handled = false; // deja visible la UI nativa de descarga de WebView2
             };
 
             // ── Bloquear permisos (notificaciones, cámara, localización…) ──
@@ -197,7 +219,18 @@ public partial class StoreView : UserControl
             // ── Sincronizar barra de direcciones ────────────────────────────
             core.SourceChanged += (_, _) => _vm?.OnNavigated(core.Source ?? "");
 
-            core.Navigate("https://tomosmanga.com/");
+            // ── Si la página de entrada falla, probar la siguiente de la lista ──
+            core.NavigationCompleted += (_, args) =>
+            {
+                if (args.IsSuccess) return;
+                if (_entryPageIndex >= EntryPages.Length - 1) return; // ya no quedan más que probar
+                if (core.Source != EntryPages[_entryPageIndex]) return; // el fallo fue en otra navegación (no la de entrada)
+
+                _entryPageIndex++;
+                core.Navigate(EntryPages[_entryPageIndex]);
+            };
+
+            core.Navigate(EntryPages[_entryPageIndex]);
         }
         catch (Exception ex)
         {

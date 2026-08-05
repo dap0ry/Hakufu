@@ -131,11 +131,17 @@ public class BackupViewModel : BaseViewModel
                 var ext = Path.GetExtension(manga.FilePath).ToLowerInvariant();
                 manga.DriveFileId = await _drive.UploadFileAsync(
                     token, folderId, $"{manga.Id}{ext}", MimeTypeFor(ext), manga.FilePath, progress);
+
+                // Guardar tras cada archivo (no al final): si algo interrumpe la
+                // subida a mitad, los archivos que sí llegaron a Drive quedan
+                // enlazados localmente — sin esto, un fallo posterior (ej. al
+                // subir los metadatos) perdía el DriveFileId de todo lo ya
+                // subido, y un reintento lo volvía a subir duplicado.
+                await _repo.SaveAsync();
             }
 
             ProgressText = "Subiendo metadatos de la biblioteca…";
             await _api.SyncUploadAsync(SyncPayloadBuilder.Build(_repo));
-            await _repo.SaveAsync();
 
             ProgressText  = "";
             IsSuccess     = true;

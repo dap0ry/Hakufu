@@ -32,7 +32,7 @@ public class GoogleDriveService : IGoogleDriveService
 
     public async Task<bool> IsConnectedAsync()
     {
-        var resp = await _api.SendAsync(AuthReq(HttpMethod.Get, "/drive/status"));
+        var resp = await _api.SendAsync(AuthReq(HttpMethod.Get, "drive/status"));
         if (!resp.IsSuccessStatusCode) return false;
         var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
         return doc.RootElement.TryGetProperty("connected", out var c) && c.GetBoolean();
@@ -40,7 +40,7 @@ public class GoogleDriveService : IGoogleDriveService
 
     public async Task<string> StartConnectFlowAsync()
     {
-        var resp = await _api.SendAsync(AuthReq(HttpMethod.Post, "/drive/link-start"));
+        var resp = await _api.SendAsync(AuthReq(HttpMethod.Post, "drive/link-start"));
         if (!resp.IsSuccessStatusCode)
             throw new InvalidOperationException("No se pudo iniciar la conexión con Google Drive.");
 
@@ -52,14 +52,14 @@ public class GoogleDriveService : IGoogleDriveService
 
     public async Task DisconnectAsync()
     {
-        var resp = await _api.SendAsync(AuthReq(HttpMethod.Post, "/drive/disconnect"));
+        var resp = await _api.SendAsync(AuthReq(HttpMethod.Post, "drive/disconnect"));
         if (!resp.IsSuccessStatusCode)
             throw new InvalidOperationException("No se pudo desconectar Google Drive.");
     }
 
     public async Task<string> GetAccessTokenAsync()
     {
-        var resp = await _api.SendAsync(AuthReq(HttpMethod.Get, "/drive/token"));
+        var resp = await _api.SendAsync(AuthReq(HttpMethod.Get, "drive/token"));
         if (!resp.IsSuccessStatusCode)
             throw new InvalidOperationException("Google Drive no está conectado o la conexión expiró. Conéctalo de nuevo.");
 

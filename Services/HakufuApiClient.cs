@@ -8,7 +8,7 @@ namespace Hakufu.Services;
 
 public class HakufuApiClient
 {
-    internal const string BaseUrl = "https://hakufuweb.vercel.app/api";
+    internal const string BaseUrl = "https://hakufuweb.vercel.app/api/";
     private readonly ISessionService _session;
     private readonly HttpClient      _http = new() { BaseAddress = new Uri(BaseUrl) };
 
@@ -96,7 +96,7 @@ public class HakufuApiClient
     // ── Auth ─────────────────────────────────────────────────────────────────
     public async Task<AuthResult> LoginAsync(string username, string password)
     {
-        var resp = await _http.PostAsJsonAsync("/auth/login", new LoginBody(username, password));
+        var resp = await _http.PostAsJsonAsync("auth/login", new LoginBody(username, password));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
         var r = await resp.Content.ReadFromJsonAsync<TokenResponse>();
         return new AuthResult(r!.Username, r.AccessToken);
@@ -104,7 +104,7 @@ public class HakufuApiClient
 
     public async Task<AuthResult> RegisterAsync(string username, string email, string password, string confirm)
     {
-        var resp = await _http.PostAsJsonAsync("/auth/register", new RegisterBody(username, email, password, confirm));
+        var resp = await _http.PostAsJsonAsync("auth/register", new RegisterBody(username, email, password, confirm));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
         var r = await resp.Content.ReadFromJsonAsync<TokenResponse>();
         return new AuthResult(r!.Username, r.AccessToken);
@@ -113,7 +113,7 @@ public class HakufuApiClient
     // ── Friends ───────────────────────────────────────────────────────────────
     public async Task<List<FriendData>> GetFriendsAsync()
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, "/friends"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, "friends"));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
         var list = await resp.Content.ReadFromJsonAsync<List<JsonElement>>() ?? [];
         return list.Select(e => new FriendData(
@@ -123,7 +123,7 @@ public class HakufuApiClient
 
     public async Task<List<FriendRequestData>> GetPendingRequestsAsync()
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, "/friends/requests"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, "friends/requests"));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
         var list = await resp.Content.ReadFromJsonAsync<List<JsonElement>>() ?? [];
         return list.Select(e => new FriendRequestData(
@@ -134,25 +134,25 @@ public class HakufuApiClient
 
     public async Task SendFriendRequestAsync(string username)
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Post, $"/friends/{username}/request"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Post, $"friends/{username}/request"));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
     }
 
     public async Task AcceptFriendRequestAsync(string username)
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Put, $"/friends/{username}/accept"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Put, $"friends/{username}/accept"));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
     }
 
     public async Task RejectFriendRequestAsync(string username)
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Delete, $"/friends/{username}/request"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Delete, $"friends/{username}/request"));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
     }
 
     public async Task RemoveFriendAsync(string username)
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Delete, $"/friends/{username}"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Delete, $"friends/{username}"));
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
     }
 
@@ -163,7 +163,7 @@ public class HakufuApiClient
         var img = new ByteArrayContent(imageBytes);
         img.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
         form.Add(img, "file", "avatar");
-        var req = AuthReq(HttpMethod.Post, "/users/me/avatar");
+        var req = AuthReq(HttpMethod.Post, "users/me/avatar");
         req.Content = form;
         var resp = await _http.SendAsync(req);
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
@@ -180,7 +180,7 @@ public class HakufuApiClient
         img.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         form.Add(img, "file", "cover.jpg");
 
-        var req = AuthReq(HttpMethod.Post, $"/users/me/cover/{collectionSlug}/{mangaSlug}");
+        var req = AuthReq(HttpMethod.Post, $"users/me/cover/{collectionSlug}/{mangaSlug}");
         req.Content = form;
         var resp = await _http.SendAsync(req);
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
@@ -190,7 +190,7 @@ public class HakufuApiClient
 
     public async Task SyncUploadAsync(LibrarySyncPayload payload)
     {
-        var req = AuthReq(HttpMethod.Put, "/users/me/library");
+        var req = AuthReq(HttpMethod.Put, "users/me/library");
         req.Content = JsonContent.Create(payload);
         var resp = await _http.SendAsync(req);
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
@@ -198,7 +198,7 @@ public class HakufuApiClient
 
     public async Task<LibrarySyncPayload?> SyncDownloadAsync()
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, "/users/me/library"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, "users/me/library"));
         if (resp.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
         return await resp.Content.ReadFromJsonAsync<LibrarySyncPayload>();
@@ -207,7 +207,7 @@ public class HakufuApiClient
     // ── Public profile ────────────────────────────────────────────────────────
     public async Task<PublicProfileData?> GetPublicProfileAsync(string username)
     {
-        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, $"/users/{username}"));
+        var resp = await _http.SendAsync(AuthReq(HttpMethod.Get, $"users/{username}"));
         if (resp.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
         if (!resp.IsSuccessStatusCode) throw new InvalidOperationException(await Detail(resp));
 

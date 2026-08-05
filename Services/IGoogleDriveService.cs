@@ -14,6 +14,10 @@ public interface IGoogleDriveService
 
     Task<string> FindOrCreateBackupFolderAsync(string accessToken);
 
+    // parentId null = raíz de Drive (o de la carpeta "Hakufu" cuando se usa
+    // para las subcarpetas de colección).
+    Task<string> FindOrCreateFolderAsync(string accessToken, string name, string? parentId);
+
     // Necesario al restaurar: recuperamos la extensión original (.pdf/.cbz/.cbr)
     // a partir del nombre del archivo en Drive, en vez de adivinarla.
     Task<string?> GetFileNameAsync(string accessToken, string fileId);

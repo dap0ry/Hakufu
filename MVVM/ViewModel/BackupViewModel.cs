@@ -107,18 +107,52 @@ public class BackupViewModel : BaseViewModel
         _      => "application/octet-stream",
     };
 
+    private const string UncategorizedFolderName = "Sin colección";
+
+    // Nombre legible para carpetas/archivos en Drive — a diferencia del Slugify
+    // que usa SyncViewModel para Cloudinary (piensa en URLs), aquí queremos que
+    // se vea bien al navegar el Drive a mano: se conservan mayúsculas y
+    // espacios, solo se quitan los caracteres que dan problemas.
+    private static string SanitizeDriveName(string text)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var clean = new string(text.Where(c => !invalid.Contains(c) && c != '/' && c != '\\').ToArray());
+        clean = string.Join(" ", clean.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        return string.IsNullOrWhiteSpace(clean) ? "Sin título" : clean.Trim();
+    }
+
     private async Task DoBackupAsync()
     {
         IsBusy = true; StatusMessage = null; IsSuccess = false;
         try
         {
             ProgressText = "Conectando con Google Drive…";
-            var token    = await _drive.GetAccessTokenAsync();
-            var folderId = await _drive.FindOrCreateBackupFolderAsync(token);
+            var token = await _drive.GetAccessTokenAsync();
+            var rootFolderId = await _drive.FindOrCreateBackupFolderAsync(token);
 
             var pending = _repo.Current.Mangas
                 .Where(m => string.IsNullOrEmpty(m.DriveFileId) && File.Exists(m.FilePath))
                 .ToList();
+
+            // Un manga puede estar en varias colecciones — se sube una vez y se
+            // coloca en la carpeta de la primera a la que pertenezca.
+            var collections = _repo.Current.Collections;
+            string CollectionFolderNameFor(Manga manga)
+            {
+                var col = collections.FirstOrDefault(c => c.MangaIds.Contains(manga.Id));
+                return col is not null ? SanitizeDriveName(col.Name) : UncategorizedFolderName;
+            }
+
+            // Cachear el id de carpeta por nombre — si hay 30 mangas en la misma
+            // colección no hace falta buscar/crear esa carpeta 30 veces.
+            var folderCache = new Dictionary<string, string>();
+            async Task<string> GetCollectionFolderIdAsync(string name)
+            {
+                if (folderCache.TryGetValue(name, out var id)) return id;
+                id = await _drive.FindOrCreateFolderAsync(token, name, rootFolderId);
+                folderCache[name] = id;
+                return id;
+            }
 
             int total = pending.Count, current = 0;
             foreach (var manga in pending)
@@ -128,9 +162,12 @@ public class BackupViewModel : BaseViewModel
                 ProgressText = label;
                 var progress = new Progress<double>(p => ProgressText = $"{label} ({p:F0}%)");
 
+                var collectionFolderId = await GetCollectionFolderIdAsync(CollectionFolderNameFor(manga));
+
                 var ext = Path.GetExtension(manga.FilePath).ToLowerInvariant();
+                var fileName = $"{SanitizeDriveName(manga.Title)}{ext}";
                 manga.DriveFileId = await _drive.UploadFileAsync(
-                    token, folderId, $"{manga.Id}{ext}", MimeTypeFor(ext), manga.FilePath, progress);
+                    token, collectionFolderId, fileName, MimeTypeFor(ext), manga.FilePath, progress);
 
                 // Guardar tras cada archivo (no al final): si algo interrumpe la
                 // subida a mitad, los archivos que sí llegaron a Drive quedan

@@ -13,7 +13,7 @@ public class GoogleDriveService : IGoogleDriveService
 {
     private const string DriveApiUrl      = "https://www.googleapis.com/drive/v3";
     private const string DriveUploadUrl   = "https://www.googleapis.com/upload/drive/v3";
-    private const string BackupFolderName = "Hakufu Backups";
+    private const string BackupFolderName = "Hakufu";
 
     private readonly ISessionService _session;
     private readonly HttpClient _api  = new() { BaseAddress = new Uri(HakufuApiClient.BaseUrl) };
@@ -68,9 +68,18 @@ public class GoogleDriveService : IGoogleDriveService
     }
 
     // ── Google Drive (directo, con el access token) ─────────────────────────
-    public async Task<string> FindOrCreateBackupFolderAsync(string accessToken)
+    public Task<string> FindOrCreateBackupFolderAsync(string accessToken) =>
+        FindOrCreateFolderAsync(accessToken, BackupFolderName, parentId: null);
+
+    // Busca (o crea) una carpeta por nombre, opcionalmente dentro de otra
+    // carpeta (parentId). Se usa tanto para la carpeta raíz "Hakufu" como para
+    // la subcarpeta de cada colección dentro de ella.
+    public async Task<string> FindOrCreateFolderAsync(string accessToken, string name, string? parentId)
     {
-        var query = $"name='{BackupFolderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false";
+        var escapedName = name.Replace("\\", "\\\\").Replace("'", "\\'");
+        var query = $"name='{escapedName}' and mimeType='application/vnd.google-apps.folder' and trashed=false";
+        if (parentId is not null) query += $" and '{parentId}' in parents";
+
         var listReq = new HttpRequestMessage(HttpMethod.Get,
             $"{DriveApiUrl}/files?q={Uri.EscapeDataString(query)}&fields=files(id,name)");
         listReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -84,7 +93,12 @@ public class GoogleDriveService : IGoogleDriveService
 
         var createReq = new HttpRequestMessage(HttpMethod.Post, $"{DriveApiUrl}/files");
         createReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        createReq.Content = JsonContent.Create(new { name = BackupFolderName, mimeType = "application/vnd.google-apps.folder" });
+        createReq.Content = JsonContent.Create(new
+        {
+            name,
+            mimeType = "application/vnd.google-apps.folder",
+            parents = parentId is not null ? new[] { parentId } : null,
+        });
 
         var createResp = await _http.SendAsync(createReq);
         createResp.EnsureSuccessStatusCode();

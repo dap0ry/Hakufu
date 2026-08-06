@@ -38,7 +38,10 @@
             </Setter>
         </Style>
 
-        <!-- Fondo de icono: cuadrado redondeado con tinte de acento -->
+        <!-- Fondo de icono: cuadrado redondeado con tinte de acento.
+             OJO: Opacity va solo en el fondo — si el icono va DENTRO de este
+             Border como hijo, hereda la opacidad y queda casi invisible.
+             El icono debe ir como hermano encima, en un Grid, no como hijo. -->
         <Style x:Key="IconBadge" TargetType="Border">
             <Setter Property="Width"   Value="40"/>
             <Setter Property="Height"  Value="40"/>
@@ -93,11 +96,12 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18">
+                        <Grid Grid.Column="0" Width="48" Height="48">
+                            <Border Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18"/>
                             <ContentControl Template="{StaticResource IconPixelBooks}"
                                             Width="24" Height="24"
                                             Foreground="{DynamicResource AccentColor}"/>
-                        </Border>
+                        </Grid>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
                             <TextBlock Text="Biblioteca" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                             <TextBlock Text="Tus colecciones y mangas" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
@@ -112,11 +116,12 @@
                     <!-- Perfil -->
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource IconBadge}">
+                            <Grid Width="40" Height="40">
+                                <Border Style="{StaticResource IconBadge}"/>
                                 <ContentControl Template="{StaticResource IconPixelHanko}"
                                                 Width="18" Height="18"
                                                 Foreground="{DynamicResource AccentColor}"/>
-                            </Border>
+                            </Grid>
                             <TextBlock Text="Perfil" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>
@@ -126,11 +131,12 @@
                     <!-- Amigos -->
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavFriendsCommand}" Margin="6,0,0,6">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource IconBadge}">
+                            <Grid Width="40" Height="40">
+                                <Border Style="{StaticResource IconBadge}"/>
                                 <ContentControl Template="{StaticResource IconPixelFan}"
                                                 Width="18" Height="18"
                                                 Foreground="{DynamicResource AccentColor}"/>
-                            </Border>
+                            </Grid>
                             <TextBlock Text="Amigos" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>
@@ -140,11 +146,12 @@
                     <!-- Tienda -->
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavStoreCommand}" Margin="0,0,6,6">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource IconBadge}">
+                            <Grid Width="40" Height="40">
+                                <Border Style="{StaticResource IconBadge}"/>
                                 <ContentControl Template="{StaticResource IconPixelWave}"
                                                 Width="18" Height="18"
                                                 Foreground="{DynamicResource AccentColor}"/>
-                            </Border>
+                            </Grid>
                             <TextBlock Text="Tienda" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>
@@ -154,11 +161,12 @@
                     <!-- Actualizaciones -->
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavUpdatesCommand}" Margin="6,0,0,6">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource IconBadge}">
+                            <Grid Width="40" Height="40">
+                                <Border Style="{StaticResource IconBadge}"/>
                                 <TextBlock Text="⟳" FontSize="18" FontWeight="Bold"
                                            Foreground="{DynamicResource AccentColor}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
+                            </Grid>
                             <TextBlock Text="Actualizaciones" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>
@@ -168,11 +176,12 @@
                     <!-- Ajustes -->
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavSettingsCommand}" Margin="0,0,6,6">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource IconBadge}">
+                            <Grid Width="40" Height="40">
+                                <Border Style="{StaticResource IconBadge}"/>
                                 <ContentControl Template="{StaticResource IconPixelLantern}"
                                                 Width="18" Height="18"
                                                 Foreground="{DynamicResource AccentColor}"/>
-                            </Border>
+                            </Grid>
                             <TextBlock Text="Ajustes" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>
@@ -182,11 +191,12 @@
                     <!-- Ayuda -->
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavHelpCommand}" Margin="6,0,0,6">
                         <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource IconBadge}">
+                            <Grid Width="40" Height="40">
+                                <Border Style="{StaticResource IconBadge}"/>
                                 <TextBlock Text="?" FontSize="18" FontWeight="Bold"
                                            Foreground="{DynamicResource AccentColor}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
+                            </Grid>
                             <TextBlock Text="Ayuda" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>
@@ -211,13 +221,14 @@
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
                                            Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
                             </Grid>
-                            <Border Style="{StaticResource IconBadge}"
-                                    Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}">
+                            <Grid Width="40" Height="40"
+                                  Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}">
+                                <Border Style="{StaticResource IconBadge}"/>
                                 <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <Ellipse Canvas.Left="4" Canvas.Top="0" Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
                                     <Path Data="M 0,16 C 0,11 16,11 16,16" Fill="{DynamicResource AccentColor}"/>
                                 </Canvas>
-                            </Border>
+                            </Grid>
                             <TextBlock Text="{Binding SessionLabel}" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>

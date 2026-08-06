@@ -1,0 +1,221 @@
+<!--
+    Iconos "pixel art" de inspiración japonesa.
+
+    Cada icono es un ControlTemplate para ContentControl: una rejilla de 8x8
+    "píxeles" (Rectangle de 1x1) dentro de un Viewbox, así que basta con poner
+    Width/Height en el ContentControl que lo consume para escalarlo sin perder
+    los bordes duros (RenderOptions.EdgeMode="Aliased" evita el suavizado que
+    los convertiría en manchas borrosas). El color sale de Foreground, así que
+    cada uso puede pintarlo del color que quiera (acento, dorado, gris…).
+
+    Uso:
+      <ContentControl Template="{StaticResource IconPixelTorii}"
+                      Width="22" Height="22"
+                      Foreground="{DynamicResource AccentColor}"/>
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══ TORII (鳥居) — puerta santuario, usado para Biblioteca / Inicio ═══ -->
+    <ControlTemplate x:Key="IconPixelTorii" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <!-- Kasagi: viga superior, sobresale a ambos lados -->
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <!-- Pilares -->
+                <Rectangle Canvas.Left="2" Canvas.Top="1" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="1" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <!-- Nuki: viga inferior, más estrecha -->
+                <Rectangle Canvas.Left="1" Canvas.Top="2" Width="6" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="3" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="3" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="4" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="4" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="5" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="5" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="6" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="6" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="7" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="7" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ HANKO (印) — sello personal, usado para Perfil / Cuenta ═══ -->
+    <ControlTemplate x:Key="IconPixelHanko" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="7" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="1" Width="1" Height="6" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="7" Canvas.Top="1" Width="1" Height="6" Fill="{TemplateBinding Foreground}"/>
+                <!-- marca central -->
+                <Rectangle Canvas.Left="3" Canvas.Top="3" Width="2" Height="2" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ ABANICO (扇) — usado para Amigos ═══ -->
+    <ControlTemplate x:Key="IconPixelFan" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="1" Width="7" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="2" Width="6" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="3" Width="5" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="4" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="5" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="6" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="7" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ OLA (波) — usado para Tienda ═══ -->
+    <ControlTemplate x:Key="IconPixelWave" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <!-- Cresta izquierda -->
+                <Rectangle Canvas.Left="1" Canvas.Top="2" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="3" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="4" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <!-- Cresta derecha -->
+                <Rectangle Canvas.Left="5" Canvas.Top="2" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="4" Canvas.Top="3" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="4" Canvas.Top="4" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <!-- Línea de mar -->
+                <Rectangle Canvas.Left="0" Canvas.Top="7" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ FAROLILLO (提灯) — usado para Ajustes ═══ -->
+    <ControlTemplate x:Key="IconPixelLantern" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="3" Canvas.Top="0" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="1" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="2" Width="6" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="3" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="4" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="5" Width="6" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="6" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="3" Canvas.Top="7" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ TOMOS apilados — usado para "Agregar manga" ═══ -->
+    <ControlTemplate x:Key="IconPixelBooks" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="0" Canvas.Top="3" Width="2" Height="5" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="3" Canvas.Top="0" Width="2" Height="8" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="6" Canvas.Top="1" Width="2" Height="7" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ CARPETA — usado para "Gestionar espacio" ═══ -->
+    <ControlTemplate x:Key="IconPixelFolder" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="0" Canvas.Top="2" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="3" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="4" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="5" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="6" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="7" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ PAPELERA — usado en botones de eliminar ═══ -->
+    <ControlTemplate x:Key="IconPixelTrash" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="3" Canvas.Top="0" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="1" Width="6" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="2" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="3" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="4" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="5" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="6" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="7" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ ESTRELLA — favorito (manga y colecciones) ═══ -->
+    <ControlTemplate x:Key="IconPixelStar" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="3" Canvas.Top="0" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="3" Canvas.Top="1" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="2" Canvas.Top="2" Width="4" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="3" Width="6" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="4" Width="8" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="5" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="5" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="6" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="6" Canvas.Top="6" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="7" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="7" Canvas.Top="7" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ FLECHAS de navegador ═══ -->
+    <ControlTemplate x:Key="IconPixelArrowLeft" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="6" Canvas.Top="0" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="1" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="4" Canvas.Top="2" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="3" Width="7" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="0" Canvas.Top="4" Width="7" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="4" Canvas.Top="5" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="5" Canvas.Top="6" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="6" Canvas.Top="7" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="IconPixelArrowRight" TargetType="ContentControl">
+        <Viewbox Stretch="Uniform">
+            <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased" SnapsToDevicePixels="True">
+                <Rectangle Canvas.Left="1" Canvas.Top="0" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="1" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="2" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="3" Width="7" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="4" Width="7" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="5" Width="3" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="6" Width="2" Height="1" Fill="{TemplateBinding Foreground}"/>
+                <Rectangle Canvas.Left="1" Canvas.Top="7" Width="1" Height="1" Fill="{TemplateBinding Foreground}"/>
+            </Canvas>
+        </Viewbox>
+    </ControlTemplate>
+
+    <!-- ═══ Botón de solo-icono para la estrellita de favorito ═══ -->
+    <Style x:Key="FavoriteStarButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="3"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource HoverBackground}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

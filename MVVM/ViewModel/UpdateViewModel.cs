@@ -1,3 +1,4 @@
+using System.Linq;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -108,9 +109,12 @@ public class UpdateViewModel : BaseViewModel
             var current = _svc.GetCurrentVersion();
             LatestVersion = $"v{latest.Major}.{latest.Minor}.{latest.Build}";
             Changelog     = release.Body;
-            _downloadUrl  = release.Assets.Count > 0
-                ? release.Assets[0].BrowserDownloadUrl
-                : null;
+            // El .zip del build (no un futuro checksum u otro artefacto suelto)
+            // es lo único que el actualizador automático sabe instalar.
+            _downloadUrl  = release.Assets
+                .FirstOrDefault(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                ?.BrowserDownloadUrl
+                ?? release.Assets.FirstOrDefault()?.BrowserDownloadUrl;
 
             IsUpdateAvailable = latest > current;
             IsUpToDate        = !IsUpdateAvailable;
@@ -129,11 +133,46 @@ public class UpdateViewModel : BaseViewModel
         }
     }
 
-    public RelayCommand DownloadCommand => new(
+    // Actualización automática: descarga el zip, cierra Hakufu, reemplaza los
+    // archivos y vuelve a abrirlo — sin pasos manuales. Si algo falla (p. ej.
+    // updater.exe no está junto al ejecutable, o no hay red) se cae al enlace
+    // manual de GitHub en vez de dejar la app a medias.
+    public AsyncRelayCommand UpdateNowCommand => new(async () =>
+    {
+        if (string.IsNullOrEmpty(_downloadUrl))
+        {
+            StatusMessage = "No se encontró el archivo de la última versión.";
+            HasError      = true;
+            return;
+        }
+
+        IsDownloading    = true;
+        HasError         = false;
+        DownloadProgress = 0;
+        StatusMessage    = "Descargando actualización…";
+
+        try
+        {
+            var progress = new Progress<double>(p =>
+            {
+                DownloadProgress = p;
+                StatusMessage    = $"Descargando actualización… {p:0}%";
+            });
+            // Si todo va bien, esto cierra Hakufu por dentro y no vuelve de aquí.
+            await _svc.DownloadAndInstallAsync(_downloadUrl, progress);
+        }
+        catch (Exception ex)
+        {
+            IsDownloading = false;
+            HasError      = true;
+            StatusMessage = $"No se pudo actualizar sola: {ex.Message}. Descárgala manualmente desde GitHub.";
+        }
+    }, () => IsUpdateAvailable && !IsDownloading);
+
+    public RelayCommand ViewOnGitHubCommand => new(
         () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
             _downloadUrl ?? "https://github.com/dap0ry/Hakufu/releases/latest")
-            { UseShellExecute = true }),
-        () => IsUpdateAvailable);
+            { UseShellExecute = true }));
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 

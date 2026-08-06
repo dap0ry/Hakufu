@@ -16,11 +16,14 @@ public partial class StoreView : UserControl
     };
 
     // ── Páginas de entrada, probadas en orden: si una está caída se prueba la siguiente ──
+    // Tomosmanga es la mejor de las tres y va primero; si en ese momento está caída
+    // (Cloudflare 522, etc.) se cae automáticamente a las otras dos, tanto al abrir la
+    // Tienda como al pulsar directamente su marcador de la barra de favoritos.
     private static readonly string[] EntryPages =
     {
+        "https://tomosmanga.com/",
         "https://lexmangas.com/",
         "https://mangaycomics.com/",
-        "https://tomosmanga.com/",
     };
     private int _entryPageIndex;
 
@@ -226,14 +229,17 @@ public partial class StoreView : UserControl
             // ── Sincronizar barra de direcciones ────────────────────────────
             core.SourceChanged += (_, _) => _vm?.OnNavigated(core.Source ?? "");
 
-            // ── Si la página de entrada falla, probar la siguiente de la lista ──
+            // ── Si una de las páginas de manga conocidas falla, probar la siguiente ──
+            // Aplica tanto a la navegación de entrada como a un click directo en un
+            // marcador (Tomosmanga/LexMangas/MangaYComics): si la que se pidió está
+            // caída, salta sola a la siguiente en vez de quedarse en blanco.
             core.NavigationCompleted += (_, args) =>
             {
                 if (args.IsSuccess) return;
-                if (_entryPageIndex >= EntryPages.Length - 1) return; // ya no quedan más que probar
-                if (core.Source != EntryPages[_entryPageIndex]) return; // el fallo fue en otra navegación (no la de entrada)
+                var idx = Array.IndexOf(EntryPages, core.Source);
+                if (idx < 0 || idx >= EntryPages.Length - 1) return; // no es una de las nuestras, o ya no quedan más que probar
 
-                _entryPageIndex++;
+                _entryPageIndex = idx + 1;
                 core.Navigate(EntryPages[_entryPageIndex]);
             };
 

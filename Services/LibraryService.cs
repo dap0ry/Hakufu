@@ -42,6 +42,49 @@ public class LibraryService
             .ToList();
     }
 
+    /// <summary>
+    /// Mangas de la colección en el mismo orden que se ven al abrirla
+    /// (respeta SortMode: nombre / fecha / personalizado). Usado también
+    /// para elegir qué portada mostrar primero en la tarjeta de la colección.
+    /// </summary>
+    public IReadOnlyList<Manga> GetMangasInCollectionSorted(Guid collectionId)
+        => SortMangas(GetMangasInCollection(collectionId), SortMode).ToList();
+
+    public static IEnumerable<Manga> SortMangas(IEnumerable<Manga> mangas, string sortMode) => sortMode switch
+    {
+        "name"   => mangas.OrderBy(m => m.Title, StringComparer.CurrentCultureIgnoreCase),
+        "custom" => mangas.OrderBy(m => m.CustomOrder),
+        _        => mangas.OrderByDescending(m => m.DateAdded), // "date"
+    };
+
+    // ── Favoritos ────────────────────────────────────────────────────────────
+
+    public IReadOnlyList<Collection> GetFavoriteCollections()
+        => _repo.Current.Collections.Where(c => c.IsFavorite).ToList();
+
+    public async Task ToggleCollectionFavoriteAsync(Guid collectionId)
+    {
+        var col = GetCollection(collectionId);
+        if (col is null) return;
+        col.IsFavorite = !col.IsFavorite;
+        await _repo.SaveAsync();
+    }
+
+    public IReadOnlyList<Manga> GetFavoriteMangas()
+        => _repo.Current.Mangas
+            .Where(m => m.IsFavorite)
+            .OrderByDescending(m => m.FavoritedAt ?? DateTime.MinValue)
+            .ToList();
+
+    public async Task ToggleMangaFavoriteAsync(Guid mangaId)
+    {
+        var manga = GetManga(mangaId);
+        if (manga is null) return;
+        manga.IsFavorite = !manga.IsFavorite;
+        manga.FavoritedAt = manga.IsFavorite ? DateTime.Now : null;
+        await _repo.SaveAsync();
+    }
+
     public async Task<Manga> AddMangaToCollectionAsync(
         Guid collectionId, string filePath, int totalPages, string coverCachePath,
         Guid? presetId = null)
@@ -168,6 +211,62 @@ public class LibraryService
         if (col is null) return;
         col.MangaIds.Remove(mangaId);
         await _repo.SaveAsync();
+    }
+
+    // ── Borrado real (libera espacio en disco) ─────────────────────────────────
+    // Usado desde "Gestionar espacio": a diferencia de RemoveMangaFromCollectionAsync
+    // (que solo quita la referencia), estos métodos también borran el archivo del
+    // manga y su portada en caché — pero solo cuando el manga no queda referenciado
+    // por ninguna otra colección, para no romper mangas compartidos entre varias.
+
+    /// <summary>Borra la colección entera junto con los archivos de los mangas que no estén en otra colección.</summary>
+    public async Task DeleteCollectionWithFilesAsync(Guid collectionId)
+    {
+        var col = GetCollection(collectionId);
+        if (col is null) return;
+
+        var mangaIds = col.MangaIds.ToList();
+        _repo.Current.Collections.Remove(col);
+
+        foreach (var mangaId in mangaIds)
+            DeleteMangaIfOrphaned(mangaId);
+
+        await _repo.SaveAsync();
+    }
+
+    /// <summary>Quita un tomo de una colección concreta y borra su archivo si no queda en ninguna otra.</summary>
+    public async Task DeleteMangaFromCollectionWithFileAsync(Guid collectionId, Guid mangaId)
+    {
+        var col = GetCollection(collectionId);
+        col?.MangaIds.Remove(mangaId);
+        DeleteMangaIfOrphaned(mangaId);
+        await _repo.SaveAsync();
+    }
+
+    private void DeleteMangaIfOrphaned(Guid mangaId)
+    {
+        bool stillReferenced = _repo.Current.Collections.Any(c => c.MangaIds.Contains(mangaId));
+        if (stillReferenced) return;
+
+        var manga = GetManga(mangaId);
+        if (manga is null) return;
+
+        try
+        {
+            if (!string.IsNullOrEmpty(manga.FilePath) && File.Exists(manga.FilePath))
+                File.Delete(manga.FilePath);
+        }
+        catch { /* archivo bloqueado o ya borrado */ }
+
+        try
+        {
+            if (!string.IsNullOrEmpty(manga.CoverCachePath) && File.Exists(manga.CoverCachePath))
+                File.Delete(manga.CoverCachePath);
+        }
+        catch { /* ídem */ }
+
+        _repo.Current.Mangas.Remove(manga);
+        _repo.Current.Progress.RemoveAll(p => p.MangaId == mangaId);
     }
 
     public Manga? GetManga(Guid id)

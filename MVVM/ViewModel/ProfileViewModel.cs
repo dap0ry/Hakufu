@@ -14,6 +14,8 @@ public class ProfileViewModel : BaseViewModel
     public ObservableCollection<HistoryEntryViewModel> RecentActivity { get; } = [];
     public ObservableCollection<HistoryEntryViewModel> FullHistory    { get; } = [];
     public ObservableCollection<CollectionStatViewModel> CollectionStats { get; } = [];
+    public ObservableCollection<CollectionCardViewModel> FavoriteCollections { get; } = [];
+    public ObservableCollection<MangaCardViewModel>      TopMangas           { get; } = [];
 
     private bool _showingAllHistory;
     public bool ShowingAllHistory
@@ -27,6 +29,8 @@ public class ProfileViewModel : BaseViewModel
     public string TotalUsageFormatted     { get; private set; } = "0 min";
     public bool   HasRecentActivity       => RecentActivity.Count > 0;
     public bool   HasCollectionStats      => CollectionStats.Count > 0;
+    public bool   HasFavoriteCollections  => FavoriteCollections.Count > 0;
+    public bool   HasTopMangas            => TopMangas.Count > 0;
 
     public ProfileViewModel(
         ProfileService profile, LibraryService library,
@@ -43,6 +47,36 @@ public class ProfileViewModel : BaseViewModel
 
     private async Task InitializeAsync()
     {
+        // Colecciones favoritas — si se desmarca la estrella aquí mismo, desaparece de la lista
+        foreach (var col in _library.GetFavoriteCollections())
+        {
+            var card = new CollectionCardViewModel(col);
+            card.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CollectionCardViewModel.IsFavorite) && !card.IsFavorite)
+                    FavoriteCollections.Remove(card);
+                OnPropertyChanged(nameof(HasFavoriteCollections));
+            };
+            FavoriteCollections.Add(card);
+            _ = card.LoadCoversAsync(_library, _cover);
+        }
+        OnPropertyChanged(nameof(HasFavoriteCollections));
+
+        // Top 3 mangas favoritos (más recientes primero) — ídem
+        foreach (var manga in _library.GetFavoriteMangas().Take(3))
+        {
+            var mangaVm = new MangaCardViewModel(manga, _library.GetProgress(manga.Id), _library);
+            mangaVm.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MangaCardViewModel.IsFavorite) && !mangaVm.IsFavorite)
+                    TopMangas.Remove(mangaVm);
+                OnPropertyChanged(nameof(HasTopMangas));
+            };
+            TopMangas.Add(mangaVm);
+            _ = mangaVm.LoadCoverAsync(_cover);
+        }
+        OnPropertyChanged(nameof(HasTopMangas));
+
         // Recently completed (last 3)
         var history = _profile.GetHistory().Take(3).ToList();
         foreach (var entry in history)
@@ -99,4 +133,18 @@ public class ProfileViewModel : BaseViewModel
     });
 
     public RelayCommand BackToProfileCommand => new(() => ShowingAllHistory = false);
+
+    public RelayCommand<CollectionCardViewModel> OpenCollectionCommand => new(card =>
+    {
+        if (card is null) return;
+        _nav.NavigateTo<CollectionDetailViewModel>(card.Model.Id);
+    });
+
+    public RelayCommand<MangaCardViewModel> OpenMangaCommand => new(card =>
+    {
+        if (card is null) return;
+        var progress  = _library.GetProgress(card.Model.Id);
+        int startPage = Math.Max(0, (progress?.CurrentPage ?? 1) - 1);
+        _nav.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(card.Model, startPage));
+    });
 }

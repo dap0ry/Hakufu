@@ -15,10 +15,12 @@ public class StoreViewModel : BaseViewModel
         set { _addressBarText = value; OnPropertyChanged(); }
     }
 
+    // Mismas URLs (y mismo orden) que StoreView.EntryPages — así el fallback automático
+    // por si un sitio está caído reconoce el marcador y salta solo al siguiente.
     public IReadOnlyList<BrowserBookmark> Bookmarks { get; } = new List<BrowserBookmark>
     {
         new("Tomos Manga",  "https://tomosmanga.com/"),
-        new("LexMangas",    "https://www.lexmangas.com/"),
+        new("LexMangas",    "https://lexmangas.com/"),
         new("MangaYComics", "https://mangaycomics.com/"),
     };
 

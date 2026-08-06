@@ -74,19 +74,14 @@ public class CollectionDetailViewModel : BaseViewModel
         Mangas.Clear();
         foreach (var manga in Sorted(_library.GetMangasInCollection(_collectionId)))
         {
-            var vm = new MangaCardViewModel(manga, _library.GetProgress(manga.Id));
+            var vm = new MangaCardViewModel(manga, _library.GetProgress(manga.Id), _library);
             Mangas.Add(vm);
             _ = vm.LoadCoverAsync(_cover);
         }
         await Task.CompletedTask;
     }
 
-    private IEnumerable<Manga> Sorted(IEnumerable<Manga> mangas) => SortMode switch
-    {
-        "name" => mangas.OrderBy(m => m.Title, StringComparer.CurrentCultureIgnoreCase),
-        "custom" => mangas.OrderBy(m => m.CustomOrder),
-        _ => mangas.OrderByDescending(m => m.DateAdded), // "date"
-    };
+    private IEnumerable<Manga> Sorted(IEnumerable<Manga> mangas) => LibraryService.SortMangas(mangas, SortMode);
 
     private async Task SetSortModeAsync(string mode)
     {

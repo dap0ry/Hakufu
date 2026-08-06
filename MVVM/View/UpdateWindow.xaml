@@ -102,6 +102,17 @@
                              Visibility="{Binding IsChecking,
                                  Converter={StaticResource BoolToVisibility}}"/>
 
+                <!-- Progreso real de la descarga automática -->
+                <ProgressBar Value="{Binding DownloadProgress, Mode=OneWay}"
+                             Minimum="0" Maximum="100"
+                             Height="3"
+                             Margin="0,24,0,0"
+                             Foreground="{DynamicResource ProgressFill}"
+                             Background="{DynamicResource ProgressTrack}"
+                             BorderThickness="0"
+                             Visibility="{Binding IsDownloading,
+                                 Converter={StaticResource BoolToVisibility}}"/>
+
                 <!-- Status message -->
                 <TextBlock Text="{Binding StatusMessage}"
                            FontSize="13"
@@ -138,11 +149,29 @@
                             HorizontalAlignment="Center"
                             Margin="0,32,0,0">
                     <Button Style="{StaticResource PrimaryButton}"
-                            Content="Ver en GitHub"
                             Padding="24,11"
-                            Command="{Binding DownloadCommand}"
+                            Command="{Binding UpdateNowCommand}"
                             Visibility="{Binding IsUpdateAvailable,
-                                Converter={StaticResource BoolToVisibility}}"/>
+                                Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Template="{StaticResource IconPixelBooks}"
+                                            Width="14" Height="14" Margin="0,0,8,0"
+                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                            Visibility="{Binding IsDownloading, Converter={StaticResource InverseBoolToVisibility}}"/>
+                            <TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Actualizar ahora"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                                <Setter Property="Text" Value="Actualizando…"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
                     <Button Style="{StaticResource GhostButton}"
                             Content="Comprobar de nuevo"
                             Padding="24,11"
@@ -151,52 +180,18 @@
                                 Converter={StaticResource InverseBoolToVisibility}}"/>
                 </StackPanel>
 
-                <!-- Instrucciones de instalación -->
-                <Border Margin="0,32,0,0" Padding="24,20"
-                        Background="{DynamicResource CardBackground}"
-                        BorderBrush="{DynamicResource CardBorder}"
-                        BorderThickness="1" CornerRadius="8"
-                        Visibility="{Binding IsUpdateAvailable,
-                            Converter={StaticResource BoolToVisibility}}">
-                    <StackPanel>
-                        <TextBlock Text="CÓMO INSTALAR"
-                                   FontSize="9" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   Margin="0,0,0,14"/>
-                        <StackPanel>
-                            <TextBlock FontSize="12" FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       TextWrapping="Wrap" Margin="0,0,0,8">
-                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="1."/>
-                                <Run Text=" Descarga el archivo "/>
-                                <Run FontWeight="SemiBold" Text=".zip"/>
-                                <Run Text=" desde la página que se abrirá."/>
-                            </TextBlock>
-                            <TextBlock FontSize="12" FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       TextWrapping="Wrap" Margin="0,0,0,8">
-                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="2."/>
-                                <Run Text=" Cierra Hakufu."/>
-                            </TextBlock>
-                            <TextBlock FontSize="12" FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       TextWrapping="Wrap" Margin="0,0,0,8">
-                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="3."/>
-                                <Run Text=" Descomprime el "/>
-                                <Run FontWeight="SemiBold" Text=".zip"/>
-                                <Run Text=" en la misma carpeta donde tienes "/>
-                                <Run FontWeight="SemiBold" Text="Hakufu.exe"/>
-                                <Run Text=" y reemplaza los archivos cuando te lo pida."/>
-                            </TextBlock>
-                            <TextBlock FontSize="12" FontFamily="Segoe UI"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       TextWrapping="Wrap">
-                                <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Text="4."/>
-                                <Run Text=" Abre Hakufu de nuevo. ¡Listo!"/>
-                            </TextBlock>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                <!-- Enlace manual de respaldo — siempre visible junto al botón principal por si falla la automática -->
+                <TextBlock HorizontalAlignment="Center"
+                           Margin="0,14,0,0"
+                           FontSize="11"
+                           Visibility="{Binding IsUpdateAvailable,
+                               Converter={StaticResource BoolToVisibility}}">
+                    <Hyperlink Command="{Binding ViewOnGitHubCommand}"
+                               Foreground="{DynamicResource TextMuted}"
+                               TextDecorations="None">
+                        Prefiero descargarla manualmente desde GitHub
+                    </Hyperlink>
+                </TextBlock>
 
             </StackPanel>
         </ScrollViewer>

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using Hakufu.Services;
 
@@ -12,9 +13,11 @@ public class StorageManagerViewModel : BaseViewModel
     private static readonly string HakufuDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
 
-    public ObservableCollection<StorageItemViewModel> Items { get; } = new();
+    public string DataPathText => HakufuDir;
 
-    // ── File list state ──────────────────────────────────────────────────────
+    public ObservableCollection<StorageCollectionEntryViewModel> Collections { get; } = new();
+
+    // ── Selección / borrado granular ────────────────────────────────────────
 
     private bool _hasSelection;
     public bool HasSelection
@@ -30,7 +33,28 @@ public class StorageManagerViewModel : BaseViewModel
         private set => SetProperty(ref _statusText, value);
     }
 
-    // ── Migrate / clean state ────────────────────────────────────────────────
+    private bool _showDeleteConfirm;
+    public bool ShowDeleteConfirm
+    {
+        get => _showDeleteConfirm;
+        private set => SetProperty(ref _showDeleteConfirm, value);
+    }
+
+    private string _deleteConfirmText = string.Empty;
+    public string DeleteConfirmText
+    {
+        get => _deleteConfirmText;
+        private set => SetProperty(ref _deleteConfirmText, value);
+    }
+
+    private bool _hasCollections;
+    public bool HasCollections
+    {
+        get => _hasCollections;
+        private set => SetProperty(ref _hasCollections, value);
+    }
+
+    // ── Migrate / clean state (sin cambios) ─────────────────────────────────
 
     private bool _showMigrateConfirm;
     public bool ShowMigrateConfirm
@@ -75,13 +99,44 @@ public class StorageManagerViewModel : BaseViewModel
 
     // ── Commands ─────────────────────────────────────────────────────────────
 
-    private readonly RelayCommand _deleteCommand;
-    public RelayCommand DeleteSelectedCommand => _deleteCommand;
-
     public RelayCommand CloseCommand           => new(() => _dialog.CloseModal());
     public RelayCommand RequestMigrateCommand  => new(() => ShowMigrateConfirm = true,  () => HasExternalMangas && !IsMigrating);
     public RelayCommand CancelMigrateCommand   => new(() => ShowMigrateConfirm = false, () => !IsMigrating);
     public RelayCommand ConfirmMigrateCommand  => new(async () => await RunMigrationAsync());
+
+    public RelayCommand OpenFolderCommand => new(() =>
+    {
+        Directory.CreateDirectory(HakufuDir);
+        try { Process.Start(new ProcessStartInfo("explorer.exe", $"\"{HakufuDir}\"") { UseShellExecute = true }); }
+        catch { /* explorer no disponible, ignorar */ }
+    });
+
+    public RelayCommand RequestDeleteCommand => new(() =>
+    {
+        var (collectionsCount, mangasCount) = CountSelection();
+        var parts = new List<string>();
+        if (collectionsCount > 0) parts.Add($"{collectionsCount} colección{(collectionsCount != 1 ? "es" : "")} entera{(collectionsCount != 1 ? "s" : "")}");
+        if (mangasCount > 0)      parts.Add($"{mangasCount} tomo{(mangasCount != 1 ? "s" : "")} suelto{(mangasCount != 1 ? "s" : "")}");
+        DeleteConfirmText = $"Vas a eliminar {string.Join(" y ", parts)}. Los archivos se borrarán del disco y esta acción no se puede deshacer.";
+        ShowDeleteConfirm = true;
+    }, () => HasSelection);
+
+    public RelayCommand CancelDeleteCommand => new(() => ShowDeleteConfirm = false);
+
+    public RelayCommand ConfirmDeleteCommand => new(async () =>
+    {
+        ShowDeleteConfirm = false;
+
+        foreach (var col in Collections.Where(c => c.IsSelected).ToList())
+            await _library.DeleteCollectionWithFilesAsync(col.Model.Id);
+
+        foreach (var col in Collections.Where(c => !c.IsSelected).ToList())
+            foreach (var manga in col.IndividuallySelectedMangas.ToList())
+                await _library.DeleteMangaFromCollectionWithFileAsync(col.Model.Id, manga.Model.Id);
+
+        LoadTree();
+        ExternalCount = _library.CountExternalMangas();
+    });
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
@@ -89,80 +144,65 @@ public class StorageManagerViewModel : BaseViewModel
     {
         _dialog  = dialog;
         _library = library;
-        _deleteCommand = new RelayCommand(ExecuteDelete, () => HasSelection);
-        LoadItems();
+        LoadTree();
         ExternalCount = _library.CountExternalMangas();
     }
 
-    // ── File list ────────────────────────────────────────────────────────────
+    // ── Árbol colecciones → tomos ────────────────────────────────────────────
 
-    private void LoadItems()
+    private void LoadTree()
     {
-        Items.Clear();
-        if (!Directory.Exists(HakufuDir)) return;
-
-        foreach (var file in Directory.GetFiles(HakufuDir).OrderBy(f => f))
+        Collections.Clear();
+        foreach (var col in _library.GetCollections())
         {
-            var info = new FileInfo(file);
-            AddItem(info.Name, file, info.Length);
+            var entry = new StorageCollectionEntryViewModel(col);
+            entry.SelectionChanged += OnSelectionChanged;
+            foreach (var manga in _library.GetMangasInCollectionSorted(col.Id))
+                entry.AddManga(manga, GetFileSize(manga.FilePath));
+            Collections.Add(entry);
         }
-
-        foreach (var dir in Directory.GetDirectories(HakufuDir).OrderBy(d => d))
-        {
-            var size = GetDirSize(dir);
-            AddItem(Path.GetFileName(dir) + "/", dir, size);
-        }
-
+        HasCollections = Collections.Count > 0;
         UpdateStatus();
     }
 
-    private void AddItem(string name, string path, long bytes)
+    private static long GetFileSize(string path)
     {
-        var item = new StorageItemViewModel(name, path, bytes);
-        item.PropertyChanged += (_, _) => OnItemSelectionChanged();
-        Items.Add(item);
+        try { return !string.IsNullOrEmpty(path) && File.Exists(path) ? new FileInfo(path).Length : 0L; }
+        catch { return 0L; }
     }
 
-    private void OnItemSelectionChanged()
+    private void OnSelectionChanged()
     {
-        HasSelection = Items.Any(i => i.IsSelected);
+        var (collectionsCount, mangasCount) = CountSelection();
+        HasSelection = collectionsCount > 0 || mangasCount > 0;
         UpdateStatus();
+    }
+
+    private (int collections, int mangas) CountSelection()
+    {
+        int collectionsCount = Collections.Count(c => c.IsSelected);
+        int mangasCount = Collections.Where(c => !c.IsSelected)
+                                     .Sum(c => c.IndividuallySelectedMangas.Count());
+        return (collectionsCount, mangasCount);
     }
 
     private void UpdateStatus()
     {
-        var selected = Items.Where(i => i.IsSelected).ToList();
-        if (selected.Count == 0)
+        var (collectionsCount, mangasCount) = CountSelection();
+        if (collectionsCount == 0 && mangasCount == 0)
         {
-            StatusText = $"{Items.Count} elemento{(Items.Count != 1 ? "s" : "")}  ·  " +
-                         $"Total: {StorageItemViewModel.FormatSize(Items.Sum(i => i.Bytes))}";
-        }
-        else
-        {
-            var bytes = selected.Sum(i => i.Bytes);
-            StatusText = $"{selected.Count} seleccionado{(selected.Count != 1 ? "s" : "")}  ·  " +
-                         $"{StorageItemViewModel.FormatSize(bytes)}";
-        }
-    }
-
-    private void ExecuteDelete()
-    {
-        foreach (var item in Items.Where(i => i.IsSelected).ToList())
-        {
-            try
-            {
-                if (Directory.Exists(item.FullPath))
-                    Directory.Delete(item.FullPath, recursive: true);
-                else if (File.Exists(item.FullPath))
-                    File.Delete(item.FullPath);
-
-                Items.Remove(item);
-            }
-            catch { /* skip locked files */ }
+            long totalBytes = Collections.Sum(c => c.Bytes);
+            StatusText = $"{Collections.Count} colección{(Collections.Count != 1 ? "es" : "")}  ·  " +
+                         $"Total: {StorageItemViewModel.FormatSize(totalBytes)}";
+            return;
         }
 
-        HasSelection = false;
-        UpdateStatus();
+        long selectedBytes = Collections.Where(c => c.IsSelected).Sum(c => c.Bytes)
+                            + Collections.Where(c => !c.IsSelected)
+                                         .SelectMany(c => c.IndividuallySelectedMangas)
+                                         .Sum(m => m.Bytes);
+        StatusText = $"{collectionsCount} colección(es) + {mangasCount} tomo(s) seleccionados  ·  " +
+                     $"{StorageItemViewModel.FormatSize(selectedBytes)}";
     }
 
     // ── Migration ────────────────────────────────────────────────────────────
@@ -184,22 +224,6 @@ public class StorageManagerViewModel : BaseViewModel
 
         IsMigrating = false;
         ExternalCount = _library.CountExternalMangas();
-        LoadItems();
-    }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private static long GetDirSize(string path)
-    {
-        try
-        {
-            return Directory.GetFiles(path, "*", SearchOption.AllDirectories)
-                            .Sum(f =>
-                            {
-                                try { return new FileInfo(f).Length; }
-                                catch { return 0L; }
-                            });
-        }
-        catch { return 0; }
+        LoadTree();
     }
 }

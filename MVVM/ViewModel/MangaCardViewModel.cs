@@ -6,6 +6,8 @@ namespace Hakufu.MVVM.ViewModel;
 
 public class MangaCardViewModel : BaseViewModel
 {
+    private readonly LibraryService? _library;
+
     public Manga Model { get; }
 
     private BitmapSource? _cover;
@@ -20,16 +22,28 @@ public class MangaCardViewModel : BaseViewModel
     private bool _isSelected;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
 
+    private bool _isFavorite;
+    public bool IsFavorite { get => _isFavorite; private set => SetProperty(ref _isFavorite, value); }
+
     private readonly ReadingProgress? _progress;
 
-    public MangaCardViewModel(Manga manga, ReadingProgress? progress)
+    public MangaCardViewModel(Manga manga, ReadingProgress? progress, LibraryService? library = null)
     {
-        Model     = manga;
-        _progress = progress;
+        Model       = manga;
+        _progress   = progress;
+        _library    = library;
+        _isFavorite = manga.IsFavorite;
     }
 
     public async Task LoadCoverAsync(ICoverService coverService)
     {
         Cover = await coverService.GetCoverAsync(Model);
     }
+
+    public RelayCommand ToggleFavoriteCommand => new(async () =>
+    {
+        if (_library is null) return;
+        await _library.ToggleMangaFavoriteAsync(Model.Id);
+        IsFavorite = Model.IsFavorite;
+    });
 }

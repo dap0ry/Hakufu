@@ -52,6 +52,185 @@
             <ScrollViewer Grid.Row="1" Padding="40,36,40,40" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
 
+                    <!-- ── TUS TOP 3 MANGAS ── -->
+                    <TextBlock Text="TUS TOP 3 MANGAS"
+                               FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,0,0,16"/>
+
+                    <TextBlock Text="Marca mangas con la estrellita para verlos aquí."
+                               Style="{StaticResource CaptionText}"
+                               Margin="0,0,0,36"
+                               Visibility="{Binding HasTopMangas, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                    <ItemsControl ItemsSource="{Binding TopMangas}"
+                                  Margin="0,0,0,40"
+                                  Visibility="{Binding HasTopMangas, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:MangaCardViewModel}">
+                                <Button Width="140" Margin="0,0,20,0"
+                                        Command="{Binding DataContext.OpenMangaCommand,
+                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Root" Opacity="1"><ContentPresenter/></Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Root" Property="Opacity" Value="0.85"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                    <StackPanel>
+                                        <Grid>
+                                            <Border Height="200" CornerRadius="6" ClipToBounds="True"
+                                                    Background="{DynamicResource CardBackground}"
+                                                    BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                                                    Margin="0,0,0,10">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="Black" ShadowDepth="0"
+                                                                      BlurRadius="12" Opacity="0.12"/>
+                                                </Border.Effect>
+                                                <Image Source="{Binding Cover}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            </Border>
+                                            <!-- Estrella: aquí siempre dorada, click quita del top 3 -->
+                                            <Button Background="Transparent" BorderThickness="0" Padding="0"
+                                                    Cursor="Hand" Panel.ZIndex="6"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                    Margin="4,4,0,0"
+                                                    Command="{Binding ToggleFavoriteCommand}"
+                                                    ToolTip="Quitar de favoritos">
+                                                <Border Width="22" Height="22" CornerRadius="11" Background="#66000000">
+                                                    <ContentControl Template="{StaticResource IconPixelStar}"
+                                                                    Width="12" Height="12"
+                                                                    Foreground="#FFD84A"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Button>
+                                        </Grid>
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontSize="12" FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimary}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- ── COLECCIONES FAVORITAS ── -->
+                    <TextBlock Text="COLECCIONES FAVORITAS"
+                               FontSize="10" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,0,0,16"/>
+
+                    <TextBlock Text="Marca colecciones con la estrellita en Biblioteca para verlas aquí."
+                               Style="{StaticResource CaptionText}"
+                               Margin="0,0,0,36"
+                               Visibility="{Binding HasFavoriteCollections, Converter={StaticResource InverseBoolToVisibility}}"/>
+
+                    <ItemsControl ItemsSource="{Binding FavoriteCollections}"
+                                  Margin="0,0,0,40"
+                                  Visibility="{Binding HasFavoriteCollections, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:CollectionCardViewModel}">
+                                <Button Width="140" Margin="0,0,20,0"
+                                        Command="{Binding DataContext.OpenCollectionCommand,
+                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="Root" Opacity="1"><ContentPresenter/></Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Root" Property="Opacity" Value="0.85"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                    <StackPanel>
+                                        <Grid>
+                                            <Border Height="200" CornerRadius="6" ClipToBounds="True"
+                                                    Background="{DynamicResource CardBackground}"
+                                                    BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                                                    Margin="0,0,0,10">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="Black" ShadowDepth="0"
+                                                                      BlurRadius="12" Opacity="0.12"/>
+                                                </Border.Effect>
+                                                <Image Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality">
+                                                    <Image.Source>
+                                                        <Binding Path="CoverPreviews[0]">
+                                                            <Binding.FallbackValue>{x:Null}</Binding.FallbackValue>
+                                                        </Binding>
+                                                    </Image.Source>
+                                                </Image>
+                                            </Border>
+                                            <Button Background="Transparent" BorderThickness="0" Padding="0"
+                                                    Cursor="Hand" Panel.ZIndex="6"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                    Margin="4,4,0,0"
+                                                    Command="{Binding ToggleFavoriteCommand}"
+                                                    ToolTip="Quitar de favoritos">
+                                                <Border Width="22" Height="22" CornerRadius="11" Background="#66000000">
+                                                    <ContentControl Template="{StaticResource IconPixelStar}"
+                                                                    Width="12" Height="12"
+                                                                    Foreground="#FFD84A"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Button>
+                                        </Grid>
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontSize="12" FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimary}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   Margin="0,2,0,0">
+                                            <Run Text="{Binding MangaCount, Mode=OneWay}"/>
+                                            <Run Text=" manga(s)"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Divider -->
+                    <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,36"/>
+
                     <!-- ── COMPLETADOS RECIENTEMENTE ── -->
                     <TextBlock Text="COMPLETADOS RECIENTEMENTE"
                                FontSize="10" FontWeight="SemiBold"

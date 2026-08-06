@@ -35,16 +35,22 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,8,0">
                     <Button x:Name="BtnBack"
                             Style="{StaticResource IconButton}"
-                            Content="◀" FontSize="10"
                             ToolTip="Atrás"
                             Width="28" Height="28"
-                            Click="BtnBack_Click"/>
+                            Click="BtnBack_Click">
+                        <ContentControl Template="{StaticResource IconPixelArrowLeft}"
+                                        Width="12" Height="12"
+                                        Foreground="{DynamicResource TextSecondary}"/>
+                    </Button>
                     <Button x:Name="BtnForward"
                             Style="{StaticResource IconButton}"
-                            Content="▶" FontSize="10"
                             ToolTip="Adelante"
                             Width="28" Height="28"
-                            Click="BtnForward_Click"/>
+                            Click="BtnForward_Click">
+                        <ContentControl Template="{StaticResource IconPixelArrowRight}"
+                                        Width="12" Height="12"
+                                        Foreground="{DynamicResource TextSecondary}"/>
+                    </Button>
                     <Button x:Name="BtnRefresh"
                             Style="{StaticResource IconButton}"
                             Content="↺" FontSize="15"

@@ -13,6 +13,7 @@
                 <!-- Global styles -->
                 <ResourceDictionary Source="Assets/Styles/GlobalStyles.xaml"/>
                 <ResourceDictionary Source="Assets/Styles/NavButton.xaml"/>
+                <ResourceDictionary Source="Assets/Styles/PixelIcons.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->

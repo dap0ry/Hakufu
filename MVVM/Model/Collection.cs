@@ -7,4 +7,7 @@ public class Collection
     public string      Description { get; set; } = string.Empty;
     public List<Guid>  MangaIds    { get; set; } = [];
     public DateTime    CreatedAt   { get; set; } = DateTime.Now;
+
+    // Colección marcada como favorita — se muestra en el perfil.
+    public bool         IsFavorite { get; set; } = false;
 }

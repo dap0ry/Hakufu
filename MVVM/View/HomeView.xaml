@@ -94,11 +94,9 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18">
-                            <Canvas Width="22" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Rectangle Canvas.Left="0" Canvas.Top="2" Width="6" Height="16" RadiusX="1" RadiusY="1" Fill="{DynamicResource AccentColor}"/>
-                                <Rectangle Canvas.Left="8" Canvas.Top="0" Width="6" Height="18" RadiusX="1" RadiusY="1" Fill="{DynamicResource AccentColor}"/>
-                                <Rectangle Canvas.Left="16" Canvas.Top="3" Width="6" Height="15" RadiusX="1" RadiusY="1" Fill="{DynamicResource AccentColor}"/>
-                            </Canvas>
+                            <ContentControl Template="{StaticResource IconPixelBooks}"
+                                            Width="24" Height="24"
+                                            Foreground="{DynamicResource AccentColor}"/>
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
                             <TextBlock Text="Biblioteca" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
@@ -115,10 +113,9 @@
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6">
                         <StackPanel Orientation="Horizontal">
                             <Border Style="{StaticResource IconBadge}">
-                                <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Ellipse Canvas.Left="4" Canvas.Top="0" Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
-                                    <Path Data="M 0,16 C 0,11 16,11 16,16" Fill="{DynamicResource AccentColor}"/>
-                                </Canvas>
+                                <ContentControl Template="{StaticResource IconPixelHanko}"
+                                                Width="18" Height="18"
+                                                Foreground="{DynamicResource AccentColor}"/>
                             </Border>
                             <TextBlock Text="Perfil" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -130,10 +127,9 @@
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavFriendsCommand}" Margin="6,0,0,6">
                         <StackPanel Orientation="Horizontal">
                             <Border Style="{StaticResource IconBadge}">
-                                <Canvas Width="20" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Ellipse Canvas.Left="0" Canvas.Top="0" Width="12" Height="12" Fill="{DynamicResource AccentColor}" Opacity="0.85"/>
-                                    <Ellipse Canvas.Left="8" Canvas.Top="0" Width="12" Height="12" Fill="{DynamicResource AccentColor}"/>
-                                </Canvas>
+                                <ContentControl Template="{StaticResource IconPixelFan}"
+                                                Width="18" Height="18"
+                                                Foreground="{DynamicResource AccentColor}"/>
                             </Border>
                             <TextBlock Text="Amigos" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -145,10 +141,9 @@
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavStoreCommand}" Margin="0,0,6,6">
                         <StackPanel Orientation="Horizontal">
                             <Border Style="{StaticResource IconBadge}">
-                                <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Path Data="M 2,4 L 14,4 L 13,16 L 3,16 Z" Fill="{DynamicResource AccentColor}"/>
-                                    <Path Data="M 5,4 C 5,0 11,0 11,4" Stroke="{DynamicResource CardBackground}" StrokeThickness="1.5" Fill="Transparent"/>
-                                </Canvas>
+                                <ContentControl Template="{StaticResource IconPixelWave}"
+                                                Width="18" Height="18"
+                                                Foreground="{DynamicResource AccentColor}"/>
                             </Border>
                             <TextBlock Text="Tienda" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -174,11 +169,9 @@
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavSettingsCommand}" Margin="0,0,6,6">
                         <StackPanel Orientation="Horizontal">
                             <Border Style="{StaticResource IconBadge}">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="16">
-                                    <Rectangle Height="2.5" Width="16" Fill="{DynamicResource AccentColor}" Margin="0,0,0,4" RadiusX="1" RadiusY="1"/>
-                                    <Rectangle Height="2.5" Width="11" Fill="{DynamicResource AccentColor}" HorizontalAlignment="Left" Margin="0,0,0,4" RadiusX="1" RadiusY="1"/>
-                                    <Rectangle Height="2.5" Width="14" Fill="{DynamicResource AccentColor}" HorizontalAlignment="Left" RadiusX="1" RadiusY="1"/>
-                                </StackPanel>
+                                <ContentControl Template="{StaticResource IconPixelLantern}"
+                                                Width="18" Height="18"
+                                                Foreground="{DynamicResource AccentColor}"/>
                             </Border>
                             <TextBlock Text="Ajustes" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"

@@ -17,15 +17,25 @@ public class CollectionCardViewModel : BaseViewModel
     private bool _isSelected;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
 
+    private bool _isFavorite;
+    public bool IsFavorite { get => _isFavorite; private set => SetProperty(ref _isFavorite, value); }
+
+    private LibraryService? _library;
+
     public CollectionCardViewModel(Collection collection)
     {
-        Model = collection;
+        Model       = collection;
+        _isFavorite = collection.IsFavorite;
     }
 
     public async Task LoadCoversAsync(LibraryService library, ICoverService coverService)
     {
+        _library = library;
         CoverPreviews.Clear();
-        var mangas = library.GetMangasInCollection(Model.Id)
+
+        // Ordenadas igual que al abrir la colección, para que la portada
+        // mostrada aquí sea siempre el primer manga "por orden" del usuario.
+        var mangas = library.GetMangasInCollectionSorted(Model.Id)
             .Take(3)
             .ToList();
 
@@ -36,4 +46,11 @@ public class CollectionCardViewModel : BaseViewModel
                 CoverPreviews.Add(cover);
         }
     }
+
+    public RelayCommand ToggleFavoriteCommand => new(async () =>
+    {
+        if (_library is null) return;
+        await _library.ToggleCollectionFavoriteAsync(Model.Id);
+        IsFavorite = Model.IsFavorite;
+    });
 }

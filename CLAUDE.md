@@ -13,9 +13,17 @@ It manages PDF and CBR/CBZ manga files locally — no backend, no internet requi
 dotnet build Hakufu.csproj         # compile
 dotnet run --project Hakufu.csproj # launch app
 dotnet restore                     # restore NuGet packages
+dotnet tool restore                # restore vpk (Velopack CLI) as a local tool
+.\Build-Release.ps1 -Version "0.9.0"   # publish + package a Velopack release → Releases\Hakufu-win-Setup.exe
 ```
 
 Local data is stored at `%LOCALAPPDATA%\Hakufu\data.json`; cover image cache at `%LOCALAPPDATA%\Hakufu\covers\`.
+
+Packaging/install uses **Velopack** (`Velopack` NuGet package + `vpk` CLI) — a single
+`Hakufu-win-Setup.exe` installs per-user (no admin) to `%LocalAppData%\Hakufu`, and the app
+checks/downloads updates from GitHub Releases in the background at startup
+(`Services/UpdateService.cs`), applying them on next restart via `UpdateViewModel.RestartCommand`.
+See `docs/superpowers/specs/2026-08-16-velopack-installer-design.md` for the full design.
 
 ## Architecture
 

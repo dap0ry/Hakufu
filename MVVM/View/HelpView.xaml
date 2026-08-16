@@ -110,6 +110,59 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
+                <!-- ── TÉRMINOS, CONDICIONES Y AVISO LEGAL ── -->
+                <Grid Margin="0,56,0,36" MaxWidth="820" HorizontalAlignment="Left">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Términos, condiciones y aviso legal"
+                                   FontSize="22" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   Margin="0,0,0,6"/>
+                        <TextBlock Text="Léelos con calma — el uso de Hakufu implica su aceptación"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextMuted}"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Text="§"
+                               FontSize="52"
+                               Foreground="{DynamicResource DividerBrush}"
+                               VerticalAlignment="Center"
+                               Margin="20,0,0,0"/>
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding LegalSections}" MaxWidth="820" HorizontalAlignment="Left">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:LegalSection}">
+                            <Border Margin="0,0,0,16"
+                                    Style="{StaticResource Card}"
+                                    Padding="24,20">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}"
+                                               FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,10"/>
+                                    <TextBlock Text="{Binding Body}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               TextWrapping="Wrap"
+                                               LineHeight="20"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock MaxWidth="820" HorizontalAlignment="Left"
+                           Text="Este texto tiene fines informativos y de protección razonable, no constituye asesoramiento jurídico profesional."
+                           FontSize="10" FontStyle="Italic"
+                           Foreground="{DynamicResource TextMuted}"
+                           TextWrapping="Wrap"
+                           Margin="0,4,0,0"/>
+
             </StackPanel>
             </Grid>
         </ScrollViewer>

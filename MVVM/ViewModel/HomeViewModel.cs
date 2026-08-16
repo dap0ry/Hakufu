@@ -33,19 +33,21 @@ public class HomeViewModel : BaseViewModel
     // se engancha a las sub-propiedades directamente (p. ej. "LibraryIcon.Path").
     public CustomizationImage? LeftPanelBackground => _repo.Current.Customization.LeftPanelBackground;
 
-    public CustomizationImage? LibraryIcon  => IconFor("library");
-    public CustomizationImage? ProfileIcon  => IconFor("profile");
-    public CustomizationImage? FriendsIcon  => IconFor("friends");
-    public CustomizationImage? SettingsIcon => IconFor("settings");
-    public CustomizationImage? HelpIcon     => IconFor("help");
-    public CustomizationImage? AccountIcon  => IconFor("account");
+    public CustomizationImage? LibraryIcon     => IconFor("library");
+    public CustomizationImage? ProfileIcon     => IconFor("profile");
+    public CustomizationImage? FriendsIcon     => IconFor("friends");
+    public CustomizationImage? SettingsIcon    => IconFor("settings");
+    public CustomizationImage? HelpIcon        => IconFor("help");
+    public CustomizationImage? AccountIcon     => IconFor("account");
+    public CustomizationImage? PersonalizeIcon => IconFor("personalize");
 
-    public CustomizationImage? LibraryBackground  => BackgroundFor("library");
-    public CustomizationImage? ProfileBackground  => BackgroundFor("profile");
-    public CustomizationImage? FriendsBackground  => BackgroundFor("friends");
-    public CustomizationImage? SettingsBackground => BackgroundFor("settings");
-    public CustomizationImage? HelpBackground     => BackgroundFor("help");
-    public CustomizationImage? AccountBackground  => BackgroundFor("account");
+    public CustomizationImage? LibraryBackground     => BackgroundFor("library");
+    public CustomizationImage? ProfileBackground     => BackgroundFor("profile");
+    public CustomizationImage? FriendsBackground     => BackgroundFor("friends");
+    public CustomizationImage? SettingsBackground    => BackgroundFor("settings");
+    public CustomizationImage? HelpBackground        => BackgroundFor("help");
+    public CustomizationImage? AccountBackground     => BackgroundFor("account");
+    public CustomizationImage? PersonalizeBackground => BackgroundFor("personalize");
 
     private CustomizationImage? IconFor(string key)
         => _repo.Current.Customization.NavIcons.TryGetValue(key, out var img) ? img : null;
@@ -104,6 +106,8 @@ public class HomeViewModel : BaseViewModel
     });
 
     public RelayCommand NavFriendsCommand => new(() => _nav.NavigateTo<FriendsViewModel>());
+
+    public RelayCommand NavCustomizeCommand => new(() => _nav.NavigateTo<CustomizationViewModel>());
 
     public RelayCommand ContinueReadingCommand => new(() =>
     {

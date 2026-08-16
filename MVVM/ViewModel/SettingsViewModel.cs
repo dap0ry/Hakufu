@@ -29,10 +29,6 @@ public class SettingsViewModel : BaseViewModel
         _ = LoadStorageSizesAsync();
     }
 
-    // ── Personalización (100% local) — vive en su propia pantalla ────────────
-
-    public RelayCommand NavCustomizeCommand => new(() => _nav.NavigateTo<CustomizationViewModel>());
-
     // ── Theme ────────────────────────────────────────────────────────────────
 
     private bool _isDarkTheme;

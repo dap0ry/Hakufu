@@ -82,7 +82,7 @@
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0"
                         Style="{StaticResource GhostButton}"
-                        Content="← Ajustes"
+                        Content="← Inicio"
                         Command="{Binding GoBackCommand}"
                         Margin="0,0,24,0"/>
                 <TextBlock Grid.Column="1" Text="PERSONALIZAR"

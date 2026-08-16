@@ -108,33 +108,6 @@
                     </Grid>
                 </Border>
 
-                <!-- ── PERSONALIZACIÓN ── -->
-                <Border Style="{StaticResource Card}" Padding="24"
-                        Margin="0,0,0,20">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,20,0">
-                            <TextBlock Text="Personalización"
-                                       FontSize="14" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimary}"
-                                       Margin="0,0,0,3"/>
-                            <TextBlock Text="Wallpaper, iconos y fondos de cada botón del menú — solo en este dispositivo"
-                                       FontSize="11"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <Button Grid.Column="1"
-                                Style="{StaticResource GhostButton}"
-                                Content="Personalizar →"
-                                Padding="16,9"
-                                VerticalAlignment="Center"
-                                Command="{Binding NavCustomizeCommand}"/>
-                    </Grid>
-                </Border>
-
                 <!-- ── ESPACIO DE DISCO ── -->
                 <Border Style="{StaticResource Card}" Padding="24"
                         Margin="0,0,0,20">

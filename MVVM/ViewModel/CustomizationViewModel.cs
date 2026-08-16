@@ -111,8 +111,9 @@ public class CustomizationViewModel : BaseViewModel
             IconSlot("settings", "Icono — Ajustes"),    BackgroundSlot("settings", "Fondo — Ajustes"),
             IconSlot("help", "Icono — Ayuda"),          BackgroundSlot("help", "Fondo — Ayuda"),
             IconSlot("account", "Icono — Cuenta"),      BackgroundSlot("account", "Fondo — Cuenta"),
+            IconSlot("personalize", "Icono — Personalizar"), BackgroundSlot("personalize", "Fondo — Personalizar"),
         ];
     }
 
-    public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<SettingsViewModel>());
+    public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 }

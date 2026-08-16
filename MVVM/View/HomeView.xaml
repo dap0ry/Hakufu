@@ -271,6 +271,31 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- Personalizar -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavCustomizeCommand}" Margin="6,0,0,0">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="PersonalizeBackground.Path"/>
+                                <Binding Path="PersonalizeBackground.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="40" Height="40">
+                                <Border Style="{StaticResource IconBadge}"
+                                        Visibility="{Binding PersonalizeIcon.Path, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        Visibility="{Binding PersonalizeIcon.Path, Converter={StaticResource NullToVisibility}}">
+                                    <Image Source="{Binding PersonalizeIcon.Path}" Stretch="UniformToFill"
+                                           Opacity="{Binding PersonalizeIcon.Opacity}"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Text="Personalizar" FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
+                        </StackPanel>
+                    </Button>
+
                 </UniformGrid>
 
                 <!-- ── FOOTER ── -->

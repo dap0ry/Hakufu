@@ -8,6 +8,11 @@ public partial class MainWindow : Window
 {
     private bool _isExiting;
 
+    // Tamaño/posición y estado previos a entrar en modo zen, para poder
+    // restaurarlos tal cual al salir.
+    private double _preZenLeft, _preZenTop, _preZenWidth, _preZenHeight;
+    private WindowState _preZenState;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -56,18 +61,48 @@ public partial class MainWindow : Window
         }
     }
 
+    // El modo zen NO usa WindowState.Maximized: con WindowStyle="None" (todo
+    // este Window ya lo es) un maximizado real se dimensiona por encima del
+    // área de trabajo, así que la barra de tareas de Windows tapa por debajo
+    // los controles del lector. En vez de eso, el modo zen se ajusta a mano
+    // a SystemParameters.WorkArea — la pantalla completa "de verdad" pero
+    // sin invadir el hueco de la barra de tareas.
     private void Reader_ZenModeChanged(object? sender, bool isZen)
     {
         if (isZen)
         {
+            _preZenState = WindowState;
+            if (WindowState == WindowState.Normal)
+            {
+                _preZenLeft   = Left;
+                _preZenTop    = Top;
+                _preZenWidth  = Width;
+                _preZenHeight = Height;
+            }
+
             TitleBarBorder.Visibility = Visibility.Collapsed;
-            WindowStyle = WindowStyle.None;
-            WindowState = WindowState.Maximized;
+            WindowState = WindowState.Normal;
+            Left   = SystemParameters.WorkArea.Left;
+            Top    = SystemParameters.WorkArea.Top;
+            Width  = SystemParameters.WorkArea.Width;
+            Height = SystemParameters.WorkArea.Height;
         }
         else
         {
             TitleBarBorder.Visibility = Visibility.Visible;
-            WindowState = WindowState.Normal;
+
+            if (_preZenState == WindowState.Maximized)
+            {
+                WindowState = WindowState.Maximized;
+            }
+            else
+            {
+                WindowState = WindowState.Normal;
+                Left   = _preZenLeft;
+                Top    = _preZenTop;
+                Width  = _preZenWidth;
+                Height = _preZenHeight;
+            }
         }
     }
 

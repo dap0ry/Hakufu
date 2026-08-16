@@ -227,13 +227,15 @@
         <!-- ═══════════════════════════════════════════════ -->
         <Grid Grid.Column="1" Background="{DynamicResource AppBackground}" ClipToBounds="True">
 
-            <!-- Patrón decorativo de fondo: círculos suaves con el color de acento -->
-            <Canvas IsHitTestVisible="False">
-                <Ellipse Canvas.Right="-120" Canvas.Top="-120" Width="360" Height="360"
-                         Fill="{DynamicResource AccentColor}" Opacity="0.05"/>
-                <Ellipse Canvas.Right="40" Canvas.Bottom="-160" Width="300" Height="300"
-                         Fill="{DynamicResource AccentColor}" Opacity="0.04"/>
-            </Canvas>
+            <!-- Fondo decorativo: wallpaper de Hakufu completo (sin recortar
+                 — el personaje solo ocupa la mitad izquierda de la imagen,
+                 así que recortar la partía). Opacidad muy baja para que
+                 quede detrás como ambiente, sin competir con la portada ni
+                 el botón de "Continuar leyendo". -->
+            <Image Source="/Images/HakufuWallpaper.png"
+                   Stretch="Uniform"
+                   Opacity="0.07"
+                   IsHitTestVisible="False"/>
 
             <!-- Estado vacío -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"

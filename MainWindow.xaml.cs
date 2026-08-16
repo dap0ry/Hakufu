@@ -6,6 +6,10 @@ namespace Hakufu;
 
 public partial class MainWindow : Window
 {
+    // Tamaño/posición previos a "maximizar" (ver EnterFakeMaximize más abajo).
+    private double _preMaximizeLeft, _preMaximizeTop, _preMaximizeWidth, _preMaximizeHeight;
+    private bool   _isFakeMaximized;
+
     // Tamaño/posición y estado previos a entrar en modo zen, para poder
     // restaurarlos tal cual al salir.
     private double _preZenLeft, _preZenTop, _preZenWidth, _preZenHeight;
@@ -95,25 +99,68 @@ public partial class MainWindow : Window
         }
     }
 
-    // Compensate for the DWM shadow offset when maximized so content
-    // is not clipped at the top and the Windows taskbar is not covered.
+    // WindowState.Maximized real, combinado con WindowChrome + WindowStyle="None",
+    // tiene un bug conocido de WPF: la ventana se dimensiona más allá del área
+    // de trabajo real — tapa la barra de tareas de Windows por debajo, y los
+    // botones de arriba quedan un poco por encima del borde visible de la
+    // pantalla (parece que se cortan). Aquí "maximizar" nunca usa
+    // WindowState.Maximized de verdad — se queda en Normal pero ajustado a
+    // mano a SystemParameters.WorkArea, igual que ya hace el modo zen del
+    // lector más abajo.
+    //
+    // Este handler también intercepta cuando WPF/Windows entra en Maximized
+    // por su cuenta (doble clic en la barra de título, Win+Flecha arriba —
+    // WindowChrome deja pasar esos gestos nativos sin pasar por
+    // MaximizeButton_Click) y lo reconduce siempre a EnterFakeMaximize().
     private void Window_StateChanged(object? sender, EventArgs e)
     {
-        RootGrid.Margin = WindowState == WindowState.Maximized
-            ? new Thickness(SystemParameters.WindowResizeBorderThickness.Left,
-                            SystemParameters.WindowResizeBorderThickness.Top,
-                            SystemParameters.WindowResizeBorderThickness.Right,
-                            SystemParameters.WindowResizeBorderThickness.Bottom)
-            : new Thickness(0);
+        if (WindowState == WindowState.Maximized)
+            EnterFakeMaximize();
+    }
+
+    private void EnterFakeMaximize()
+    {
+        if (!_isFakeMaximized)
+        {
+            // RestoreBounds es la fuente fiable del tamaño/posición previos
+            // cuando se llega aquí ya en Maximized (p. ej. doble clic en la
+            // barra de título) — Left/Top/Width/Height no se actualizan de
+            // forma consistente en ese caso.
+            var restore = WindowState == WindowState.Maximized
+                ? RestoreBounds
+                : new Rect(Left, Top, Width, Height);
+            _preMaximizeLeft   = restore.Left;
+            _preMaximizeTop    = restore.Top;
+            _preMaximizeWidth  = restore.Width;
+            _preMaximizeHeight = restore.Height;
+        }
+
+        if (WindowState != WindowState.Normal) WindowState = WindowState.Normal;
+
+        Left   = SystemParameters.WorkArea.Left;
+        Top    = SystemParameters.WorkArea.Top;
+        Width  = SystemParameters.WorkArea.Width;
+        Height = SystemParameters.WorkArea.Height;
+        _isFakeMaximized = true;
+    }
+
+    private void ExitFakeMaximize()
+    {
+        Left   = _preMaximizeLeft;
+        Top    = _preMaximizeTop;
+        Width  = _preMaximizeWidth;
+        Height = _preMaximizeHeight;
+        _isFakeMaximized = false;
     }
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         => WindowState = WindowState.Minimized;
 
     private void MaximizeButton_Click(object sender, RoutedEventArgs e)
-        => WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
+    {
+        if (_isFakeMaximized) ExitFakeMaximize();
+        else EnterFakeMaximize();
+    }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
         => Close();

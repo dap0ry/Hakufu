@@ -3,6 +3,7 @@ using Hakufu.Data;
 using Hakufu.MVVM.Model;
 using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
+using Velopack;
 
 namespace Hakufu;
 
@@ -12,6 +13,15 @@ public partial class App : Application
     private DateTime          _sessionStart;
     private ITrayIconService? _trayIcon;
     private MainWindow?       _mainWindowRef;
+
+    public App()
+    {
+        // Debe ejecutarse antes que cualquier otra cosa: gestiona los
+        // hooks de instalar/actualizar/desinstalar de Velopack (crea el
+        // acceso directo del menú Inicio en la primera instalación,
+        // limpia versiones antiguas, etc.).
+        VelopackApp.Build().Run();
+    }
 
     protected override async void OnStartup(StartupEventArgs e)
     {

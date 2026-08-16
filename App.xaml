@@ -48,13 +48,6 @@
             <DataTemplate DataType="{x:Type vm:HelpViewModel}">
                 <v:HelpView/>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:UpdateViewModel}">
-                <v:UpdateView/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:StoreViewModel}">
-                <v:StoreView/>
-            </DataTemplate>
-
             <DataTemplate DataType="{x:Type vm:AccountViewModel}">
                 <v:AccountView/>
             </DataTemplate>

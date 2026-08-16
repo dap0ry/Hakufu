@@ -111,7 +111,7 @@
                 </Button>
 
                 <!-- ── CUADRÍCULA DE ACCESOS ── -->
-                <UniformGrid Grid.Row="2" Columns="2" Rows="4" Margin="0,16,0,0">
+                <UniformGrid Grid.Row="2" Columns="2" Rows="3" Margin="0,16,0,0">
 
                     <!-- Perfil -->
                     <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6">
@@ -133,41 +133,11 @@
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
-                                <ContentControl Template="{StaticResource IconPixelFan}"
+                                <ContentControl Template="{StaticResource IconPixelFriends}"
                                                 Width="18" Height="18"
                                                 Foreground="{DynamicResource AccentColor}"/>
                             </Grid>
                             <TextBlock Text="Amigos" FontSize="14" FontWeight="Medium"
-                                       Foreground="{DynamicResource TextPrimary}"
-                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Tienda -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavStoreCommand}" Margin="0,0,6,6">
-                        <StackPanel Orientation="Horizontal">
-                            <Grid Width="40" Height="40">
-                                <Border Style="{StaticResource IconBadge}"/>
-                                <ContentControl Template="{StaticResource IconPixelWave}"
-                                                Width="18" Height="18"
-                                                Foreground="{DynamicResource AccentColor}"/>
-                            </Grid>
-                            <TextBlock Text="Tienda" FontSize="14" FontWeight="Medium"
-                                       Foreground="{DynamicResource TextPrimary}"
-                                       VerticalAlignment="Center" Margin="14,0,0,0"/>
-                        </StackPanel>
-                    </Button>
-
-                    <!-- Actualizaciones -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavUpdatesCommand}" Margin="6,0,0,6">
-                        <StackPanel Orientation="Horizontal">
-                            <Grid Width="40" Height="40">
-                                <Border Style="{StaticResource IconBadge}"/>
-                                <TextBlock Text="⟳" FontSize="18" FontWeight="Bold"
-                                           Foreground="{DynamicResource AccentColor}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                            <TextBlock Text="Actualizaciones" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>
                         </StackPanel>

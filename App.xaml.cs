@@ -42,10 +42,19 @@ public partial class App : Application
             var libraryService = new LibraryService(_repo);
             var profileService = new ProfileService(_repo);
             var updateService  = new UpdateService();
-            var storeService   = new StoreService();
             var sessionService = new SessionService();
             var apiClient      = new HakufuApiClient(sessionService);
             var driveService   = new GoogleDriveService(sessionService);
+
+            // Si ya hay una actualización descargada de la sesión anterior
+            // (Velopack lo recuerda entre reinicios), aplícala y reinicia
+            // antes de mostrar nada — el usuario nunca ve una pantalla de
+            // actualizaciones, simplemente la app ya está al día.
+            if (updateService.IsUpdateReadyToApply)
+            {
+                updateService.ApplyUpdateAndRestart();
+                return;
+            }
 
             // Apply saved theme
             var savedTheme = _repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light;
@@ -59,7 +68,7 @@ public partial class App : Application
                 return type.Name switch
                 {
                     nameof(HomeViewModel) => new HomeViewModel(
-                        libraryService, coverService, navService!, updateService, storeService, sessionService, apiClient),
+                        libraryService, coverService, navService!, sessionService, apiClient),
 
                     nameof(AccountViewModel) => new AccountViewModel(sessionService, apiClient, navService!),
 
@@ -78,10 +87,6 @@ public partial class App : Application
                     nameof(SettingsViewModel) => new SettingsViewModel(themeService, _repo, navService!, dialogService, libraryService),
 
                     nameof(HelpViewModel) => new HelpViewModel(navService!),
-
-                    nameof(UpdateViewModel) => new UpdateViewModel(updateService, navService!),
-
-                    nameof(StoreViewModel)  => new StoreViewModel(storeService, navService!),
 
                     nameof(SyncViewModel) => new SyncViewModel(
                         sessionService, apiClient, navService!, libraryService, coverService, _repo!),

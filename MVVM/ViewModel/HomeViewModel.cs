@@ -8,8 +8,6 @@ public class HomeViewModel : BaseViewModel
     private readonly LibraryService     _library;
     private readonly ICoverService      _cover;
     private readonly INavigationService _nav;
-    private readonly IUpdateService     _updateService;
-    private readonly IStoreService      _storeService;
     private readonly ISessionService    _session;
     private readonly HakufuApiClient    _api;
 
@@ -28,16 +26,13 @@ public class HomeViewModel : BaseViewModel
     public string  SessionInitial => _session.Username?.Length > 0 ? _session.Username[0].ToString().ToUpper() : "?";
 
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
-                         IUpdateService updateService, IStoreService storeService,
                          ISessionService session, HakufuApiClient api)
     {
-        _library       = library;
-        _cover         = cover;
-        _nav           = nav;
-        _updateService = updateService;
-        _storeService  = storeService;
-        _session       = session;
-        _api           = api;
+        _library = library;
+        _cover   = cover;
+        _nav     = nav;
+        _session = session;
+        _api     = api;
         _ = LoadAsync();
     }
 
@@ -79,8 +74,6 @@ public class HomeViewModel : BaseViewModel
             _nav.NavigateTo<AccountViewModel>();
     });
 
-    public RelayCommand NavUpdatesCommand => new(() => _nav.NavigateTo<UpdateViewModel>());
-    public RelayCommand NavStoreCommand   => new(() => _nav.NavigateTo<StoreViewModel>());
     public RelayCommand NavFriendsCommand => new(() => _nav.NavigateTo<FriendsViewModel>());
 
     public RelayCommand ContinueReadingCommand => new(() =>

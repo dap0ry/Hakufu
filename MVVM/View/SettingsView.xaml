@@ -273,7 +273,7 @@
                                    Margin="0,0,0,8"/>
                         <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
                                    TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,16">
-                            La X de la ventana solo la oculta — Hakufu sigue corriendo en la bandeja del sistema. Usa esto para cerrarlo del todo.
+                            Cierra Hakufu del todo — lo mismo que darle a la X de la ventana.
                         </TextBlock>
                         <Button Style="{StaticResource GhostButton}"
                                 Content="Salir de Hakufu"

@@ -6,8 +6,6 @@ namespace Hakufu;
 
 public partial class MainWindow : Window
 {
-    private bool _isExiting;
-
     // Tamaño/posición y estado previos a entrar en modo zen, para poder
     // restaurarlos tal cual al salir.
     private double _preZenLeft, _preZenTop, _preZenWidth, _preZenHeight;
@@ -23,25 +21,16 @@ public partial class MainWindow : Window
             if (DataContext is MainWindowViewModel mvm)
                 mvm.PropertyChanged += MainVm_PropertyChanged;
         };
-
-        Closing += Window_Closing;
     }
 
-    // La X de la ventana solo la oculta (queda corriendo en la bandeja del
-    // sistema) — el proceso solo termina de verdad si algo llama a
-    // RequestExit() primero (menú "Salir" de la bandeja, o Ajustes).
-    private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
-    {
-        if (_isExiting) return;
-        e.Cancel = true;
-        Hide();
-    }
-
-    public void RequestExit()
-    {
-        _isExiting = true;
-        Close();
-    }
+    // La X de la ventana cierra Hakufu del todo — exactamente igual que
+    // "Salir de Hakufu" en Ajustes o "Salir" en el menú de la bandeja del
+    // sistema. (Antes solo la ocultaba y el proceso seguía corriendo detrás;
+    // se quitó porque confundía — parecía que la app no arrancaba en la
+    // versión nueva al reabrirla, cuando en realidad seguía siendo la misma
+    // sesión de siempre.) ShutdownMode por defecto (OnLastWindowClose) hace
+    // que cerrar esta ventana también termine el proceso.
+    public void RequestExit() => Close();
 
     public void RestoreFromTray()
     {

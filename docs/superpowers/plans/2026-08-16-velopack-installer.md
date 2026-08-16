@@ -101,9 +101,9 @@ Delete the whole `<Target Name="PublishUpdater" ...> ... </Target>` block.
 In `Hakufu.csproj`, change:
 
 ```xml
-    <Version>0.5.4</Version>
-    <AssemblyVersion>0.5.4.0</AssemblyVersion>
-    <FileVersion>0.5.4.0</FileVersion>
+    <Version>0.8.1</Version>
+    <AssemblyVersion>0.8.1.0</AssemblyVersion>
+    <FileVersion>0.8.1.0</FileVersion>
 ```
 
 to:
@@ -173,26 +173,14 @@ git commit -m "chore: quitar Inno Setup/Updater, añadir Velopack + vpk"
 - [ ] **Step 1: Add the `using` and a constructor that runs `VelopackApp.Build().Run()` first**
 
 `App.xaml.cs` currently has no explicit constructor — only `OnStartup`
-and `OnExit`. Add one, and it must be the very first thing that runs in
-the app (Velopack's own requirement: it needs to intercept
-install/update/uninstall invocations before anything else touches the
-filesystem or UI):
+and `OnExit`. Add `using Velopack;` to the top `using` block, and add a
+constructor immediately before `OnStartup`, so it's the very first
+thing that runs in the app (Velopack's own requirement: it needs to
+intercept install/update/uninstall invocations before anything else
+touches the filesystem or UI). Don't touch any other field or method —
+this is a pure insertion:
 
 ```csharp
-using System.Windows;
-using Hakufu.Data;
-using Hakufu.MVVM.Model;
-using Hakufu.MVVM.ViewModel;
-using Hakufu.Services;
-using Velopack;
-
-namespace Hakufu;
-
-public partial class App : Application
-{
-    private IDataRepository? _repo;
-    private DateTime _sessionStart;
-
     public App()
     {
         // Debe ejecutarse antes que cualquier otra cosa: gestiona los
@@ -201,17 +189,13 @@ public partial class App : Application
         // limpia versiones antiguas, etc.).
         VelopackApp.Build().Run();
     }
-
-    protected override async void OnStartup(StartupEventArgs e)
-    {
-        _sessionStart = DateTime.Now;
-        base.OnStartup(e);
-        ...
 ```
 
-(Leave the rest of `OnStartup` and `OnExit` unchanged for now — the
-background update kick-off is added in Task 4 once `UpdateService`
-actually implements it.)
+Place it right after the existing field declarations
+(`_repo`, `_sessionStart`, `_trayIcon`, `_mainWindowRef`) and before
+`protected override async void OnStartup(...)`. Leave `OnStartup` and
+`OnExit` themselves unchanged for now — the background update kick-off
+is added in Task 4 once `UpdateService` actually implements it.
 
 - [ ] **Step 2: Verify the app still builds and launches**
 
@@ -424,41 +408,88 @@ In `App.xaml.cs`, in `OnStartup`, right after `window.Show();`, add:
             _ = updateService.CheckForUpdatesInBackgroundAsync();
 ```
 
-- [ ] **Step 2: Add `IsRestartReady` and `RestartCommand` to `UpdateViewModel`**
+- [ ] **Step 2: Replace `UpdateViewModel`**
 
-Current constructor and field list (`MVVM/ViewModel/UpdateViewModel.cs`):
+The current file (as of the auto-update work in `dc98e6b`) has a
+manual pipeline — `UpdateNowCommand` (an `AsyncRelayCommand`) that
+calls `_svc.DownloadAndInstallAsync(...)` directly, plus `IsDownloading`/
+`DownloadProgress` to show its progress. `DownloadAndInstallAsync` no
+longer exists after Task 3 — this whole manual pipeline is replaced by
+the Velopack background flow, surfaced only via `IsRestartReady`/
+`RestartCommand`. `ViewOnGitHubCommand` (the manual-fallback link) is
+kept as-is, unchanged in behavior — it's still exactly what carries a
+pre-Velopack user to the release page for the one-time v0.9.0 install.
+
+Replace the full contents of `MVVM/ViewModel/UpdateViewModel.cs`:
 
 ```csharp
-    private bool   _isDownloading     = false;
-    private bool   _hasError          = false;
-    private string _statusMessage     = "Comprobando actualizaciones…";
-```
+using System.Linq;
+using Hakufu.Services;
 
-Add a new backing field right after `_isDownloading`:
+namespace Hakufu.MVVM.ViewModel;
 
-```csharp
-    private bool   _isDownloading     = false;
+public class UpdateViewModel : BaseViewModel
+{
+    private readonly IUpdateService     _svc;
+    private readonly INavigationService _nav;
+    private string? _downloadUrl;
+
+    private string _currentVersion    = "";
+    private string _latestVersion     = "—";
+    private string _changelog         = "";
+    private bool   _isChecking        = true;
+    private bool   _isUpdateAvailable = false;
+    private bool   _isUpToDate        = false;
     private bool   _isRestartReady    = false;
     private bool   _hasError          = false;
     private string _statusMessage     = "Comprobando actualizaciones…";
-```
 
-Add the property next to the other bool properties (after `IsDownloading`'s
-property block):
-
-```csharp
+    public string CurrentVersion
+    {
+        get => _currentVersion;
+        private set => SetProperty(ref _currentVersion, value);
+    }
+    public string LatestVersion
+    {
+        get => _latestVersion;
+        private set => SetProperty(ref _latestVersion, value);
+    }
+    public string Changelog
+    {
+        get => _changelog;
+        private set => SetProperty(ref _changelog, value);
+    }
+    public bool IsChecking
+    {
+        get => _isChecking;
+        private set => SetProperty(ref _isChecking, value);
+    }
+    public bool IsUpdateAvailable
+    {
+        get => _isUpdateAvailable;
+        private set => SetProperty(ref _isUpdateAvailable, value);
+    }
+    public bool IsUpToDate
+    {
+        get => _isUpToDate;
+        private set => SetProperty(ref _isUpToDate, value);
+    }
     public bool IsRestartReady
     {
         get => _isRestartReady;
         private set => SetProperty(ref _isRestartReady, value);
     }
-```
+    public bool HasError
+    {
+        get => _hasError;
+        private set => SetProperty(ref _hasError, value);
+    }
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        private set => SetProperty(ref _statusMessage, value);
+    }
 
-In the constructor, read the service's current state once (it may
-already have a downloaded update ready from a previous session's
-background check):
-
-```csharp
     public UpdateViewModel(IUpdateService svc, INavigationService nav)
     {
         _svc = svc;
@@ -468,32 +499,109 @@ background check):
         IsRestartReady  = svc.IsUpdateReadyToApply;
         _ = CheckAsync();
     }
-```
 
-In `CheckAsync()`, re-read it alongside the existing GitHub-changelog
-check so "Comprobar de nuevo" also refreshes this state — add this line
-at the very start of the `try` block (before `var release = ...`):
+    private async Task CheckAsync()
+    {
+        IsChecking        = true;
+        HasError          = false;
+        IsUpdateAvailable = false;
+        IsUpToDate        = false;
+        StatusMessage     = "Comprobando actualizaciones…";
+        // El fondo pudo terminar de descargar mientras tanto — refresca.
+        IsRestartReady    = _svc.IsUpdateReadyToApply;
 
-```csharp
         try
         {
-            IsRestartReady = _svc.IsUpdateReadyToApply;
-
             var release = await _svc.FetchLatestReleaseAsync();
-```
+            if (release is null)
+            {
+                StatusMessage = "No se pudo obtener información de la versión.";
+                HasError      = true;
+                return;
+            }
 
-Add the command next to the other `RelayCommand` properties at the
-bottom of the class:
+            var tag = release.TagName.TrimStart('v');
+            if (!Version.TryParse(tag, out var latest))
+            {
+                StatusMessage = "Formato de versión desconocido.";
+                HasError      = true;
+                return;
+            }
 
-```csharp
+            var current = _svc.GetCurrentVersion();
+            LatestVersion = $"v{latest.Major}.{latest.Minor}.{latest.Build}";
+            Changelog     = release.Body;
+            _downloadUrl  = release.Assets.FirstOrDefault()?.BrowserDownloadUrl;
+
+            IsUpdateAvailable = latest > current;
+            IsUpToDate        = !IsUpdateAvailable;
+            StatusMessage     = IsUpdateAvailable
+                ? "¡Nueva versión disponible!"
+                : "Hakufu está actualizado.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error al comprobar: {ex.Message}";
+            HasError      = true;
+        }
+        finally
+        {
+            IsChecking = false;
+        }
+    }
+
+    // Aplica la actualización que Velopack ya descargó en segundo plano
+    // y reinicia la app.
     public RelayCommand RestartCommand => new(() => _svc.ApplyUpdateAndRestart());
+
+    public RelayCommand ViewOnGitHubCommand => new(
+        () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+            _downloadUrl ?? "https://github.com/dap0ry/Hakufu/releases/latest")
+            { UseShellExecute = true }));
+
+    public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
+
+    public RelayCommand CheckAgainCommand => new(
+        () => _ = CheckAsync(),
+        () => !IsChecking);
+}
 ```
 
-- [ ] **Step 3: Add the "Restart to update" button to `UpdateWindow.xaml`**
+Removed vs. the pre-Velopack file: `_isDownloading`/`IsDownloading`,
+`_downloadProgress`/`DownloadProgress`, `UpdateNowCommand`. The
+`.zip`-specific asset filter in `_downloadUrl`'s old lookup
+(`FirstOrDefault(a => a.Name.EndsWith(".zip", ...))`) is simplified back
+to "first asset" — nothing downloads that URL programmatically anymore,
+it's purely a link a human clicks, so it doesn't matter which asset it
+points to.
 
-In the `Buttons` `StackPanel` (the one containing `DownloadCommand` and
-`CheckAgainCommand`), add a new button as the first child, so it's the
-primary action when present:
+- [ ] **Step 3: Update `UpdateWindow.xaml`'s buttons/progress for the new bindings**
+
+Two edits in `MVVM/View/UpdateWindow.xaml`:
+
+**3a.** Delete the manual-download progress bar entirely — Velopack
+downloads silently, there's nothing to show:
+
+```xml
+                <!-- Progreso real de la descarga automática -->
+                <ProgressBar Value="{Binding DownloadProgress, Mode=OneWay}"
+                             Minimum="0" Maximum="100"
+                             Height="3"
+                             Margin="0,24,0,0"
+                             Foreground="{DynamicResource ProgressFill}"
+                             Background="{DynamicResource ProgressTrack}"
+                             BorderThickness="0"
+                             Visibility="{Binding IsDownloading,
+                                 Converter={StaticResource BoolToVisibility}}"/>
+```
+
+Delete that whole `<ProgressBar>` element.
+
+**3b.** Replace the `Buttons` `StackPanel` — swap the `UpdateNowCommand`
+toggle button for a `RestartCommand` button gated on `IsRestartReady`,
+and gate "Comprobar de nuevo" on the same flag (mutually exclusive with
+the primary action, same pairing logic as before, just against the new
+flag):
 
 ```xml
                 <!-- Buttons -->
@@ -501,26 +609,34 @@ primary action when present:
                             HorizontalAlignment="Center"
                             Margin="0,32,0,0">
                     <Button Style="{StaticResource PrimaryButton}"
-                            Content="Reiniciar y actualizar"
                             Padding="24,11"
-                            Margin="0,0,10,0"
                             Command="{Binding RestartCommand}"
                             Visibility="{Binding IsRestartReady,
-                                Converter={StaticResource BoolToVisibility}}"/>
-                    <Button Style="{StaticResource PrimaryButton}"
-                            Content="Ver en GitHub"
-                            Padding="24,11"
-                            Command="{Binding DownloadCommand}"
-                            Visibility="{Binding IsUpdateAvailable,
-                                Converter={StaticResource BoolToVisibility}}"/>
+                                Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Template="{StaticResource IconPixelBooks}"
+                                            Width="14" Height="14" Margin="0,0,8,0"
+                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            <TextBlock Text="Reiniciar y actualizar"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                        </StackPanel>
+                    </Button>
                     <Button Style="{StaticResource GhostButton}"
                             Content="Comprobar de nuevo"
                             Padding="24,11"
                             Command="{Binding CheckAgainCommand}"
-                            Visibility="{Binding IsUpdateAvailable,
+                            Visibility="{Binding IsRestartReady,
                                 Converter={StaticResource InverseBoolToVisibility}}"/>
                 </StackPanel>
 ```
+
+This replaces the previous `<Button ... Command="{Binding UpdateNowCommand}">`
+block (the one with the `IconPixelBooks` template and the
+`IsDownloading`-triggered "Actualizar ahora"/"Actualizando…" text
+swap) and its sibling "Comprobar de nuevo" button. Leave the trailing
+"Prefiero descargarla manualmente desde GitHub" `Hyperlink` block
+(bound to `ViewOnGitHubCommand`, gated on `IsUpdateAvailable`)
+untouched — it still works unchanged.
 
 - [ ] **Step 4: Verify build and manual UI check**
 
@@ -529,10 +645,13 @@ dotnet build Hakufu.csproj
 dotnet run --project Hakufu.csproj
 ```
 
-Navigate Home → Actualizaciones. Expected: screen renders as before
-(no "Restart to update" button visible, since `IsUpdateReadyToApply`
-is `false` outside an installed context — there's nothing to restart
-into). No crash, no exception dialog.
+Navigate Home → Actualizaciones. Expected: screen renders — version
+cards, changelog, "Comprobar de nuevo" button — with no "Reiniciar y
+actualizar" button visible, since `IsUpdateReadyToApply` is `false`
+outside an installed context (there's nothing to restart into yet). No
+crash, no exception dialog, no leftover reference anywhere to
+`UpdateNowCommand`/`IsDownloading`/`DownloadProgress` (build would have
+failed already if XAML still referenced them).
 
 - [ ] **Step 5: Commit**
 
@@ -781,3 +900,12 @@ future delta updates) instead of a raw zip.
   Tasks 3–4. `CheckForUpdatesInBackgroundAsync()` name matches between
   its definition (Task 3) and both call sites (Task 4 Step 1 and
   Step 2's constructor-time read of `IsUpdateReadyToApply`).
+- **Freshness correction (post-brainstorm):** this plan was originally
+  drafted against a stale local checkout (15 commits behind
+  `origin/main`, missing the `dc98e6b` "auto-update real" work that
+  reshaped `UpdateViewModel`/`UpdateWindow.xaml` with `UpdateNowCommand`,
+  `IsDownloading`/`DownloadProgress`, and pixel icon styling). After
+  rebasing onto current `origin/main` before implementation, Task 1's
+  version-bump numbers and all of Task 4 were rewritten against the
+  real current files — the spec's intent is unchanged, only the exact
+  before/after code snippets were corrected.

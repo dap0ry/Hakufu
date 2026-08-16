@@ -111,11 +111,14 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0" Width="48" Height="48">
-                            <Border Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18"/>
-                            <Image Source="{Binding LibraryIcon.Path}"
-                                   Width="24" Height="24" Stretch="UniformToFill"
-                                   Opacity="{Binding LibraryIcon.Opacity}"
-                                   Visibility="{Binding LibraryIcon.Path, Converter={StaticResource NullToVisibility}}"/>
+                            <Border Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18"
+                                    Visibility="{Binding LibraryIcon.Path, Converter={StaticResource NullToVisibilityInverse}}"/>
+                            <Border CornerRadius="10" ClipToBounds="True"
+                                    Visibility="{Binding LibraryIcon.Path, Converter={StaticResource NullToVisibility}}">
+                                <Image Source="{Binding LibraryIcon.Path}" Stretch="UniformToFill"
+                                       Opacity="{Binding LibraryIcon.Opacity}"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
                         </Grid>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
                             <TextBlock Text="Biblioteca" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
@@ -138,11 +141,14 @@
                         </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
-                                <Border Style="{StaticResource IconBadge}"/>
-                                <Image Source="{Binding ProfileIcon.Path}"
-                                       Width="18" Height="18" Stretch="UniformToFill"
-                                       Opacity="{Binding ProfileIcon.Opacity}"
-                                       Visibility="{Binding ProfileIcon.Path, Converter={StaticResource NullToVisibility}}"/>
+                                <Border Style="{StaticResource IconBadge}"
+                                        Visibility="{Binding ProfileIcon.Path, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        Visibility="{Binding ProfileIcon.Path, Converter={StaticResource NullToVisibility}}">
+                                    <Image Source="{Binding ProfileIcon.Path}" Stretch="UniformToFill"
+                                           Opacity="{Binding ProfileIcon.Opacity}"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
                             </Grid>
                             <TextBlock Text="Perfil" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -160,11 +166,14 @@
                         </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
-                                <Border Style="{StaticResource IconBadge}"/>
-                                <Image Source="{Binding FriendsIcon.Path}"
-                                       Width="18" Height="18" Stretch="UniformToFill"
-                                       Opacity="{Binding FriendsIcon.Opacity}"
-                                       Visibility="{Binding FriendsIcon.Path, Converter={StaticResource NullToVisibility}}"/>
+                                <Border Style="{StaticResource IconBadge}"
+                                        Visibility="{Binding FriendsIcon.Path, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        Visibility="{Binding FriendsIcon.Path, Converter={StaticResource NullToVisibility}}">
+                                    <Image Source="{Binding FriendsIcon.Path}" Stretch="UniformToFill"
+                                           Opacity="{Binding FriendsIcon.Opacity}"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
                             </Grid>
                             <TextBlock Text="Amigos" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -182,11 +191,14 @@
                         </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
-                                <Border Style="{StaticResource IconBadge}"/>
-                                <Image Source="{Binding SettingsIcon.Path}"
-                                       Width="18" Height="18" Stretch="UniformToFill"
-                                       Opacity="{Binding SettingsIcon.Opacity}"
-                                       Visibility="{Binding SettingsIcon.Path, Converter={StaticResource NullToVisibility}}"/>
+                                <Border Style="{StaticResource IconBadge}"
+                                        Visibility="{Binding SettingsIcon.Path, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        Visibility="{Binding SettingsIcon.Path, Converter={StaticResource NullToVisibility}}">
+                                    <Image Source="{Binding SettingsIcon.Path}" Stretch="UniformToFill"
+                                           Opacity="{Binding SettingsIcon.Opacity}"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
                             </Grid>
                             <TextBlock Text="Ajustes" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -204,11 +216,14 @@
                         </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
-                                <Border Style="{StaticResource IconBadge}"/>
-                                <Image Source="{Binding HelpIcon.Path}"
-                                       Width="18" Height="18" Stretch="UniformToFill"
-                                       Opacity="{Binding HelpIcon.Opacity}"
-                                       Visibility="{Binding HelpIcon.Path, Converter={StaticResource NullToVisibility}}"/>
+                                <Border Style="{StaticResource IconBadge}"
+                                        Visibility="{Binding HelpIcon.Path, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        Visibility="{Binding HelpIcon.Path, Converter={StaticResource NullToVisibility}}">
+                                    <Image Source="{Binding HelpIcon.Path}" Stretch="UniformToFill"
+                                           Opacity="{Binding HelpIcon.Opacity}"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Border>
                             </Grid>
                             <TextBlock Text="Ayuda" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -244,12 +259,12 @@
                                 <Border Style="{StaticResource IconBadge}"
                                         Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}"/>
                             </Grid>
-                            <Grid Width="40" Height="40"
-                                  Visibility="{Binding AccountIcon.Path, Converter={StaticResource NullToVisibility}}">
+                            <Border Width="40" Height="40" CornerRadius="10" ClipToBounds="True"
+                                    Visibility="{Binding AccountIcon.Path, Converter={StaticResource NullToVisibility}}">
                                 <Image Source="{Binding AccountIcon.Path}"
                                        Opacity="{Binding AccountIcon.Opacity}"
                                        Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            </Grid>
+                            </Border>
                             <TextBlock Text="{Binding SessionLabel}" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center" Margin="14,0,0,0"/>

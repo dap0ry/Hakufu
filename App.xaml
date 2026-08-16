@@ -46,6 +46,9 @@
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
                 <v:SettingsView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:CustomizationViewModel}">
+                <v:CustomizationView/>
+            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:HelpViewModel}">
                 <v:HelpView/>
             </DataTemplate>

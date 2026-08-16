@@ -93,8 +93,10 @@ public partial class App : Application
                         profileService, libraryService, coverService, dialogService, navService!),
 
                     nameof(SettingsViewModel) => new SettingsViewModel(
-                        themeService, _repo, navService!, dialogService, libraryService,
-                        customizationService, filePickerSvc, wallpaperService),
+                        themeService, _repo, navService!, dialogService, libraryService),
+
+                    nameof(CustomizationViewModel) => new CustomizationViewModel(
+                        _repo!, navService!, customizationService, filePickerSvc, wallpaperService),
 
                     nameof(HelpViewModel) => new HelpViewModel(navService!),
 

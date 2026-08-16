@@ -65,9 +65,14 @@
         <!-- LEFT  — título + navegación                    -->
         <!-- ═══════════════════════════════════════════════ -->
         <Border Grid.Column="0"
-                Background="{Binding LeftPanelBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
                 BorderThickness="0,0,1,0">
+            <Border.Background>
+                <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="SidebarBackground">
+                    <Binding Path="LeftPanelBackground.Path"/>
+                    <Binding Path="LeftPanelBackground.Opacity"/>
+                </MultiBinding>
+            </Border.Background>
             <Grid Margin="56,40,56,32">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>   <!-- title -->
@@ -92,8 +97,13 @@
                 <!-- ── ACCIÓN PRINCIPAL ── -->
                 <Button Grid.Row="1" Style="{StaticResource NavTile}"
                         Command="{Binding NavLibraryCommand}"
-                        Background="{Binding LibraryBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}"
                         Margin="0,0,0,10" Padding="22,20">
+                    <Button.Background>
+                        <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                            <Binding Path="LibraryBackground.Path"/>
+                            <Binding Path="LibraryBackground.Opacity"/>
+                        </MultiBinding>
+                    </Button.Background>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -102,13 +112,10 @@
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0" Width="48" Height="48">
                             <Border Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18"/>
-                            <ContentControl Template="{StaticResource IconPixelBooks}"
-                                            Width="24" Height="24"
-                                            Foreground="{DynamicResource AccentColor}"
-                                            Visibility="{Binding LibraryIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
-                            <Image Source="{Binding LibraryIconPath}"
+                            <Image Source="{Binding LibraryIcon.Path}"
                                    Width="24" Height="24" Stretch="UniformToFill"
-                                   Visibility="{Binding LibraryIconPath, Converter={StaticResource NullToVisibility}}"/>
+                                   Opacity="{Binding LibraryIcon.Opacity}"
+                                   Visibility="{Binding LibraryIcon.Path, Converter={StaticResource NullToVisibility}}"/>
                         </Grid>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
                             <TextBlock Text="Biblioteca" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
@@ -122,18 +129,20 @@
                 <UniformGrid Grid.Row="2" Columns="2" Rows="3" Margin="0,16,0,0">
 
                     <!-- Perfil -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6"
-                            Background="{Binding ProfileBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="ProfileBackground.Path"/>
+                                <Binding Path="ProfileBackground.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
-                                <ContentControl Template="{StaticResource IconPixelHanko}"
-                                                Width="18" Height="18"
-                                                Foreground="{DynamicResource AccentColor}"
-                                                Visibility="{Binding ProfileIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
-                                <Image Source="{Binding ProfileIconPath}"
+                                <Image Source="{Binding ProfileIcon.Path}"
                                        Width="18" Height="18" Stretch="UniformToFill"
-                                       Visibility="{Binding ProfileIconPath, Converter={StaticResource NullToVisibility}}"/>
+                                       Opacity="{Binding ProfileIcon.Opacity}"
+                                       Visibility="{Binding ProfileIcon.Path, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Perfil" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -142,18 +151,20 @@
                     </Button>
 
                     <!-- Amigos -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavFriendsCommand}" Margin="6,0,0,6"
-                            Background="{Binding FriendsBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavFriendsCommand}" Margin="6,0,0,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="FriendsBackground.Path"/>
+                                <Binding Path="FriendsBackground.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
-                                <ContentControl Template="{StaticResource IconPixelFriends}"
-                                                Width="18" Height="18"
-                                                Foreground="{DynamicResource AccentColor}"
-                                                Visibility="{Binding FriendsIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
-                                <Image Source="{Binding FriendsIconPath}"
+                                <Image Source="{Binding FriendsIcon.Path}"
                                        Width="18" Height="18" Stretch="UniformToFill"
-                                       Visibility="{Binding FriendsIconPath, Converter={StaticResource NullToVisibility}}"/>
+                                       Opacity="{Binding FriendsIcon.Opacity}"
+                                       Visibility="{Binding FriendsIcon.Path, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Amigos" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -162,18 +173,20 @@
                     </Button>
 
                     <!-- Ajustes -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavSettingsCommand}" Margin="0,0,6,6"
-                            Background="{Binding SettingsBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavSettingsCommand}" Margin="0,0,6,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="SettingsBackground.Path"/>
+                                <Binding Path="SettingsBackground.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
-                                <ContentControl Template="{StaticResource IconPixelLantern}"
-                                                Width="18" Height="18"
-                                                Foreground="{DynamicResource AccentColor}"
-                                                Visibility="{Binding SettingsIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
-                                <Image Source="{Binding SettingsIconPath}"
+                                <Image Source="{Binding SettingsIcon.Path}"
                                        Width="18" Height="18" Stretch="UniformToFill"
-                                       Visibility="{Binding SettingsIconPath, Converter={StaticResource NullToVisibility}}"/>
+                                       Opacity="{Binding SettingsIcon.Opacity}"
+                                       Visibility="{Binding SettingsIcon.Path, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Ajustes" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -182,18 +195,20 @@
                     </Button>
 
                     <!-- Ayuda -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavHelpCommand}" Margin="6,0,0,6"
-                            Background="{Binding HelpBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavHelpCommand}" Margin="6,0,0,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="HelpBackground.Path"/>
+                                <Binding Path="HelpBackground.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
-                                <TextBlock Text="?" FontSize="18" FontWeight="Bold"
-                                           Foreground="{DynamicResource AccentColor}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Visibility="{Binding HelpIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
-                                <Image Source="{Binding HelpIconPath}"
+                                <Image Source="{Binding HelpIcon.Path}"
                                        Width="18" Height="18" Stretch="UniformToFill"
-                                       Visibility="{Binding HelpIconPath, Converter={StaticResource NullToVisibility}}"/>
+                                       Opacity="{Binding HelpIcon.Opacity}"
+                                       Visibility="{Binding HelpIcon.Path, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Ayuda" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -202,11 +217,16 @@
                     </Button>
 
                     <!-- Cuenta (avatar real si hay sesión; icono personalizado, si lo hay, gana a todo lo demás) -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavAccountCommand}" Margin="0,0,6,0"
-                            Background="{Binding AccountBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavAccountCommand}" Margin="0,0,6,0">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="AccountBackground.Path"/>
+                                <Binding Path="AccountBackground.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40"
-                                  Visibility="{Binding AccountIconPath, Converter={StaticResource NullToVisibilityInverse}}">
+                                  Visibility="{Binding AccountIcon.Path, Converter={StaticResource NullToVisibilityInverse}}">
                                 <Grid Visibility="{Binding ShowAvatarArea, Converter={StaticResource BoolToVisibility}}">
                                     <Border CornerRadius="20" ClipToBounds="True"
                                             Visibility="{Binding HasAvatar, Converter={StaticResource BoolToVisibility}}">
@@ -221,17 +241,13 @@
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                                Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
                                 </Grid>
-                                <Grid Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}">
-                                    <Border Style="{StaticResource IconBadge}"/>
-                                    <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Ellipse Canvas.Left="4" Canvas.Top="0" Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
-                                        <Path Data="M 0,16 C 0,11 16,11 16,16" Fill="{DynamicResource AccentColor}"/>
-                                    </Canvas>
-                                </Grid>
+                                <Border Style="{StaticResource IconBadge}"
+                                        Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}"/>
                             </Grid>
                             <Grid Width="40" Height="40"
-                                  Visibility="{Binding AccountIconPath, Converter={StaticResource NullToVisibility}}">
-                                <Image Source="{Binding AccountIconPath}"
+                                  Visibility="{Binding AccountIcon.Path, Converter={StaticResource NullToVisibility}}">
+                                <Image Source="{Binding AccountIcon.Path}"
+                                       Opacity="{Binding AccountIcon.Opacity}"
                                        Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Grid>
                             <TextBlock Text="{Binding SessionLabel}" FontSize="14" FontWeight="Medium"

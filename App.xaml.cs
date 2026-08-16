@@ -43,6 +43,7 @@ public partial class App : Application
             var profileService = new ProfileService(_repo);
             var updateService  = new UpdateService();
             var customizationService = new CustomizationService();
+            var wallpaperService = new WallpaperService();
             var sessionService = new SessionService();
             var apiClient      = new HakufuApiClient(sessionService);
             var driveService   = new GoogleDriveService(sessionService);
@@ -60,6 +61,12 @@ public partial class App : Application
             // Apply saved theme
             var savedTheme = _repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light;
             themeService.SetTheme(savedTheme);
+
+            // Wallpaper general (si hay uno guardado) — sustituye el recurso
+            // AppBackground antes de crear ninguna vista, para que se vea
+            // desde la primera pantalla.
+            var wallpaper = _repo.Current.Customization.GeneralWallpaper;
+            wallpaperService.Apply(wallpaper?.Path, wallpaper?.Opacity ?? 0.3);
 
             // ── Navigation factory ──────────────────────────────────
             NavigationService? navService = null;
@@ -86,7 +93,8 @@ public partial class App : Application
                         profileService, libraryService, coverService, dialogService, navService!),
 
                     nameof(SettingsViewModel) => new SettingsViewModel(
-                        themeService, _repo, navService!, dialogService, libraryService, customizationService, filePickerSvc),
+                        themeService, _repo, navService!, dialogService, libraryService,
+                        customizationService, filePickerSvc, wallpaperService),
 
                     nameof(HelpViewModel) => new HelpViewModel(navService!),
 

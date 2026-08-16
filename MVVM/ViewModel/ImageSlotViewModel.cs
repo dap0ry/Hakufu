@@ -1,19 +1,22 @@
 using Hakufu.Data;
+using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
 
 // Un "hueco" de personalización elegible desde Ajustes: fondo del panel
-// izquierdo, o el icono/fondo de un botón de navegación concreto. onChanged
-// es quien sabe en qué campo/diccionario de HomeCustomization escribir —
-// este ViewModel no conoce esa forma, solo gestiona elegir/quitar imagen.
+// izquierdo, el wallpaper general, o el icono/fondo de un botón de
+// navegación concreto. onPathChanged/onOpacityChanged son quienes saben en
+// qué campo/diccionario de HomeCustomization escribir — este ViewModel no
+// conoce esa forma, solo gestiona elegir/quitar imagen y ajustar su opacidad.
 public class ImageSlotViewModel : BaseViewModel
 {
     private readonly string _slotKey;
     private readonly ICustomizationService _customization;
     private readonly IFilePickerService    _filePicker;
     private readonly IDataRepository       _repo;
-    private readonly Action<string?>       _onChanged;
+    private readonly Action<string?> _onPathChanged;
+    private readonly Action<double>  _onOpacityChanged;
 
     public string Label { get; }
 
@@ -30,17 +33,32 @@ public class ImageSlotViewModel : BaseViewModel
 
     public bool HasImage => !string.IsNullOrEmpty(ImagePath);
 
-    public ImageSlotViewModel(string slotKey, string label, string? initialPath,
-                              ICustomizationService customization, IFilePickerService filePicker,
-                              IDataRepository repo, Action<string?> onChanged)
+    private double _opacity;
+    public double Opacity
     {
-        _slotKey       = slotKey;
-        Label          = label;
-        _imagePath     = initialPath;
-        _customization = customization;
-        _filePicker    = filePicker;
-        _repo          = repo;
-        _onChanged     = onChanged;
+        get => _opacity;
+        set
+        {
+            if (!SetProperty(ref _opacity, value)) return;
+            _onOpacityChanged(value);
+            _ = _repo.SaveAsync();
+        }
+    }
+
+    public ImageSlotViewModel(string slotKey, string label, CustomizationImage? initial,
+                              ICustomizationService customization, IFilePickerService filePicker,
+                              IDataRepository repo, Action<string?> onPathChanged, Action<double> onOpacityChanged,
+                              double defaultOpacity = 1.0)
+    {
+        _slotKey          = slotKey;
+        Label             = label;
+        _imagePath        = initial?.Path;
+        _opacity          = initial?.Opacity ?? defaultOpacity;
+        _customization    = customization;
+        _filePicker       = filePicker;
+        _repo             = repo;
+        _onPathChanged    = onPathChanged;
+        _onOpacityChanged = onOpacityChanged;
     }
 
     public RelayCommand PickCommand => new(() =>
@@ -53,7 +71,7 @@ public class ImageSlotViewModel : BaseViewModel
 
         var saved = _customization.SaveImage(files[0], _slotKey);
         ImagePath = saved;
-        _onChanged(saved);
+        _onPathChanged(saved);
         _ = _repo.SaveAsync();
     });
 
@@ -61,7 +79,7 @@ public class ImageSlotViewModel : BaseViewModel
     {
         _customization.RemoveImage(_slotKey);
         ImagePath = null;
-        _onChanged(null);
+        _onPathChanged(null);
         _ = _repo.SaveAsync();
     }, () => HasImage);
 }

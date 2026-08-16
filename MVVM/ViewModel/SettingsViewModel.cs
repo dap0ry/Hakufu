@@ -14,6 +14,7 @@ public class SettingsViewModel : BaseViewModel
     private readonly LibraryService     _library;
     private readonly ICustomizationService _customization;
     private readonly IFilePickerService    _filePicker;
+    private readonly IWallpaperService     _wallpaper;
 
     private static readonly string HakufuDataDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
@@ -21,7 +22,7 @@ public class SettingsViewModel : BaseViewModel
     public SettingsViewModel(IThemeService theme, IDataRepository repo,
                              INavigationService nav, IDialogService dialog,
                              LibraryService library, ICustomizationService customization,
-                             IFilePickerService filePicker)
+                             IFilePickerService filePicker, IWallpaperService wallpaper)
     {
         _theme         = theme;
         _repo          = repo;
@@ -30,6 +31,7 @@ public class SettingsViewModel : BaseViewModel
         _library       = library;
         _customization = customization;
         _filePicker    = filePicker;
+        _wallpaper     = wallpaper;
         _isDarkTheme = _theme.CurrentTheme == AppTheme.Dark;
 
         CustomizationSlots = BuildCustomizationSlots();
@@ -37,7 +39,7 @@ public class SettingsViewModel : BaseViewModel
         _ = LoadStorageSizesAsync();
     }
 
-    // ── Personalización del menú de Inicio (100% local) ─────────────────────
+    // ── Personalización (100% local) ─────────────────────────────────────────
 
     public List<ImageSlotViewModel> CustomizationSlots { get; }
 
@@ -46,27 +48,78 @@ public class SettingsViewModel : BaseViewModel
         var c = _repo.Current.Customization;
 
         ImageSlotViewModel IconSlot(string key, string label) => new(
-            $"nav.{key}.icon", label, c.NavIconPaths.GetValueOrDefault(key),
+            $"nav.{key}.icon", label, c.NavIcons.GetValueOrDefault(key),
             _customization, _filePicker, _repo,
-            path =>
+            onPathChanged: path =>
             {
-                if (path is null) c.NavIconPaths.Remove(key);
-                else c.NavIconPaths[key] = path;
-            });
+                if (path is null) { c.NavIcons.Remove(key); return; }
+                var img = c.NavIcons.TryGetValue(key, out var cur) ? cur : new CustomizationImage();
+                img.Path = path;
+                c.NavIcons[key] = img;
+            },
+            onOpacityChanged: op =>
+            {
+                if (c.NavIcons.TryGetValue(key, out var img)) img.Opacity = op;
+            },
+            defaultOpacity: 1.0);
 
         ImageSlotViewModel BackgroundSlot(string key, string label) => new(
-            $"nav.{key}.background", label, c.NavBackgroundPaths.GetValueOrDefault(key),
+            $"nav.{key}.background", label, c.NavBackgrounds.GetValueOrDefault(key),
             _customization, _filePicker, _repo,
-            path =>
+            onPathChanged: path =>
             {
-                if (path is null) c.NavBackgroundPaths.Remove(key);
-                else c.NavBackgroundPaths[key] = path;
-            });
+                if (path is null) { c.NavBackgrounds.Remove(key); return; }
+                var img = c.NavBackgrounds.TryGetValue(key, out var cur) ? cur : new CustomizationImage();
+                img.Path = path;
+                c.NavBackgrounds[key] = img;
+            },
+            onOpacityChanged: op =>
+            {
+                if (c.NavBackgrounds.TryGetValue(key, out var img)) img.Opacity = op;
+            },
+            defaultOpacity: 0.3);
+
+        var panelSlot = new ImageSlotViewModel("panel.left", "Fondo del panel izquierdo", c.LeftPanelBackground,
+            _customization, _filePicker, _repo,
+            onPathChanged: path =>
+            {
+                if (path is null) { c.LeftPanelBackground = null; return; }
+                c.LeftPanelBackground ??= new CustomizationImage();
+                c.LeftPanelBackground.Path = path;
+            },
+            onOpacityChanged: op =>
+            {
+                if (c.LeftPanelBackground is not null) c.LeftPanelBackground.Opacity = op;
+            },
+            defaultOpacity: 0.3);
+
+        // El wallpaper general, a diferencia de los demás huecos, también
+        // tiene que aplicarse en el momento (WallpaperService sustituye el
+        // recurso AppBackground del que cuelga casi toda la UI) — si no,
+        // habría que salir de Ajustes y volver a entrar para verlo.
+        var wallpaperSlot = new ImageSlotViewModel("wallpaper.general", "Wallpaper general (fondo de toda la app)",
+            c.GeneralWallpaper, _customization, _filePicker, _repo,
+            onPathChanged: path =>
+            {
+                if (path is null) { c.GeneralWallpaper = null; }
+                else
+                {
+                    c.GeneralWallpaper ??= new CustomizationImage();
+                    c.GeneralWallpaper.Path = path;
+                }
+                _wallpaper.Apply(c.GeneralWallpaper?.Path, c.GeneralWallpaper?.Opacity ?? 0.3);
+            },
+            onOpacityChanged: op =>
+            {
+                if (c.GeneralWallpaper is not null) c.GeneralWallpaper.Opacity = op;
+                _wallpaper.Apply(c.GeneralWallpaper?.Path, op);
+            },
+            defaultOpacity: 0.3);
 
         return
         [
-            new ImageSlotViewModel("panel.left", "Fondo del panel izquierdo", c.LeftPanelBackgroundPath,
-                _customization, _filePicker, _repo, path => c.LeftPanelBackgroundPath = path),
+            wallpaperSlot,
+            panelSlot,
 
             IconSlot("library", "Icono — Biblioteca"),  BackgroundSlot("library", "Fondo — Biblioteca"),
             IconSlot("profile", "Icono — Perfil"),      BackgroundSlot("profile", "Fondo — Perfil"),

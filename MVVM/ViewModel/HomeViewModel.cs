@@ -1,5 +1,6 @@
 using System.Windows.Media.Imaging;
 using Hakufu.Data;
+using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -27,28 +28,30 @@ public class HomeViewModel : BaseViewModel
     public bool    ShowAvatarArea => _session.IsLoggedIn;
     public string  SessionInitial => _session.Username?.Length > 0 ? _session.Username[0].ToString().ToUpper() : "?";
 
-    // ── Personalización (100% local, ver HomeCustomization) ────────────────
-    public string? LeftPanelBackgroundPath => _repo.Current.Customization.LeftPanelBackgroundPath;
+    // ── Personalización (100% local, ver HomeCustomization) ─────────────────
+    // Se exponen los CustomizationImage completos (Path + Opacity) — HomeView
+    // se engancha a las sub-propiedades directamente (p. ej. "LibraryIcon.Path").
+    public CustomizationImage? LeftPanelBackground => _repo.Current.Customization.LeftPanelBackground;
 
-    public string? LibraryIconPath  => IconFor("library");
-    public string? ProfileIconPath  => IconFor("profile");
-    public string? FriendsIconPath  => IconFor("friends");
-    public string? SettingsIconPath => IconFor("settings");
-    public string? HelpIconPath     => IconFor("help");
-    public string? AccountIconPath  => IconFor("account");
+    public CustomizationImage? LibraryIcon  => IconFor("library");
+    public CustomizationImage? ProfileIcon  => IconFor("profile");
+    public CustomizationImage? FriendsIcon  => IconFor("friends");
+    public CustomizationImage? SettingsIcon => IconFor("settings");
+    public CustomizationImage? HelpIcon     => IconFor("help");
+    public CustomizationImage? AccountIcon  => IconFor("account");
 
-    public string? LibraryBackgroundPath  => BackgroundFor("library");
-    public string? ProfileBackgroundPath  => BackgroundFor("profile");
-    public string? FriendsBackgroundPath  => BackgroundFor("friends");
-    public string? SettingsBackgroundPath => BackgroundFor("settings");
-    public string? HelpBackgroundPath     => BackgroundFor("help");
-    public string? AccountBackgroundPath  => BackgroundFor("account");
+    public CustomizationImage? LibraryBackground  => BackgroundFor("library");
+    public CustomizationImage? ProfileBackground  => BackgroundFor("profile");
+    public CustomizationImage? FriendsBackground  => BackgroundFor("friends");
+    public CustomizationImage? SettingsBackground => BackgroundFor("settings");
+    public CustomizationImage? HelpBackground     => BackgroundFor("help");
+    public CustomizationImage? AccountBackground  => BackgroundFor("account");
 
-    private string? IconFor(string key)
-        => _repo.Current.Customization.NavIconPaths.TryGetValue(key, out var p) ? p : null;
+    private CustomizationImage? IconFor(string key)
+        => _repo.Current.Customization.NavIcons.TryGetValue(key, out var img) ? img : null;
 
-    private string? BackgroundFor(string key)
-        => _repo.Current.Customization.NavBackgroundPaths.TryGetValue(key, out var p) ? p : null;
+    private CustomizationImage? BackgroundFor(string key)
+        => _repo.Current.Customization.NavBackgrounds.TryGetValue(key, out var img) ? img : null;
 
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
                          ISessionService session, HakufuApiClient api, IDataRepository repo)

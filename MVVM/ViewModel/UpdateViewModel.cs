@@ -12,11 +12,10 @@ public class UpdateViewModel : BaseViewModel
     private string _currentVersion    = "";
     private string _latestVersion     = "—";
     private string _changelog         = "";
-    private double _downloadProgress  = 0;
     private bool   _isChecking        = true;
     private bool   _isUpdateAvailable = false;
     private bool   _isUpToDate        = false;
-    private bool   _isDownloading     = false;
+    private bool   _isRestartReady    = false;
     private bool   _hasError          = false;
     private string _statusMessage     = "Comprobando actualizaciones…";
 
@@ -35,11 +34,6 @@ public class UpdateViewModel : BaseViewModel
         get => _changelog;
         private set => SetProperty(ref _changelog, value);
     }
-    public double DownloadProgress
-    {
-        get => _downloadProgress;
-        private set => SetProperty(ref _downloadProgress, value);
-    }
     public bool IsChecking
     {
         get => _isChecking;
@@ -55,10 +49,10 @@ public class UpdateViewModel : BaseViewModel
         get => _isUpToDate;
         private set => SetProperty(ref _isUpToDate, value);
     }
-    public bool IsDownloading
+    public bool IsRestartReady
     {
-        get => _isDownloading;
-        private set => SetProperty(ref _isDownloading, value);
+        get => _isRestartReady;
+        private set => SetProperty(ref _isRestartReady, value);
     }
     public bool HasError
     {
@@ -76,7 +70,8 @@ public class UpdateViewModel : BaseViewModel
         _svc = svc;
         _nav = nav;
         var v = svc.GetCurrentVersion();
-        CurrentVersion = $"v{v.Major}.{v.Minor}.{v.Build}";
+        CurrentVersion  = $"v{v.Major}.{v.Minor}.{v.Build}";
+        IsRestartReady  = svc.IsUpdateReadyToApply;
         _ = CheckAsync();
     }
 
@@ -87,6 +82,8 @@ public class UpdateViewModel : BaseViewModel
         IsUpdateAvailable = false;
         IsUpToDate        = false;
         StatusMessage     = "Comprobando actualizaciones…";
+        // El fondo pudo terminar de descargar mientras tanto — refresca.
+        IsRestartReady    = _svc.IsUpdateReadyToApply;
 
         try
         {
@@ -109,12 +106,7 @@ public class UpdateViewModel : BaseViewModel
             var current = _svc.GetCurrentVersion();
             LatestVersion = $"v{latest.Major}.{latest.Minor}.{latest.Build}";
             Changelog     = release.Body;
-            // El .zip del build (no un futuro checksum u otro artefacto suelto)
-            // es lo único que el actualizador automático sabe instalar.
-            _downloadUrl  = release.Assets
-                .FirstOrDefault(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                ?.BrowserDownloadUrl
-                ?? release.Assets.FirstOrDefault()?.BrowserDownloadUrl;
+            _downloadUrl  = release.Assets.FirstOrDefault()?.BrowserDownloadUrl;
 
             IsUpdateAvailable = latest > current;
             IsUpToDate        = !IsUpdateAvailable;
@@ -133,41 +125,9 @@ public class UpdateViewModel : BaseViewModel
         }
     }
 
-    // Actualización automática: descarga el zip, cierra Hakufu, reemplaza los
-    // archivos y vuelve a abrirlo — sin pasos manuales. Si algo falla (p. ej.
-    // updater.exe no está junto al ejecutable, o no hay red) se cae al enlace
-    // manual de GitHub en vez de dejar la app a medias.
-    public AsyncRelayCommand UpdateNowCommand => new(async () =>
-    {
-        if (string.IsNullOrEmpty(_downloadUrl))
-        {
-            StatusMessage = "No se encontró el archivo de la última versión.";
-            HasError      = true;
-            return;
-        }
-
-        IsDownloading    = true;
-        HasError         = false;
-        DownloadProgress = 0;
-        StatusMessage    = "Descargando actualización…";
-
-        try
-        {
-            var progress = new Progress<double>(p =>
-            {
-                DownloadProgress = p;
-                StatusMessage    = $"Descargando actualización… {p:0}%";
-            });
-            // Si todo va bien, esto cierra Hakufu por dentro y no vuelve de aquí.
-            await _svc.DownloadAndInstallAsync(_downloadUrl, progress);
-        }
-        catch (Exception ex)
-        {
-            IsDownloading = false;
-            HasError      = true;
-            StatusMessage = $"No se pudo actualizar sola: {ex.Message}. Descárgala manualmente desde GitHub.";
-        }
-    }, () => IsUpdateAvailable && !IsDownloading);
+    // Aplica la actualización que Velopack ya descargó en segundo plano
+    // y reinicia la app.
+    public RelayCommand RestartCommand => new(() => _svc.ApplyUpdateAndRestart());
 
     public RelayCommand ViewOnGitHubCommand => new(
         () => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
@@ -178,5 +138,5 @@ public class UpdateViewModel : BaseViewModel
 
     public RelayCommand CheckAgainCommand => new(
         () => _ = CheckAsync(),
-        () => !IsChecking && !IsDownloading);
+        () => !IsChecking);
 }

@@ -102,17 +102,6 @@
                              Visibility="{Binding IsChecking,
                                  Converter={StaticResource BoolToVisibility}}"/>
 
-                <!-- Progreso real de la descarga automática -->
-                <ProgressBar Value="{Binding DownloadProgress, Mode=OneWay}"
-                             Minimum="0" Maximum="100"
-                             Height="3"
-                             Margin="0,24,0,0"
-                             Foreground="{DynamicResource ProgressFill}"
-                             Background="{DynamicResource ProgressTrack}"
-                             BorderThickness="0"
-                             Visibility="{Binding IsDownloading,
-                                 Converter={StaticResource BoolToVisibility}}"/>
-
                 <!-- Status message -->
                 <TextBlock Text="{Binding StatusMessage}"
                            FontSize="13"
@@ -150,33 +139,22 @@
                             Margin="0,32,0,0">
                     <Button Style="{StaticResource PrimaryButton}"
                             Padding="24,11"
-                            Command="{Binding UpdateNowCommand}"
-                            Visibility="{Binding IsUpdateAvailable,
+                            Command="{Binding RestartCommand}"
+                            Visibility="{Binding IsRestartReady,
                                 Converter={StaticResource BoolToVisibility}}">
                         <StackPanel Orientation="Horizontal">
                             <ContentControl Template="{StaticResource IconPixelBooks}"
                                             Width="14" Height="14" Margin="0,0,8,0"
-                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                            Visibility="{Binding IsDownloading, Converter={StaticResource InverseBoolToVisibility}}"/>
-                            <TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Text" Value="Actualizar ahora"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsDownloading}" Value="True">
-                                                <Setter Property="Text" Value="Actualizando…"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            <TextBlock Text="Reiniciar y actualizar"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource GhostButton}"
                             Content="Comprobar de nuevo"
                             Padding="24,11"
                             Command="{Binding CheckAgainCommand}"
-                            Visibility="{Binding IsUpdateAvailable,
+                            Visibility="{Binding IsRestartReady,
                                 Converter={StaticResource InverseBoolToVisibility}}"/>
                 </StackPanel>
 

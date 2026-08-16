@@ -107,6 +107,10 @@ public partial class App : Application
             _mainWindowRef = window;
             window.Show();
 
+            // Comprobar/descargar actualizaciones en segundo plano, sin
+            // bloquear el arranque ni avisar al usuario.
+            _ = updateService.CheckForUpdatesInBackgroundAsync();
+
             // ── Bandeja del sistema ──────────────────────────────────
             // La X de la ventana la oculta (ver MainWindow.Window_Closing);
             // esto es lo que permite recuperarla o cerrar la app de verdad.

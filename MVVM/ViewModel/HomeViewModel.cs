@@ -1,4 +1,5 @@
 using System.Windows.Media.Imaging;
+using Hakufu.Data;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -10,6 +11,7 @@ public class HomeViewModel : BaseViewModel
     private readonly INavigationService _nav;
     private readonly ISessionService    _session;
     private readonly HakufuApiClient    _api;
+    private readonly IDataRepository    _repo;
 
     private string?       _lastMangaTitle;
     private BitmapSource? _lastMangaCover;
@@ -25,14 +27,38 @@ public class HomeViewModel : BaseViewModel
     public bool    ShowAvatarArea => _session.IsLoggedIn;
     public string  SessionInitial => _session.Username?.Length > 0 ? _session.Username[0].ToString().ToUpper() : "?";
 
+    // ── Personalización (100% local, ver HomeCustomization) ────────────────
+    public string? LeftPanelBackgroundPath => _repo.Current.Customization.LeftPanelBackgroundPath;
+
+    public string? LibraryIconPath  => IconFor("library");
+    public string? ProfileIconPath  => IconFor("profile");
+    public string? FriendsIconPath  => IconFor("friends");
+    public string? SettingsIconPath => IconFor("settings");
+    public string? HelpIconPath     => IconFor("help");
+    public string? AccountIconPath  => IconFor("account");
+
+    public string? LibraryBackgroundPath  => BackgroundFor("library");
+    public string? ProfileBackgroundPath  => BackgroundFor("profile");
+    public string? FriendsBackgroundPath  => BackgroundFor("friends");
+    public string? SettingsBackgroundPath => BackgroundFor("settings");
+    public string? HelpBackgroundPath     => BackgroundFor("help");
+    public string? AccountBackgroundPath  => BackgroundFor("account");
+
+    private string? IconFor(string key)
+        => _repo.Current.Customization.NavIconPaths.TryGetValue(key, out var p) ? p : null;
+
+    private string? BackgroundFor(string key)
+        => _repo.Current.Customization.NavBackgroundPaths.TryGetValue(key, out var p) ? p : null;
+
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
-                         ISessionService session, HakufuApiClient api)
+                         ISessionService session, HakufuApiClient api, IDataRepository repo)
     {
         _library = library;
         _cover   = cover;
         _nav     = nav;
         _session = session;
         _api     = api;
+        _repo    = repo;
         _ = LoadAsync();
     }
 

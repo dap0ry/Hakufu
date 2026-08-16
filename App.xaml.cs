@@ -42,6 +42,7 @@ public partial class App : Application
             var libraryService = new LibraryService(_repo);
             var profileService = new ProfileService(_repo);
             var updateService  = new UpdateService();
+            var customizationService = new CustomizationService();
             var sessionService = new SessionService();
             var apiClient      = new HakufuApiClient(sessionService);
             var driveService   = new GoogleDriveService(sessionService);
@@ -68,7 +69,7 @@ public partial class App : Application
                 return type.Name switch
                 {
                     nameof(HomeViewModel) => new HomeViewModel(
-                        libraryService, coverService, navService!, sessionService, apiClient),
+                        libraryService, coverService, navService!, sessionService, apiClient, _repo!),
 
                     nameof(AccountViewModel) => new AccountViewModel(sessionService, apiClient, navService!),
 
@@ -84,7 +85,8 @@ public partial class App : Application
                     nameof(ProfileViewModel) => new ProfileViewModel(
                         profileService, libraryService, coverService, dialogService, navService!),
 
-                    nameof(SettingsViewModel) => new SettingsViewModel(themeService, _repo, navService!, dialogService, libraryService),
+                    nameof(SettingsViewModel) => new SettingsViewModel(
+                        themeService, _repo, navService!, dialogService, libraryService, customizationService, filePickerSvc),
 
                     nameof(HelpViewModel) => new HelpViewModel(navService!),
 

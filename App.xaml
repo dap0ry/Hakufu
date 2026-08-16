@@ -25,6 +25,7 @@
             <conv:PercentageWidthConverter x:Key="PercentageWidth"/>
             <conv:UrlToImageConverter x:Key="UrlToImage"/>
             <conv:BoolToOpacityConverter x:Key="BoolToOpacity"/>
+            <conv:PathToImageBrushConverter x:Key="PathToImageBrush"/>
 
             <!-- ViewModel → View dispatch for ContentControl -->
             <DataTemplate DataType="{x:Type vm:HomeViewModel}">

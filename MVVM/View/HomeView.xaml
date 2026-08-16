@@ -4,9 +4,12 @@
 
     <UserControl.Resources>
 
-        <!-- ── Tile de navegación: icono vectorial + etiqueta, resalta en hover ── -->
+        <!-- ── Tile de navegación: icono vectorial + etiqueta, resalta en hover ──
+             Background sale de TemplateBinding a propósito: así un botón puede
+             traer su propio ImageBrush personalizado (ver PathToImageBrush en
+             HomeView) en vez del CardBackground de siempre. -->
         <Style x:Key="NavTile" TargetType="Button">
-            <Setter Property="Background"         Value="Transparent"/>
+            <Setter Property="Background"         Value="{DynamicResource CardBackground}"/>
             <Setter Property="BorderThickness"    Value="1"/>
             <Setter Property="BorderBrush"        Value="{DynamicResource CardBorder}"/>
             <Setter Property="Cursor"              Value="Hand"/>
@@ -17,7 +20,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Root"
-                                Background="{DynamicResource CardBackground}"
+                                Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="10"
@@ -62,7 +65,7 @@
         <!-- LEFT  — título + navegación                    -->
         <!-- ═══════════════════════════════════════════════ -->
         <Border Grid.Column="0"
-                Background="{DynamicResource SidebarBackground}"
+                Background="{Binding LeftPanelBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
                 BorderThickness="0,0,1,0">
             <Grid Margin="56,40,56,32">
@@ -89,6 +92,7 @@
                 <!-- ── ACCIÓN PRINCIPAL ── -->
                 <Button Grid.Row="1" Style="{StaticResource NavTile}"
                         Command="{Binding NavLibraryCommand}"
+                        Background="{Binding LibraryBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}"
                         Margin="0,0,0,10" Padding="22,20">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -100,7 +104,11 @@
                             <Border Style="{StaticResource IconBadge}" Width="48" Height="48" Opacity="0.18"/>
                             <ContentControl Template="{StaticResource IconPixelBooks}"
                                             Width="24" Height="24"
-                                            Foreground="{DynamicResource AccentColor}"/>
+                                            Foreground="{DynamicResource AccentColor}"
+                                            Visibility="{Binding LibraryIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
+                            <Image Source="{Binding LibraryIconPath}"
+                                   Width="24" Height="24" Stretch="UniformToFill"
+                                   Visibility="{Binding LibraryIconPath, Converter={StaticResource NullToVisibility}}"/>
                         </Grid>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
                             <TextBlock Text="Biblioteca" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
@@ -114,13 +122,18 @@
                 <UniformGrid Grid.Row="2" Columns="2" Rows="3" Margin="0,16,0,0">
 
                     <!-- Perfil -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavProfileCommand}" Margin="0,0,6,6"
+                            Background="{Binding ProfileBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
                                 <ContentControl Template="{StaticResource IconPixelHanko}"
                                                 Width="18" Height="18"
-                                                Foreground="{DynamicResource AccentColor}"/>
+                                                Foreground="{DynamicResource AccentColor}"
+                                                Visibility="{Binding ProfileIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Image Source="{Binding ProfileIconPath}"
+                                       Width="18" Height="18" Stretch="UniformToFill"
+                                       Visibility="{Binding ProfileIconPath, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Perfil" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -129,13 +142,18 @@
                     </Button>
 
                     <!-- Amigos -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavFriendsCommand}" Margin="6,0,0,6">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavFriendsCommand}" Margin="6,0,0,6"
+                            Background="{Binding FriendsBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
                                 <ContentControl Template="{StaticResource IconPixelFriends}"
                                                 Width="18" Height="18"
-                                                Foreground="{DynamicResource AccentColor}"/>
+                                                Foreground="{DynamicResource AccentColor}"
+                                                Visibility="{Binding FriendsIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Image Source="{Binding FriendsIconPath}"
+                                       Width="18" Height="18" Stretch="UniformToFill"
+                                       Visibility="{Binding FriendsIconPath, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Amigos" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -144,13 +162,18 @@
                     </Button>
 
                     <!-- Ajustes -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavSettingsCommand}" Margin="0,0,6,6">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavSettingsCommand}" Margin="0,0,6,6"
+                            Background="{Binding SettingsBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
                                 <ContentControl Template="{StaticResource IconPixelLantern}"
                                                 Width="18" Height="18"
-                                                Foreground="{DynamicResource AccentColor}"/>
+                                                Foreground="{DynamicResource AccentColor}"
+                                                Visibility="{Binding SettingsIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Image Source="{Binding SettingsIconPath}"
+                                       Width="18" Height="18" Stretch="UniformToFill"
+                                       Visibility="{Binding SettingsIconPath, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Ajustes" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -159,13 +182,18 @@
                     </Button>
 
                     <!-- Ayuda -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavHelpCommand}" Margin="6,0,0,6">
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavHelpCommand}" Margin="6,0,0,6"
+                            Background="{Binding HelpBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40">
                                 <Border Style="{StaticResource IconBadge}"/>
                                 <TextBlock Text="?" FontSize="18" FontWeight="Bold"
                                            Foreground="{DynamicResource AccentColor}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="{Binding HelpIconPath, Converter={StaticResource NullToVisibilityInverse}}"/>
+                                <Image Source="{Binding HelpIconPath}"
+                                       Width="18" Height="18" Stretch="UniformToFill"
+                                       Visibility="{Binding HelpIconPath, Converter={StaticResource NullToVisibility}}"/>
                             </Grid>
                             <TextBlock Text="Ayuda" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -173,31 +201,38 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- Cuenta (avatar real si hay sesión) -->
-                    <Button Style="{StaticResource NavTile}" Command="{Binding NavAccountCommand}" Margin="0,0,6,0">
+                    <!-- Cuenta (avatar real si hay sesión; icono personalizado, si lo hay, gana a todo lo demás) -->
+                    <Button Style="{StaticResource NavTile}" Command="{Binding NavAccountCommand}" Margin="0,0,6,0"
+                            Background="{Binding AccountBackgroundPath, Converter={StaticResource PathToImageBrush}, ConverterParameter=CardBackground}">
                         <StackPanel Orientation="Horizontal">
                             <Grid Width="40" Height="40"
-                                  Visibility="{Binding ShowAvatarArea, Converter={StaticResource BoolToVisibility}}">
-                                <Border CornerRadius="20" ClipToBounds="True"
-                                        Visibility="{Binding HasAvatar, Converter={StaticResource BoolToVisibility}}">
-                                    <Image Source="{Binding AvatarUrl, Converter={StaticResource UrlToImage}}"
-                                           Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                </Border>
-                                <Border CornerRadius="20" Background="{DynamicResource AccentColor}" Opacity="0.18"
-                                        Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
-                                <TextBlock Text="{Binding SessionInitial}"
-                                           FontSize="15" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource AccentColor}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
+                                  Visibility="{Binding AccountIconPath, Converter={StaticResource NullToVisibilityInverse}}">
+                                <Grid Visibility="{Binding ShowAvatarArea, Converter={StaticResource BoolToVisibility}}">
+                                    <Border CornerRadius="20" ClipToBounds="True"
+                                            Visibility="{Binding HasAvatar, Converter={StaticResource BoolToVisibility}}">
+                                        <Image Source="{Binding AvatarUrl, Converter={StaticResource UrlToImage}}"
+                                               Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Border>
+                                    <Border CornerRadius="20" Background="{DynamicResource AccentColor}" Opacity="0.18"
+                                            Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
+                                    <TextBlock Text="{Binding SessionInitial}"
+                                               FontSize="15" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource AccentColor}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Visibility="{Binding HasAvatar, Converter={StaticResource InverseBoolToVisibility}}"/>
+                                </Grid>
+                                <Grid Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}">
+                                    <Border Style="{StaticResource IconBadge}"/>
+                                    <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Ellipse Canvas.Left="4" Canvas.Top="0" Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
+                                        <Path Data="M 0,16 C 0,11 16,11 16,16" Fill="{DynamicResource AccentColor}"/>
+                                    </Canvas>
+                                </Grid>
                             </Grid>
                             <Grid Width="40" Height="40"
-                                  Visibility="{Binding ShowAvatarArea, Converter={StaticResource InverseBoolToVisibility}}">
-                                <Border Style="{StaticResource IconBadge}"/>
-                                <Canvas Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Ellipse Canvas.Left="4" Canvas.Top="0" Width="8" Height="8" Fill="{DynamicResource AccentColor}"/>
-                                    <Path Data="M 0,16 C 0,11 16,11 16,16" Fill="{DynamicResource AccentColor}"/>
-                                </Canvas>
+                                  Visibility="{Binding AccountIconPath, Converter={StaticResource NullToVisibility}}">
+                                <Image Source="{Binding AccountIconPath}"
+                                       Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Grid>
                             <TextBlock Text="{Binding SessionLabel}" FontSize="14" FontWeight="Medium"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -227,15 +262,13 @@
         <!-- ═══════════════════════════════════════════════ -->
         <Grid Grid.Column="1" Background="{DynamicResource AppBackground}" ClipToBounds="True">
 
-            <!-- Fondo decorativo: wallpaper de Hakufu completo (sin recortar
-                 — el personaje solo ocupa la mitad izquierda de la imagen,
-                 así que recortar la partía). Opacidad muy baja para que
-                 quede detrás como ambiente, sin competir con la portada ni
-                 el botón de "Continuar leyendo". -->
-            <Image Source="/Images/HakufuWallpaper.png"
-                   Stretch="Uniform"
-                   Opacity="0.07"
-                   IsHitTestVisible="False"/>
+            <!-- Patrón decorativo de fondo: círculos suaves con el color de acento -->
+            <Canvas IsHitTestVisible="False">
+                <Ellipse Canvas.Right="-120" Canvas.Top="-120" Width="360" Height="360"
+                         Fill="{DynamicResource AccentColor}" Opacity="0.05"/>
+                <Ellipse Canvas.Right="40" Canvas.Bottom="-160" Width="300" Height="300"
+                         Fill="{DynamicResource AccentColor}" Opacity="0.04"/>
+            </Canvas>
 
             <!-- Estado vacío -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"

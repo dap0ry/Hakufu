@@ -1,5 +1,6 @@
 using System.IO;
 using Hakufu.Data;
+using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -11,22 +12,69 @@ public class SettingsViewModel : BaseViewModel
     private readonly INavigationService _nav;
     private readonly IDialogService     _dialog;
     private readonly LibraryService     _library;
+    private readonly ICustomizationService _customization;
+    private readonly IFilePickerService    _filePicker;
 
     private static readonly string HakufuDataDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
 
     public SettingsViewModel(IThemeService theme, IDataRepository repo,
                              INavigationService nav, IDialogService dialog,
-                             LibraryService library)
+                             LibraryService library, ICustomizationService customization,
+                             IFilePickerService filePicker)
     {
-        _theme   = theme;
-        _repo    = repo;
-        _nav     = nav;
-        _dialog  = dialog;
-        _library = library;
+        _theme         = theme;
+        _repo          = repo;
+        _nav           = nav;
+        _dialog        = dialog;
+        _library       = library;
+        _customization = customization;
+        _filePicker    = filePicker;
         _isDarkTheme = _theme.CurrentTheme == AppTheme.Dark;
 
+        CustomizationSlots = BuildCustomizationSlots();
+
         _ = LoadStorageSizesAsync();
+    }
+
+    // ── Personalización del menú de Inicio (100% local) ─────────────────────
+
+    public List<ImageSlotViewModel> CustomizationSlots { get; }
+
+    private List<ImageSlotViewModel> BuildCustomizationSlots()
+    {
+        var c = _repo.Current.Customization;
+
+        ImageSlotViewModel IconSlot(string key, string label) => new(
+            $"nav.{key}.icon", label, c.NavIconPaths.GetValueOrDefault(key),
+            _customization, _filePicker, _repo,
+            path =>
+            {
+                if (path is null) c.NavIconPaths.Remove(key);
+                else c.NavIconPaths[key] = path;
+            });
+
+        ImageSlotViewModel BackgroundSlot(string key, string label) => new(
+            $"nav.{key}.background", label, c.NavBackgroundPaths.GetValueOrDefault(key),
+            _customization, _filePicker, _repo,
+            path =>
+            {
+                if (path is null) c.NavBackgroundPaths.Remove(key);
+                else c.NavBackgroundPaths[key] = path;
+            });
+
+        return
+        [
+            new ImageSlotViewModel("panel.left", "Fondo del panel izquierdo", c.LeftPanelBackgroundPath,
+                _customization, _filePicker, _repo, path => c.LeftPanelBackgroundPath = path),
+
+            IconSlot("library", "Icono — Biblioteca"),  BackgroundSlot("library", "Fondo — Biblioteca"),
+            IconSlot("profile", "Icono — Perfil"),      BackgroundSlot("profile", "Fondo — Perfil"),
+            IconSlot("friends", "Icono — Amigos"),      BackgroundSlot("friends", "Fondo — Amigos"),
+            IconSlot("settings", "Icono — Ajustes"),    BackgroundSlot("settings", "Fondo — Ajustes"),
+            IconSlot("help", "Icono — Ayuda"),          BackgroundSlot("help", "Fondo — Ayuda"),
+            IconSlot("account", "Icono — Cuenta"),      BackgroundSlot("account", "Fondo — Cuenta"),
+        ];
     }
 
     // ── Theme ────────────────────────────────────────────────────────────────

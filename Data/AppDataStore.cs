@@ -19,4 +19,6 @@ public class AppDataStore
 
     // "name" | "date" | "custom" — recordado entre sesiones.
     public string                    LibrarySortMode { get; set; } = "date";
+
+    public HomeCustomization         Customization   { get; set; } = new();
 }

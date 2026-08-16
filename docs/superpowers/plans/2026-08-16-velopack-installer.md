@@ -43,7 +43,7 @@
 - Delete: `Installer/Hakufu.iss`
 - Delete: `Updater/Updater.csproj`, `Updater/Program.cs`, `Updater/app.manifest`
 - Modify: `Hakufu.csproj`
-- Create: `.config/dotnet-tools.json` (via `dotnet new tool-manifest`)
+- Create: `dotnet-tools.json` (via `dotnet new tool-manifest`)
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks (first task).
@@ -131,12 +131,12 @@ dotnet new tool-manifest
 dotnet tool install --local vpk
 ```
 
-This creates `.config/dotnet-tools.json`, committed to the repo so
+This creates `dotnet-tools.json`, committed to the repo so
 `Build-Release.ps1` (Task 5) can run `dotnet tool run vpk` without
 requiring a global install. Verify it was created:
 
 ```bash
-cat .config/dotnet-tools.json
+cat dotnet-tools.json
 ```
 
 Expected: JSON containing a `"vpk"` entry under `"tools"`.
@@ -336,21 +336,19 @@ public class UpdateService : IUpdateService
         if (_pendingUpdate is null)
             return;
 
-        _mgr.ApplyUpdatesAndRestart(_pendingUpdate);
+        _mgr.ApplyUpdatesAndRestart(_pendingUpdate.TargetFullRelease);
     }
 }
 ```
 
-> **Nota para quien implemente:** este código asume la superficie de API
-> actual de Velopack (`UpdateManager.IsInstalled`,
-> `CheckForUpdatesAsync()`, `DownloadUpdatesAsync(UpdateInfo)`,
-> `ApplyUpdatesAndRestart(UpdateInfo)`, `GithubSource(repoUrl, token,
-> prerelease)`). Si `dotnet build` falla por un nombre distinto en la
-> versión de paquete resuelta en la Tarea 1, abre el paquete instalado
-> en `~/.nuget/packages/velopack/<version>/lib/` (o el IntelliSense de
-> tu editor) para confirmar el nombre exacto y ajusta la llamada — la
-> forma (comprobar → descargar → guardar referencia → aplicar) no
-> cambia, solo los nombres literales podrían diferir entre versiones.
+> **Nota:** API verificada contra la documentación oficial de Velopack
+> 1.2.0 (`docs.velopack.io/reference/cs/Velopack`) el mismo día de esta
+> implementación: `UpdateManager.IsInstalled`, `CheckForUpdatesAsync()`
+> → `Task<UpdateInfo?>`, `DownloadUpdatesAsync(UpdateInfo, ...)`,
+> `ApplyUpdatesAndRestart(VelopackAsset?, ...)` (recibe el
+> `VelopackAsset`, no el `UpdateInfo` — de ahí `.TargetFullRelease`),
+> `GithubSource(string repoUrl, string? accessToken, bool prerelease,
+> IFileDownloader? downloader = null)`. Confirmado, no es una suposición.
 
 - [ ] **Step 3: Verify build**
 
@@ -669,7 +667,7 @@ git commit -m "feat: comprobación de updates en segundo plano + botón reinicia
 - Create: `Build-Release.ps1`
 
 **Interfaces:**
-- Consumes: `.config/dotnet-tools.json` (Task 1, for `dotnet tool run vpk`),
+- Consumes: `dotnet-tools.json` (Task 1, for `dotnet tool run vpk`),
   the bumped `<Version>` in `Hakufu.csproj` (Task 1).
 - Produces: `Releases/Setup.exe` + delta/full `.nupkg` packages, used
   manually by the user in Task 6 to actually publish a GitHub release
@@ -813,7 +811,7 @@ output/
 Releases/
 ```
 
-Leave `.config/dotnet-tools.json` untracked-by-nothing (i.e. don't add
+Leave `dotnet-tools.json` untracked-by-nothing (i.e. don't add
 it to `.gitignore`) — it must stay committed so `dotnet tool restore`
 works for anyone building the release.
 

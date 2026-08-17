@@ -31,7 +31,7 @@
                                FontSize="11" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextMuted}"
                                Margin="0,0,0,2"/>
-                    <TextBlock Text="Tus mangas en Google Drive"
+                    <TextBlock Text="Tus mangas en Dropbox"
                                Style="{StaticResource CaptionText}"/>
                 </StackPanel>
             </Grid>
@@ -95,7 +95,7 @@
                     </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock Text="Google Drive: " FontSize="14" FontWeight="SemiBold"
+                            <TextBlock Text="Dropbox: " FontSize="14" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextPrimary}"/>
                             <TextBlock Text="Conectado" FontSize="14" FontWeight="SemiBold"
                                        Foreground="#3EA76A"
@@ -106,13 +106,13 @@
                         </StackPanel>
                         <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
                                    TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,20">
-                            Conecta tu propia cuenta de Google. Hakufu solo accede a los archivos que él mismo crea en tu Drive (carpeta "Hakufu Backups"), nada más.
+                            Conecta tu propia cuenta de Dropbox. Hakufu solo accede a su propia carpeta dedicada dentro de tu Dropbox — nunca al resto de tus archivos.
                         </TextBlock>
 
                         <StackPanel Orientation="Horizontal"
                                     Visibility="{Binding IsNotConnected, Converter={StaticResource BoolToVisibility}}">
                             <Button Style="{StaticResource PrimaryButton}"
-                                    Content="Conectar Google Drive"
+                                    Content="Conectar Dropbox"
                                     Padding="22,10" Margin="0,0,10,0"
                                     Command="{Binding ConnectCommand}"/>
                             <Button Style="{StaticResource GhostButton}"
@@ -204,7 +204,7 @@
                                        Margin="0,0,0,8"/>
                             <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
                                        TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,20">
-                                Descarga desde Drive cualquier manga respaldado que no tengas ya en este equipo. Útil tras reinstalar Hakufu o en un PC nuevo.
+                                Descarga desde Dropbox cualquier manga respaldado que no tengas ya en este equipo. Útil tras reinstalar Hakufu o en un PC nuevo.
                             </TextBlock>
 
                             <Button Style="{StaticResource PrimaryButton}"

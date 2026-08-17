@@ -10,9 +10,9 @@ public class Manga
     public DateTime DateAdded          { get; set; } = DateTime.Now;
     public string   CloudinaryCoverUrl { get; set; } = string.Empty;
 
-    // Id del archivo en Google Drive una vez respaldado (ver BackupViewModel).
+    // Ruta del archivo en Dropbox una vez respaldado (ver BackupViewModel).
     // Vacío = todavía no se ha subido.
-    public string   DriveFileId        { get; set; } = string.Empty;
+    public string   DropboxPath        { get; set; } = string.Empty;
 
     // Posición cuando el orden de la colección es "personalizado" (ver
     // ReorderMangaViewModel). Sin usar en los demás modos de orden.

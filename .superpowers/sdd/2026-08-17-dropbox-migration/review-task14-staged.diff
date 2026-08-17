@@ -1,0 +1,82 @@
+Staged (uncommitted) Task 14 changes — Manga.cs/SyncPayloadBuilder.cs/HakufuApiClient.cs only.
+
+diff --git a/MVVM/Model/Manga.cs b/MVVM/Model/Manga.cs
+index 3d1b978..1f717ef 100644
+--- a/MVVM/Model/Manga.cs
++++ b/MVVM/Model/Manga.cs
+@@ -5,21 +5,21 @@ public class Manga
+     public Guid   Id             { get; set; } = Guid.NewGuid();
+     public string Title          { get; set; } = string.Empty;
+     public string FilePath       { get; set; } = string.Empty;
+     public string CoverCachePath { get; set; } = string.Empty;
+     public int    TotalPages     { get; set; }
+     public DateTime DateAdded          { get; set; } = DateTime.Now;
+     public string   CloudinaryCoverUrl { get; set; } = string.Empty;
+ 
+     // Id del archivo en Google Drive una vez respaldado (ver BackupViewModel).
+     // Vacío = todavía no se ha subido.
+-    public string   DriveFileId        { get; set; } = string.Empty;
++    public string   DropboxPath        { get; set; } = string.Empty;
+ 
+     // Posición cuando el orden de la colección es "personalizado" (ver
+     // ReorderMangaViewModel). Sin usar en los demás modos de orden.
+     public int      CustomOrder        { get; set; } = 0;
+ 
+     // Favorito marcado con la estrellita junto al título. Independiente de
+     // los favoritos por colección (ver Collection.IsFavorite).
+     public bool     IsFavorite         { get; set; } = false;
+ 
+     // Momento en el que se marcó como favorito — usado para ordenar el
+diff --git a/Services/HakufuApiClient.cs b/Services/HakufuApiClient.cs
+index 4ee69de..41eacb1 100644
+--- a/Services/HakufuApiClient.cs
++++ b/Services/HakufuApiClient.cs
+@@ -24,21 +24,21 @@ public class HakufuApiClient
+         List<ReadingHistoryData> ReadingHistory,
+         CurrentlyReadingData? CurrentlyReading);
+ 
+     // ── Sync records ────────────────────────────────────────────────────────
+     public record MangaSyncItem(
+         [property: JsonPropertyName("id")]                   string   Id,
+         [property: JsonPropertyName("title")]                string   Title,
+         [property: JsonPropertyName("total_pages")]          int      TotalPages,
+         [property: JsonPropertyName("cover_cloudinary_url")] string   CoverCloudinaryUrl,
+         [property: JsonPropertyName("date_added")]           DateTime DateAdded,
+-        [property: JsonPropertyName("drive_file_id")]        string   DriveFileId = "");
++        [property: JsonPropertyName("dropbox_path")]         string   DropboxPath = "");
+ 
+     public record CollectionSyncItem(
+         [property: JsonPropertyName("id")]          string       Id,
+         [property: JsonPropertyName("name")]        string       Name,
+         [property: JsonPropertyName("description")] string       Description,
+         [property: JsonPropertyName("manga_ids")]   List<string> MangaIds,
+         [property: JsonPropertyName("created_at")]  DateTime     CreatedAt);
+ 
+     public record ProgressSyncItem(
+         [property: JsonPropertyName("manga_id")]     string   MangaId,
+diff --git a/Services/SyncPayloadBuilder.cs b/Services/SyncPayloadBuilder.cs
+index 92e6e62..4099560 100644
+--- a/Services/SyncPayloadBuilder.cs
++++ b/Services/SyncPayloadBuilder.cs
+@@ -19,20 +19,20 @@ public static class SyncPayloadBuilder
+             return new HakufuApiClient.HistorySyncItem(
+                 h.MangaId.ToString(),
+                 m?.Title              ?? "",
+                 m?.CloudinaryCoverUrl ?? "",
+                 h.CompletedAt);
+         }).ToList();
+ 
+         return new HakufuApiClient.LibrarySyncPayload(
+             Mangas: mangas.Select(m => new HakufuApiClient.MangaSyncItem(
+                 m.Id.ToString(), m.Title, m.TotalPages,
+-                m.CloudinaryCoverUrl, m.DateAdded, m.DriveFileId)).ToList(),
++                m.CloudinaryCoverUrl, m.DateAdded, m.DropboxPath)).ToList(),
+             Collections: collections.Select(c => new HakufuApiClient.CollectionSyncItem(
+                 c.Id.ToString(), c.Name, c.Description,
+                 c.MangaIds.Select(id => id.ToString()).ToList(), c.CreatedAt)).ToList(),
+             ReadingProgress: repo.Current.Progress.Select(p => new HakufuApiClient.ProgressSyncItem(
+                 p.MangaId.ToString(), p.CurrentPage, p.LastRead)).ToList(),
+             ReadingHistory: history,
+             TotalUsageSeconds: repo.Current.TotalUsageSeconds);
+     }
+ }

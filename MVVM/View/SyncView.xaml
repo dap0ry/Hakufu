@@ -266,13 +266,13 @@
                         <DropShadowEffect Color="Black" ShadowDepth="0" BlurRadius="14" Opacity="0.07"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="Google Drive"
+                        <TextBlock Text="Dropbox"
                                    FontSize="14" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimary}"
                                    Margin="0,0,0,8"/>
                         <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
                                    TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,20">
-                            Respalda tus archivos de manga (no solo los datos) en tu propio Google Drive, y léelos desde cualquier dispositivo en la web.
+                            Respalda tus archivos de manga (no solo los datos) en tu propio Dropbox, y léelos desde cualquier dispositivo en la web.
                         </TextBlock>
                         <Button Style="{StaticResource PrimaryButton}"
                                 Content="Gestionar copia de seguridad"

@@ -1,0 +1,52 @@
+Staged (uncommitted) App.xaml.cs changes for Task 12 — will be committed together with Tasks 11+13 per plan.
+
+diff --git a/App.xaml.cs b/App.xaml.cs
+index b26c538..f26701b 100644
+--- a/App.xaml.cs
++++ b/App.xaml.cs
+@@ -39,21 +39,21 @@ public partial class App : Application
+             var dialogService  = new DialogService();
+             var filePickerSvc  = new FilePickerService();
+             var coverService   = new CoverService();
+             var libraryService = new LibraryService(_repo);
+             var profileService = new ProfileService(_repo);
+             var updateService  = new UpdateService();
+             var customizationService = new CustomizationService();
+             var wallpaperService = new WallpaperService();
+             var sessionService = new SessionService();
+             var apiClient      = new HakufuApiClient(sessionService);
+-            var driveService   = new GoogleDriveService(sessionService);
++            var dropboxService = new DropboxService(sessionService);
+ 
+             // Si ya hay una actualización descargada de la sesión anterior
+             // (Velopack lo recuerda entre reinicios), aplícala y reinicia
+             // antes de mostrar nada — el usuario nunca ve una pantalla de
+             // actualizaciones, simplemente la app ya está al día.
+             if (updateService.IsUpdateReadyToApply)
+             {
+                 updateService.ApplyUpdateAndRestart();
+                 return;
+             }
+@@ -97,21 +97,21 @@ public partial class App : Application
+ 
+                     nameof(CustomizationViewModel) => new CustomizationViewModel(
+                         _repo!, navService!, customizationService, filePickerSvc, wallpaperService),
+ 
+                     nameof(HelpViewModel) => new HelpViewModel(navService!),
+ 
+                     nameof(SyncViewModel) => new SyncViewModel(
+                         sessionService, apiClient, navService!, libraryService, coverService, _repo!),
+ 
+                     nameof(BackupViewModel) => new BackupViewModel(
+-                        driveService, apiClient, navService!, _repo!, coverService),
++                        dropboxService, apiClient, navService!, _repo!, coverService),
+ 
+                     nameof(FriendsViewModel) => new FriendsViewModel(sessionService, apiClient, navService!),
+ 
+                     nameof(PublicProfileViewModel) when param is string username =>
+                         new PublicProfileViewModel(username, apiClient, navService!),
+ 
+                     _ => throw new InvalidOperationException($"Unknown ViewModel: {type.Name}")
+                 };
+             }
+ 

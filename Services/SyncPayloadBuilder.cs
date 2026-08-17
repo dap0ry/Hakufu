@@ -4,7 +4,7 @@ namespace Hakufu.Services;
 
 // Construye el payload de /users/me/library a partir del estado local. Lo usan
 // tanto la sincronización de cuenta (SyncViewModel) como la copia de seguridad en
-// Drive (BackupViewModel) — un único sitio donde mapear Manga/Collection/etc. al
+// Dropbox (BackupViewModel) — un único sitio donde mapear Manga/Collection/etc. al
 // formato que espera la API.
 public static class SyncPayloadBuilder
 {
@@ -26,7 +26,7 @@ public static class SyncPayloadBuilder
         return new HakufuApiClient.LibrarySyncPayload(
             Mangas: mangas.Select(m => new HakufuApiClient.MangaSyncItem(
                 m.Id.ToString(), m.Title, m.TotalPages,
-                m.CloudinaryCoverUrl, m.DateAdded, m.DriveFileId)).ToList(),
+                m.CloudinaryCoverUrl, m.DateAdded, m.DropboxPath)).ToList(),
             Collections: collections.Select(c => new HakufuApiClient.CollectionSyncItem(
                 c.Id.ToString(), c.Name, c.Description,
                 c.MangaIds.Select(id => id.ToString()).ToList(), c.CreatedAt)).ToList(),

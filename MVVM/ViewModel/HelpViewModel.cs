@@ -49,7 +49,7 @@ public class HelpViewModel : BaseViewModel
         new("2. Naturaleza de la Aplicación y ausencia de contenidos propios",
             "Hakufu es, exclusivamente, una herramienta local de organización, catalogación y lectura de archivos " +
             "en formato PDF, CBR y CBZ que el propio Usuario posee, almacena y gestiona en sus propios " +
-            "dispositivos y/o en su propia cuenta personal de servicios de terceros (por ejemplo, Google Drive, " +
+            "dispositivos y/o en su propia cuenta personal de servicios de terceros (por ejemplo, Dropbox, " +
             "cuando el Usuario decide vincularla voluntariamente). La Aplicación NO aloja, NO almacena en " +
             "servidores propios del Desarrollador, NO indexa, NO cataloga, NO distribuye, NO comparte, NO " +
             "publica, NO enlaza ni NO facilita de ninguna otra forma el acceso a obras protegidas por derechos de " +

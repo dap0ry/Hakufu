@@ -120,8 +120,8 @@ public class HelpViewModel : BaseViewModel
 
         new("6. Cuentas de usuario, sincronización con servicios de terceros y protección de datos",
             "La Aplicación permite, de forma opcional y bajo la exclusiva voluntad del Usuario, la creación de " +
-            "una cuenta personal y la vinculación de servicios de terceros —incluyendo, entre otros, Google " +
-            "Drive— con el fin de sincronizar o respaldar la biblioteca del Usuario. Dicha vinculación se realiza " +
+            "una cuenta personal y la vinculación de servicios de terceros —incluyendo, entre otros, Dropbox " +
+            "— con el fin de sincronizar o respaldar la biblioteca del Usuario. Dicha vinculación se realiza " +
             "íntegramente mediante los mecanismos oficiales de autenticación del tercero correspondiente (OAuth), " +
             "sin que el Desarrollador llegue a conocer, almacenar ni tener acceso a las credenciales de acceso " +
             "del Usuario a dichos servicios. El tratamiento de los datos personales facilitados por el Usuario se " +

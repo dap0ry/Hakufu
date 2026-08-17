@@ -9,7 +9,6 @@ namespace Hakufu.Services;
 public class DropboxService : IDropboxService
 {
     private const string ContentApiUrl = "https://content.dropboxapi.com/2";
-    private const string ApiUrl        = "https://api.dropboxapi.com/2";
     private const int    ChunkSize     = 8 * 1024 * 1024; // 8 MB por chunk
 
     private readonly ISessionService _session;
@@ -43,6 +42,8 @@ public class DropboxService : IDropboxService
 
         var doc     = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
         var linkUrl = doc.RootElement.GetProperty("link_url").GetString()!;
+        if (!linkUrl.StartsWith("https://", StringComparison.Ordinal))
+            throw new InvalidOperationException("El enlace de conexión con Dropbox no es válido.");
         Process.Start(new ProcessStartInfo(linkUrl) { UseShellExecute = true });
         return linkUrl;
     }
@@ -65,10 +66,13 @@ public class DropboxService : IDropboxService
     }
 
     // Los valores de la cabecera Dropbox-API-Arg deben ser ASCII de 7 bits —
-    // los títulos de manga pueden llevar tildes/ñ, así que se codifica el
-    // JSON con Uri.EscapeDataString antes de meterlo en la cabecera.
-    private static string ArgHeader(object args) =>
-        Uri.EscapeDataString(JsonSerializer.Serialize(args));
+    // los títulos de manga pueden llevar tildes/ñ. System.Text.Json ya escapa
+    // por defecto todo lo no-ASCII como \uXXXX, que es exactamente el formato
+    // "header safe" que exige Dropbox — no hace falta (ni es correcto) hacer
+    // también percent-encoding con Uri.EscapeDataString, que codificaría
+    // también los caracteres estructurales del JSON ({, ", :, /) y rompería
+    // el parseo en el lado de Dropbox.
+    private static string ArgHeader(object args) => JsonSerializer.Serialize(args);
 
     // ── Dropbox (directo, con el access token) — subida por sesión/chunks ──
     // Siempre por sesión, nunca el endpoint simple de /upload (limitado a
@@ -90,7 +94,7 @@ public class DropboxService : IDropboxService
         startReq.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
         using var startResp = await _http.SendAsync(startReq, ct);
-        startResp.EnsureSuccessStatusCode();
+        await EnsureDropboxSuccessAsync(startResp);
         var startDoc = JsonDocument.Parse(await startResp.Content.ReadAsStringAsync());
         var sessionId = startDoc.RootElement.GetProperty("session_id").GetString()!;
 
@@ -112,7 +116,7 @@ public class DropboxService : IDropboxService
             appendReq.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
             using var appendResp = await _http.SendAsync(appendReq, ct);
-            appendResp.EnsureSuccessStatusCode();
+            await EnsureDropboxSuccessAsync(appendResp);
 
             sent += read;
             progress?.Report(total > 0 ? (double)sent / total * 100 : 100);
@@ -124,15 +128,28 @@ public class DropboxService : IDropboxService
         finishReq.Headers.Add("Dropbox-API-Arg", ArgHeader(new
         {
             cursor = new { session_id = sessionId, offset = sent },
-            commit = new { path, mode = "overwrite" },
+            commit = new { path, mode = "add", autorename = true },
         }));
         finishReq.Content = new ByteArrayContent([]);
         finishReq.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
         using var finishResp = await _http.SendAsync(finishReq, ct);
-        finishResp.EnsureSuccessStatusCode();
+        await EnsureDropboxSuccessAsync(finishResp);
         var finishDoc = JsonDocument.Parse(await finishResp.Content.ReadAsStringAsync());
         return finishDoc.RootElement.GetProperty("path_lower").GetString()!;
+    }
+
+    // Dropbox devuelve el motivo real del fallo en el cuerpo (campo
+    // error_summary), no en el status code — EnsureSuccessStatusCode() por sí
+    // solo da "409 (Conflict)" sin decir el porqué.
+    private static async Task EnsureDropboxSuccessAsync(HttpResponseMessage resp)
+    {
+        if (resp.IsSuccessStatusCode) return;
+        string body;
+        try { body = await resp.Content.ReadAsStringAsync(); }
+        catch { body = ""; }
+        throw new InvalidOperationException(
+            $"Dropbox devolvió {(int)resp.StatusCode}: {(string.IsNullOrEmpty(body) ? resp.ReasonPhrase : body)}");
     }
 
     private static async Task<int> ReadFullyAsync(Stream stream, byte[] buffer, CancellationToken ct)
@@ -156,7 +173,7 @@ public class DropboxService : IDropboxService
         req.Headers.Add("Dropbox-API-Arg", ArgHeader(new { path }));
 
         using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
-        resp.EnsureSuccessStatusCode();
+        await EnsureDropboxSuccessAsync(resp);
 
         var total  = resp.Content.Headers.ContentLength ?? -1L;
         var buffer = new byte[81920];

@@ -31,7 +31,7 @@ public class HakufuApiClient
         [property: JsonPropertyName("total_pages")]          int      TotalPages,
         [property: JsonPropertyName("cover_cloudinary_url")] string   CoverCloudinaryUrl,
         [property: JsonPropertyName("date_added")]           DateTime DateAdded,
-        [property: JsonPropertyName("drive_file_id")]        string   DriveFileId = "");
+        [property: JsonPropertyName("dropbox_path")]         string   DropboxPath = "");
 
     public record CollectionSyncItem(
         [property: JsonPropertyName("id")]          string       Id,

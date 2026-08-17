@@ -46,7 +46,7 @@ public partial class App : Application
             var wallpaperService = new WallpaperService();
             var sessionService = new SessionService();
             var apiClient      = new HakufuApiClient(sessionService);
-            var driveService   = new GoogleDriveService(sessionService);
+            var dropboxService = new DropboxService(sessionService);
 
             // Si ya hay una actualización descargada de la sesión anterior
             // (Velopack lo recuerda entre reinicios), aplícala y reinicia
@@ -104,7 +104,7 @@ public partial class App : Application
                         sessionService, apiClient, navService!, libraryService, coverService, _repo!),
 
                     nameof(BackupViewModel) => new BackupViewModel(
-                        driveService, apiClient, navService!, _repo!, coverService),
+                        dropboxService, apiClient, navService!, _repo!, coverService),
 
                     nameof(FriendsViewModel) => new FriendsViewModel(sessionService, apiClient, navService!),
 

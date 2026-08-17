@@ -26,7 +26,7 @@ public static class SyncPayloadBuilder
         return new HakufuApiClient.LibrarySyncPayload(
             Mangas: mangas.Select(m => new HakufuApiClient.MangaSyncItem(
                 m.Id.ToString(), m.Title, m.TotalPages,
-                m.CloudinaryCoverUrl, m.DateAdded, m.DriveFileId)).ToList(),
+                m.CloudinaryCoverUrl, m.DateAdded, m.DropboxPath)).ToList(),
             Collections: collections.Select(c => new HakufuApiClient.CollectionSyncItem(
                 c.Id.ToString(), c.Name, c.Description,
                 c.MangaIds.Select(id => id.ToString()).ToList(), c.CreatedAt)).ToList(),

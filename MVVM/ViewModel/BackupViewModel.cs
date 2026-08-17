@@ -7,7 +7,7 @@ namespace Hakufu.MVVM.ViewModel;
 
 public class BackupViewModel : BaseViewModel
 {
-    private readonly IGoogleDriveService _drive;
+    private readonly IDropboxService _dropbox;
     private readonly HakufuApiClient     _api;
     private readonly INavigationService  _nav;
     private readonly IDataRepository     _repo;
@@ -43,21 +43,21 @@ public class BackupViewModel : BaseViewModel
     public string? StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
     public bool    IsSuccess     { get => _isSuccess;     private set => SetProperty(ref _isSuccess,     value); }
 
-    public BackupViewModel(IGoogleDriveService drive, HakufuApiClient api, INavigationService nav,
+    public BackupViewModel(IDropboxService dropbox, HakufuApiClient api, INavigationService nav,
                            IDataRepository repo, ICoverService cover)
     {
-        _drive = drive;
-        _api   = api;
-        _nav   = nav;
-        _repo  = repo;
-        _cover = cover;
+        _dropbox = dropbox;
+        _api     = api;
+        _nav     = nav;
+        _repo    = repo;
+        _cover   = cover;
         _ = RefreshStatusAsync();
     }
 
     private async Task RefreshStatusAsync()
     {
         IsCheckingStatus = true;
-        try { IsConnected = await _drive.IsConnectedAsync(); }
+        try { IsConnected = await _dropbox.IsConnectedAsync(); }
         catch { IsConnected = false; }
         finally { IsCheckingStatus = false; }
     }
@@ -69,7 +69,7 @@ public class BackupViewModel : BaseViewModel
         StatusMessage = null;
         try
         {
-            await _drive.StartConnectFlowAsync();
+            await _dropbox.StartConnectFlowAsync();
             StatusMessage = "Completa la conexión en el navegador y pulsa \"Comprobar conexión\".";
             IsSuccess = true;
         }
@@ -87,10 +87,10 @@ public class BackupViewModel : BaseViewModel
         IsBusy = true;
         try
         {
-            await _drive.DisconnectAsync();
+            await _dropbox.DisconnectAsync();
             IsConnected   = false;
             IsSuccess     = true;
-            StatusMessage = "Google Drive desconectado.";
+            StatusMessage = "Dropbox desconectado.";
         }
         catch (Exception ex)
         {
@@ -102,21 +102,13 @@ public class BackupViewModel : BaseViewModel
 
     public AsyncRelayCommand DisconnectCommand => new(DoDisconnectAsync, () => !IsBusy);
 
-    private static string MimeTypeFor(string ext) => ext switch
-    {
-        ".pdf" => "application/pdf",
-        ".cbz" => "application/zip",
-        ".cbr" => "application/vnd.rar",
-        _      => "application/octet-stream",
-    };
-
     private const string UncategorizedFolderName = "Sin colección";
 
-    // Nombre legible para carpetas/archivos en Drive — a diferencia del Slugify
+    // Nombre legible para la ruta en Dropbox — a diferencia del Slugify
     // que usa SyncViewModel para Cloudinary (piensa en URLs), aquí queremos que
-    // se vea bien al navegar el Drive a mano: se conservan mayúsculas y
-    // espacios, solo se quitan los caracteres que dan problemas.
-    private static string SanitizeDriveName(string text)
+    // se vea bien al navegar el Dropbox a mano: se conservan mayúsculas y
+    // espacios, solo se quitan los caracteres que dan problemas en una ruta.
+    private static string SanitizeDropboxName(string text)
     {
         var invalid = Path.GetInvalidFileNameChars();
         var clean = new string(text.Where(c => !invalid.Contains(c) && c != '/' && c != '\\').ToArray());
@@ -129,12 +121,11 @@ public class BackupViewModel : BaseViewModel
         IsBusy = true; StatusMessage = null; IsSuccess = false;
         try
         {
-            ProgressText = "Conectando con Google Drive…";
-            var token = await _drive.GetAccessTokenAsync();
-            var rootFolderId = await _drive.FindOrCreateBackupFolderAsync(token);
+            ProgressText = "Conectando con Dropbox…";
+            var token = await _dropbox.GetAccessTokenAsync();
 
             var pending = _repo.Current.Mangas
-                .Where(m => string.IsNullOrEmpty(m.DriveFileId) && File.Exists(m.FilePath))
+                .Where(m => string.IsNullOrEmpty(m.DropboxPath) && File.Exists(m.FilePath))
                 .ToList();
 
             // Un manga puede estar en varias colecciones — se sube una vez y se
@@ -143,18 +134,7 @@ public class BackupViewModel : BaseViewModel
             string CollectionFolderNameFor(Manga manga)
             {
                 var col = collections.FirstOrDefault(c => c.MangaIds.Contains(manga.Id));
-                return col is not null ? SanitizeDriveName(col.Name) : UncategorizedFolderName;
-            }
-
-            // Cachear el id de carpeta por nombre — si hay 30 mangas en la misma
-            // colección no hace falta buscar/crear esa carpeta 30 veces.
-            var folderCache = new Dictionary<string, string>();
-            async Task<string> GetCollectionFolderIdAsync(string name)
-            {
-                if (folderCache.TryGetValue(name, out var id)) return id;
-                id = await _drive.FindOrCreateFolderAsync(token, name, rootFolderId);
-                folderCache[name] = id;
-                return id;
+                return col is not null ? SanitizeDropboxName(col.Name) : UncategorizedFolderName;
             }
 
             int total = pending.Count, current = 0;
@@ -165,14 +145,13 @@ public class BackupViewModel : BaseViewModel
                 ProgressText = label;
                 var progress = new Progress<double>(p => ProgressText = $"{label} ({p:F0}%)");
 
-                var collectionFolderId = await GetCollectionFolderIdAsync(CollectionFolderNameFor(manga));
-
                 var ext = Path.GetExtension(manga.FilePath).ToLowerInvariant();
-                var fileName = $"{SanitizeDriveName(manga.Title)}{ext}";
-                manga.DriveFileId = await _drive.UploadFileAsync(
-                    token, collectionFolderId, fileName, MimeTypeFor(ext), manga.FilePath, progress);
+                var fileName = $"{SanitizeDropboxName(manga.Title)}{ext}";
+                var path = $"/{CollectionFolderNameFor(manga)}/{fileName}";
+                manga.DropboxPath = await _dropbox.UploadFileAsync(
+                    token, path, manga.FilePath, progress);
 
-                // La copia de seguridad solo sube el archivo a Drive — sin esto,
+                // La copia de seguridad solo sube el archivo a Dropbox — sin esto,
                 // un manga respaldado solo por aquí (sin pasar nunca por
                 // "Sincronización") se queda sin CloudinaryCoverUrl, y por eso
                 // no aparecía portada en el perfil público ni en el de amigos.
@@ -194,9 +173,9 @@ public class BackupViewModel : BaseViewModel
                 }
 
                 // Guardar tras cada archivo (no al final): si algo interrumpe la
-                // subida a mitad, los archivos que sí llegaron a Drive quedan
+                // subida a mitad, los archivos que sí llegaron a Dropbox quedan
                 // enlazados localmente — sin esto, un fallo posterior (ej. al
-                // subir los metadatos) perdía el DriveFileId de todo lo ya
+                // subir los metadatos) perdía el DropboxPath de todo lo ya
                 // subido, y un reintento lo volvía a subir duplicado.
                 await _repo.SaveAsync();
             }
@@ -208,7 +187,7 @@ public class BackupViewModel : BaseViewModel
             IsSuccess     = true;
             StatusMessage = total > 0
                 ? $"Copia de seguridad completada. {total} archivo(s) subidos."
-                : "Todo tu manga ya estaba respaldado en Drive.";
+                : "Todo tu manga ya estaba respaldado en Dropbox.";
         }
         catch (Exception ex)
         {
@@ -232,11 +211,11 @@ public class BackupViewModel : BaseViewModel
                 return;
             }
 
-            var token = await _drive.GetAccessTokenAsync();
+            var token = await _dropbox.GetAccessTokenAsync();
             Directory.CreateDirectory(LibraryDir);
 
             var toRestore = data.Mangas
-                .Where(m => !string.IsNullOrEmpty(m.DriveFileId) && Guid.TryParse(m.Id, out _))
+                .Where(m => !string.IsNullOrEmpty(m.DropboxPath) && Guid.TryParse(m.Id, out _))
                 .Where(m => !_repo.Current.Mangas.Any(local =>
                     local.Id == Guid.Parse(m.Id) && File.Exists(local.FilePath)))
                 .ToList();
@@ -249,11 +228,10 @@ public class BackupViewModel : BaseViewModel
                 ProgressText = label;
                 var progress = new Progress<double>(p => ProgressText = $"{label} ({p:F0}%)");
 
-                var remoteName = await _drive.GetFileNameAsync(token, item.DriveFileId);
-                var ext        = string.IsNullOrEmpty(remoteName) ? "" : Path.GetExtension(remoteName);
-                var destPath   = Path.Combine(LibraryDir, $"{item.Id}{ext}");
+                var ext      = Path.GetExtension(item.DropboxPath);
+                var destPath = Path.Combine(LibraryDir, $"{item.Id}{ext}");
 
-                await _drive.DownloadFileAsync(token, item.DriveFileId, destPath, progress);
+                await _dropbox.DownloadFileAsync(token, item.DropboxPath, destPath, progress);
 
                 var id    = Guid.Parse(item.Id);
                 var local = _repo.Current.Mangas.FirstOrDefault(m => m.Id == id);
@@ -271,7 +249,7 @@ public class BackupViewModel : BaseViewModel
                         TotalPages         = item.TotalPages,
                         DateAdded          = item.DateAdded,
                         CloudinaryCoverUrl = item.CoverCloudinaryUrl,
-                        DriveFileId        = item.DriveFileId,
+                        DropboxPath        = item.DropboxPath,
                     });
                 }
             }
@@ -280,7 +258,7 @@ public class BackupViewModel : BaseViewModel
             ProgressText  = "";
             IsSuccess     = true;
             StatusMessage = total > 0
-                ? $"Restaurados {total} archivo(s) desde Google Drive."
+                ? $"Restaurados {total} archivo(s) desde Dropbox."
                 : "Ya tenías localmente todo lo que hay respaldado.";
         }
         catch (Exception ex)

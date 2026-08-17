@@ -1,7 +1,7 @@
 namespace Hakufu.MVVM.Model;
 
 // Una imagen de personalización + su opacidad — 100% local, nunca se
-// sincroniza con Drive ni con la cuenta.
+// sincroniza con Dropbox ni con la cuenta.
 public class CustomizationImage
 {
     public string Path    { get; set; } = "";

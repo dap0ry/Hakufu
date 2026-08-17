@@ -6,7 +6,7 @@ using System.Windows.Media.Imaging;
 namespace Hakufu.Services;
 
 // Compartido entre SyncViewModel (sube portadas sueltas) y BackupViewModel
-// (sube portada + archivo completo a Drive) — un único sitio para el
+// (sube portada + archivo completo a Dropbox) — un único sitio para el
 // slug de nombres de colección/manga y la re-codificación a JPEG.
 public static class CoverUploadHelper
 {

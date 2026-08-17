@@ -4,7 +4,7 @@ namespace Hakufu.Services;
 
 // Construye el payload de /users/me/library a partir del estado local. Lo usan
 // tanto la sincronización de cuenta (SyncViewModel) como la copia de seguridad en
-// Drive (BackupViewModel) — un único sitio donde mapear Manga/Collection/etc. al
+// Dropbox (BackupViewModel) — un único sitio donde mapear Manga/Collection/etc. al
 // formato que espera la API.
 public static class SyncPayloadBuilder
 {

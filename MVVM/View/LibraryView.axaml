@@ -1,0 +1,303 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.LibraryView"
+             x:DataType="vm:LibraryViewModel">
+
+    <UserControl.Styles>
+        <!-- Tarjeta de colección: botón sin cromo que se aclara al pasar el ratón -->
+        <Style Selector="Button.collectionCard">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root" Background="Transparent">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.collectionCard:pointerover /template/ Border#Root">
+            <Setter Property="Opacity" Value="0.82"/>
+        </Style>
+
+        <!-- Botón de favorito (estrella sobre la portada) -->
+        <Style Selector="Button.star">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Background="Transparent"
+                                      Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="ContentControl.starIcon">
+            <Setter Property="Foreground" Value="#CCFFFFFF"/>
+        </Style>
+        <Style Selector="ContentControl.starIcon.favorite">
+            <Setter Property="Foreground" Value="#FFD84A"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="40,24,40,24">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Back -->
+                <Button Grid.Column="0"
+                        Classes="ghost"
+                        Content="← Inicio"
+                        Command="{Binding GoBackCommand}"
+                        Margin="0,0,24,0"/>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="BIBLIOTECA"
+                               FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,0,0,2"/>
+                    <TextBlock Classes="caption"
+                               Text="{Binding Collections.Count, StringFormat='{}{0} colecciones'}"/>
+                </StackPanel>
+
+                <!-- Actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Normal mode -->
+                    <Button Classes="ghost"
+                            Content="Seleccionar"
+                            Padding="16,10"
+                            Margin="0,0,12,0"
+                            Command="{Binding ToggleSelectionModeCommand}"
+                            IsVisible="{Binding !IsSelectionMode}"/>
+                    <Button Classes="primary"
+                            Padding="18,10"
+                            Command="{Binding CreateCollectionCommand}"
+                            IsVisible="{Binding !IsSelectionMode}">
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Template="{StaticResource IconPixelFolder}"
+                                            Width="14" Height="14" Margin="0,0,8,0"/>
+                            <TextBlock Text="Nueva colección"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- Selection mode -->
+                    <Button Classes="ghost"
+                            Content="Cancelar"
+                            Padding="16,10"
+                            Margin="0,0,12,0"
+                            Command="{Binding ToggleSelectionModeCommand}"
+                            IsVisible="{Binding IsSelectionMode}"/>
+                    <Button Classes="primary"
+                            Padding="18,10"
+                            Command="{Binding DeleteSelectedCommand}"
+                            IsVisible="{Binding IsSelectionMode}">
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Template="{StaticResource IconPixelTrash}"
+                                            Width="14" Height="14" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding SelectedCount, StringFormat='Eliminar ({0})'}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ CONTINUAR LEYENDO ═══ -->
+        <Border Grid.Row="1"
+                Padding="40,20,40,0"
+                IsVisible="{Binding HasLastManga}">
+            <Border Classes="card" Padding="0" ClipToBounds="True">
+                <Button Classes="icon"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Command="{Binding ContinueReadingCommand}">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+
+                        <!-- Cover -->
+                        <Border Grid.Column="0" Width="72" Height="100"
+                                CornerRadius="6,0,0,6" ClipToBounds="True"
+                                Background="{DynamicResource SidebarBackground}">
+                            <Image Source="{Binding LastMangaCover}"
+                                   Stretch="UniformToFill"
+                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                        </Border>
+
+                        <!-- Info -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
+                            <TextBlock Text="CONTINUAR LEYENDO"
+                                       FontSize="9" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding LastMangaTitle}"
+                                       FontSize="15" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+
+                        <!-- Arrow -->
+                        <TextBlock Grid.Column="2"
+                                   Text="→"
+                                   FontSize="18"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,24,0"/>
+                    </Grid>
+                </Button>
+            </Border>
+        </Border>
+
+        <!-- ═══ COLECCIONES ═══ -->
+        <ScrollViewer Grid.Row="2"
+                      Padding="40,28,40,40"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- Section label -->
+                <TextBlock Text="MIS COLECCIONES"
+                           FontSize="10" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMuted}"
+                           Margin="0,0,0,20"/>
+
+                <!-- Empty state -->
+                <StackPanel HorizontalAlignment="Center"
+                            Margin="0,40,0,0"
+                            IsVisible="{Binding !Collections.Count}">
+                    <TextBlock Text="—" FontSize="28"
+                               Foreground="{DynamicResource TextMuted}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,12"/>
+                    <TextBlock Text="Sin colecciones todavía"
+                               Classes="subtitle"
+                               Foreground="{DynamicResource TextMuted}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Pulsa &quot;+ Nueva colección&quot; para empezar"
+                               Classes="caption"
+                               HorizontalAlignment="Center"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+
+                <!-- Cards wrap -->
+                <ItemsControl ItemsSource="{Binding Collections}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CollectionCardViewModel">
+                            <Button Classes="collectionCard"
+                                    Margin="0,0,24,28"
+                                    Command="{Binding $parent[UserControl].((vm:LibraryViewModel)DataContext).CardClickCommand}"
+                                    CommandParameter="{Binding}">
+                                <StackPanel Width="172">
+                                    <!-- Stacked cover effect -->
+                                    <Grid Width="172" Height="232" Margin="0,0,0,10">
+                                        <!-- Back -->
+                                        <Border Width="154" Height="218" CornerRadius="6"
+                                                Background="{DynamicResource CardBackground}"
+                                                BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                                                ZIndex="0" RenderTransformOrigin="50%,100%">
+                                            <Border.RenderTransform>
+                                                <TransformGroup>
+                                                    <RotateTransform Angle="-4"/>
+                                                    <TranslateTransform X="9" Y="-7"/>
+                                                </TransformGroup>
+                                            </Border.RenderTransform>
+                                            <Image Source="{Binding BackCover}"
+                                                   Stretch="UniformToFill"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                        </Border>
+                                        <!-- Middle -->
+                                        <Border Width="160" Height="224" CornerRadius="6"
+                                                Background="{DynamicResource CardBackground}"
+                                                BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                                                ZIndex="1" RenderTransformOrigin="50%,100%">
+                                            <Border.RenderTransform>
+                                                <TransformGroup>
+                                                    <RotateTransform Angle="-2"/>
+                                                    <TranslateTransform X="4" Y="-3"/>
+                                                </TransformGroup>
+                                            </Border.RenderTransform>
+                                            <Image Source="{Binding MiddleCover}"
+                                                   Stretch="UniformToFill"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                        </Border>
+                                        <!-- Front -->
+                                        <Border Width="166" Height="228" CornerRadius="6"
+                                                Background="{DynamicResource CardBackground}"
+                                                BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                                                BoxShadow="0 0 18 0 #33000000"
+                                                ZIndex="2">
+                                            <Image Source="{Binding FrontCover}"
+                                                   Stretch="UniformToFill"
+                                                   IsVisible="{Binding FrontCover, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                        </Border>
+                                        <!-- Selection overlay -->
+                                        <Border CornerRadius="6"
+                                                Background="{DynamicResource AccentColor}"
+                                                Opacity="0.22"
+                                                ZIndex="3"
+                                                IsVisible="{Binding IsSelected}"/>
+                                        <Border Width="26" Height="26" CornerRadius="13"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                Margin="0,8,8,0"
+                                                Background="{DynamicResource AccentColor}"
+                                                ZIndex="4"
+                                                IsVisible="{Binding IsSelected}">
+                                            <TextBlock Text="✓" Foreground="White"
+                                                       FontSize="13" FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                        <!-- Favorito -->
+                                        <Button Classes="star"
+                                                ZIndex="5"
+                                                HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                Margin="6,6,0,0"
+                                                Command="{Binding ToggleFavoriteCommand}"
+                                                ToolTip.Tip="Colección favorita">
+                                            <Border Width="24" Height="24" CornerRadius="12" Background="#66000000">
+                                                <ContentControl Classes="starIcon"
+                                                                Classes.favorite="{Binding IsFavorite}"
+                                                                Template="{StaticResource IconPixelStar}"
+                                                                Width="14" Height="14"
+                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Name -->
+                                    <TextBlock Text="{Binding Name}"
+                                               TextTrimming="CharacterEllipsis"
+                                               FontWeight="Medium" FontSize="13"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               HorizontalAlignment="Left"/>
+                                    <!-- Count -->
+                                    <TextBlock FontSize="11"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               HorizontalAlignment="Left"
+                                               Margin="0,3,0,0"
+                                               Text="{Binding MangaCount, StringFormat='{}{0} manga(s)'}"/>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

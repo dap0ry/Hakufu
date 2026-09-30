@@ -12,10 +12,13 @@ namespace Hakufu.Tests;
 
 public static class TestAppBuilder
 {
+    // La App real (estilos, temas, converters de App.axaml) sin ventana: en
+    // headless no hay IClassicDesktopStyleApplicationLifetime, así que no
+    // arranca la composición de servicios.
     // Skia real (no el dibujo "de mentira" de headless) para poder decodificar
     // y guardar imágenes igual que en la app.
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<Application>()
+        AppBuilder.Configure<Hakufu.App>()
             .UseSkia()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }

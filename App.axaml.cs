@@ -3,9 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Hakufu.Data;
-using Hakufu.MVVM.Model;
-using Hakufu.MVVM.ViewModel;
-using Hakufu.Services;
 
 namespace Hakufu;
 
@@ -22,7 +19,6 @@ public partial class App : Application
         {
             _sessionStart = DateTime.Now;
 
-            // ── Data layer ──────────────────────────────────────────
             // Se carga de forma síncrona antes de crear la ventana: data.json
             // es pequeño y así la primera pantalla ya sale con la biblioteca.
             _repo = new JsonDataRepository();
@@ -31,7 +27,9 @@ public partial class App : Application
             var mainWindow = new MainWindow();
             try
             {
-                mainWindow.DataContext = Compose(_repo);
+                var root = new CompositionRoot(_repo);
+                root.ApplySavedAppearance();
+                mainWindow.DataContext = root.CreateMainViewModel();
             }
             catch (Exception ex)
             {
@@ -52,65 +50,6 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
-    }
-
-    private MainWindowViewModel Compose(IDataRepository repo)
-    {
-        // ── Services ────────────────────────────────────────────────
-        var themeService         = new ThemeService();
-        var dialogService        = new DialogService();
-        var filePickerSvc        = new FilePickerService();
-        var coverService         = new CoverService();
-        var libraryService       = new LibraryService(repo);
-        var profileService       = new ProfileService(repo);
-        var customizationService = new CustomizationService();
-        var wallpaperService     = new WallpaperService();
-        var backupService        = new BackupService(repo);
-
-        // Apply saved theme
-        themeService.SetTheme(repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
-
-        // Wallpaper general (si hay uno guardado) — sustituye el recurso
-        // AppBackground antes de crear ninguna vista.
-        var wallpaper = repo.Current.Customization.GeneralWallpaper;
-        wallpaperService.Apply(wallpaper?.Path, wallpaper?.Opacity ?? 0.3);
-
-        // ── Navigation factory ──────────────────────────────────────
-        NavigationService? navService = null;
-
-        BaseViewModel Factory(Type type, object? param) => type.Name switch
-        {
-            nameof(HomeViewModel) => new HomeViewModel(
-                libraryService, coverService, navService!, repo),
-
-            nameof(LibraryViewModel) => new LibraryViewModel(
-                libraryService, coverService, dialogService, navService!),
-
-            nameof(CollectionDetailViewModel) when param is Guid id => new CollectionDetailViewModel(
-                id, libraryService, coverService, dialogService, navService!, filePickerSvc),
-
-            nameof(ReaderViewModel) when param is ReaderNavigationParam p => new ReaderViewModel(
-                p.Manga, p.StartPage, libraryService, profileService, navService!),
-
-            nameof(ProfileViewModel) => new ProfileViewModel(
-                profileService, libraryService, coverService, dialogService, navService!),
-
-            nameof(SettingsViewModel) => new SettingsViewModel(
-                themeService, repo, navService!, dialogService, libraryService, filePickerSvc),
-
-            nameof(CustomizationViewModel) => new CustomizationViewModel(
-                repo, navService!, customizationService, filePickerSvc, wallpaperService),
-
-            nameof(HelpViewModel) => new HelpViewModel(navService!),
-
-            nameof(BackupViewModel) => new BackupViewModel(
-                backupService, filePickerSvc, navService!, repo, themeService, wallpaperService),
-
-            _ => throw new InvalidOperationException($"Unknown ViewModel: {type.Name}")
-        };
-
-        navService = new NavigationService(Factory);
-        return new MainWindowViewModel(navService, dialogService);
     }
 
     private void SaveOnExit()

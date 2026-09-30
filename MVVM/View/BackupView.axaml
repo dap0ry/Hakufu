@@ -1,0 +1,273 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.BackupView"
+             x:DataType="vm:BackupViewModel">
+
+    <UserControl.Styles>
+        <!-- Rótulo de sección (BIBLIOTECA, CREAR COPIA…) -->
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- Texto explicativo de las tarjetas -->
+        <Style Selector="TextBlock.body">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="LineHeight" Value="20"/>
+        </Style>
+
+        <Style Selector="TextBlock.cardTitle">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- Aviso en gris (restaurar) -->
+        <Style Selector="Border.notice">
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+
+        <!-- Mensaje de estado: éxito normal, error en tono secundario con icono de aviso -->
+        <Style Selector="Border.status">
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+        </Style>
+        <Style Selector="Border.status.error">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+        <Style Selector="Border.status SelectableTextBlock#StatusText">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="Border.status.error SelectableTextBlock#StatusText">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+
+        <!-- CheckBox de Fluent con los colores del tema -->
+        <Style Selector="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="CheckBox /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="CheckBox /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
+        </Style>
+        <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource ButtonForeground}"/>
+        </Style>
+        <Style Selector="CheckBox:disabled">
+            <Setter Property="Opacity" Value="0.4"/>
+        </Style>
+
+        <!-- Barra de progreso fina, colores del tema -->
+        <Style Selector="ProgressBar.thin">
+            <Setter Property="Height" Value="4"/>
+            <Setter Property="MinHeight" Value="4"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Foreground" Value="{DynamicResource ProgressFill}"/>
+            <Setter Property="Background" Value="{DynamicResource ProgressTrack}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="40,22">
+            <Grid ColumnDefinitions="Auto,*">
+                <Button Grid.Column="0"
+                        Classes="ghost"
+                        Command="{Binding GoBackCommand}"
+                        Margin="0,0,24,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ContentControl Template="{StaticResource IconPixelArrowLeft}"
+                                        Width="12" Height="12"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Inicio" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="COPIA DE SEGURIDAD"
+                               FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,0,0,2"/>
+                    <TextBlock Classes="caption"
+                               Text="Guarda tu biblioteca en un archivo .zip y recupérala en este u otro equipo"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ BODY ═══ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="40,36,40,40" MaxWidth="620" HorizontalAlignment="Left">
+
+                <!-- Progreso -->
+                <Border Classes="card" Padding="16,14" Margin="0,0,0,24"
+                        IsVisible="{Binding IsBusy}">
+                    <StackPanel Spacing="10">
+                        <ProgressBar Classes="thin"
+                                     Minimum="0" Maximum="100"
+                                     Value="{Binding Progress}"/>
+                        <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
+                                   Text="{Binding Progress, StringFormat='Trabajando… {0:0} %'}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Mensaje de estado -->
+                <Border Classes="card status" Padding="16,14" Margin="0,0,0,24"
+                        Classes.error="{Binding !IsSuccess}"
+                        IsVisible="{Binding HasStatus}">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <!-- Icono: ✓ si ha ido bien, ! si no -->
+                        <Path Grid.Column="0" Width="14" Height="14" Margin="0,1,10,0"
+                              VerticalAlignment="Top" Stretch="Uniform"
+                              StrokeThickness="2" StrokeLineCap="Round" StrokeJoin="Round"
+                              Data="M1,7 L5,11 L13,2"
+                              Stroke="{DynamicResource AccentColor}"
+                              IsVisible="{Binding IsSuccess}"/>
+                        <Path Grid.Column="0" Width="14" Height="14" Margin="0,1,10,0"
+                              VerticalAlignment="Top" Stretch="None"
+                              Fill="{DynamicResource TextSecondary}"
+                              Data="F0 M7,0 A7,7 0 1 1 6.99,0 Z M6,3 L8,3 L7.6,8.5 L6.4,8.5 Z M6,10 L8,10 L8,12 L6,12 Z"
+                              IsVisible="{Binding !IsSuccess}"/>
+                        <SelectableTextBlock Grid.Column="1" Name="StatusText"
+                                             Text="{Binding StatusMessage}"
+                                             FontSize="12" TextWrapping="Wrap"/>
+                    </Grid>
+                </Border>
+
+                <!-- ── BIBLIOTECA ── -->
+                <TextBlock Classes="section" Text="BIBLIOTECA"/>
+
+                <Border Classes="card" Padding="28,24" Margin="0,0,0,32">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,8">
+                            <ContentControl Template="{StaticResource IconPixelBooks}"
+                                            Width="18" Height="18"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource AccentColor}"/>
+                            <TextBlock Classes="cardTitle" Margin="0"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding SummaryText}"/>
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0" Classes="body"
+                                       VerticalAlignment="Center" Margin="0,0,16,0">
+                                <Run Text="Carpeta de datos: "/>
+                                <Run Text="{Binding DataFolder}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                            <Button Grid.Column="1"
+                                    Classes="ghost"
+                                    Padding="14,8"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding OpenDataFolderCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <ContentControl Template="{StaticResource IconPixelFolder}"
+                                                    Width="13" Height="13"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource AccentColor}"/>
+                                    <TextBlock Text="Abrir carpeta" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,32"/>
+
+                <!-- ── CREAR COPIA ── -->
+                <TextBlock Classes="section" Text="CREAR COPIA"/>
+
+                <Border Classes="card" Padding="28,24" Margin="0,0,0,32">
+                    <StackPanel>
+                        <TextBlock Classes="cardTitle" Text="Exportar tu biblioteca"/>
+                        <TextBlock Classes="body" Margin="0,0,0,16"
+                                   Text="Crea un archivo .zip con tus colecciones, el progreso de lectura, el historial, las portadas y la personalización (tema y fondos). Guárdalo donde quieras: un disco externo, un pendrive u otra carpeta."/>
+
+                        <CheckBox IsChecked="{Binding IncludeLibraryFiles}"
+                                  IsEnabled="{Binding IsIdle}"
+                                  Content="Incluir los mangas de la biblioteca de Hakufu"/>
+                        <TextBlock Classes="body" FontSize="11" Margin="28,2,0,20"
+                                   Text="Los mangas que están fuera de la carpeta de Hakufu no se copian, solo su ficha. Si quieres llevarlos en la copia, pásalos antes a la biblioteca con «Limpiar espacio» en Ajustes."/>
+
+                        <Button Classes="primary"
+                                Content="Exportar copia…"
+                                HorizontalAlignment="Left" Padding="22,10"
+                                Command="{Binding ExportCommand}"/>
+                    </StackPanel>
+                </Border>
+
+                <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,32"/>
+
+                <!-- ── RESTAURAR COPIA ── -->
+                <TextBlock Classes="section" Text="RESTAURAR COPIA"/>
+
+                <Border Classes="card" Padding="28,24" Margin="0,0,0,32">
+                    <StackPanel>
+                        <TextBlock Classes="cardTitle" Text="Recuperar una copia de seguridad"/>
+                        <TextBlock Classes="body" Margin="0,0,0,20"
+                                   Text="Elige un .zip creado con Hakufu. Sirve también para pasar la biblioteca a otro equipo, aunque sea Mac o Linux: las rutas se adaptan solas."/>
+
+                        <Button Classes="primary"
+                                Content="Elegir copia…"
+                                HorizontalAlignment="Left" Padding="22,10"
+                                Command="{Binding PickRestoreCommand}"
+                                IsVisible="{Binding !IsConfirmingRestore}"/>
+
+                        <StackPanel IsVisible="{Binding IsConfirmingRestore}">
+                            <Border Classes="notice" Margin="0,0,0,14">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Path Grid.Column="0" Width="14" Height="14" Margin="0,1,10,0"
+                                          VerticalAlignment="Top" Stretch="None"
+                                          Fill="{DynamicResource TextPrimary}"
+                                          Data="F0 M7,0 A7,7 0 1 1 6.99,0 Z M6,3 L8,3 L7.6,8.5 L6.4,8.5 Z M6,10 L8,10 L8,12 L6,12 Z"/>
+                                    <TextBlock Grid.Column="1" FontSize="12" TextWrapping="Wrap"
+                                               Text="La copia sustituirá tu biblioteca actual: colecciones, progreso, historial y personalización. Lo que no esté en la copia se perderá (los archivos de manga del disco no se borran). ¿Continuar?"/>
+                                </Grid>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Classes="primary"
+                                        Content="Restaurar"
+                                        Padding="22,10"
+                                        Command="{Binding ConfirmRestoreCommand}"/>
+                                <Button Classes="ghost"
+                                        Content="Cancelar"
+                                        Padding="22,10"
+                                        Command="{Binding CancelRestoreCommand}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── NOTA: VARIOS EQUIPOS ── -->
+                <Border Classes="notice">
+                    <TextBlock Classes="body" FontSize="11" LineHeight="18"
+                               Text="¿Quieres tener la biblioteca en varios equipos? Guarda tus mangas dentro de la carpeta de Dropbox, iCloud o Google Drive: esas apps los sincronizan solas. Hakufu no se conecta a internet."/>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

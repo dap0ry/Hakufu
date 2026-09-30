@@ -11,6 +11,16 @@ public class Task5ViewTests
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
+    public void Backup_view_renders(bool dark)
+    {
+        using var app = ViewSmoke.Start(darkTheme: dark);
+        app.Root.Navigation.NavigateTo<BackupViewModel>();
+        app.AssertShows<BackupView>();
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void Storage_manager_modal_renders_collection_tree(bool dark)
     {
         using var app = ViewSmoke.Start(darkTheme: dark);

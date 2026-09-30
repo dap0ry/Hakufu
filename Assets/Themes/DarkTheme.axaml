@@ -46,4 +46,15 @@
     <SolidColorBrush x:Key="ReaderBarBackground" Color="#0D0D0D"/>
     <SolidColorBrush x:Key="ReaderForeground"   Color="#F0F0F0"/>
 
+    <!-- Acento del tema Fluent (sliders, checkboxes, barras de progreso,
+         selección de texto): el mismo blanco que AccentColor en vez del azul
+         del sistema. -->
+    <Color x:Key="SystemAccentColor">#F0F0F0</Color>
+    <Color x:Key="SystemAccentColorDark1">#CCCCCC</Color>
+    <Color x:Key="SystemAccentColorDark2">#AAAAAA</Color>
+    <Color x:Key="SystemAccentColorDark3">#888888</Color>
+    <Color x:Key="SystemAccentColorLight1">#FFFFFF</Color>
+    <Color x:Key="SystemAccentColorLight2">#FFFFFF</Color>
+    <Color x:Key="SystemAccentColorLight3">#FFFFFF</Color>
+
 </ResourceDictionary>

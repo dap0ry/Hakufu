@@ -115,7 +115,7 @@
                                    Foreground="{DynamicResource TextMuted}"
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,10"
-                                   Text="Los archivos se copiarán a la biblioteca local y luego se eliminarán de sus ubicaciones originales. Esta acción no se puede deshacer."/>
+                                   Text="Los archivos se copiarán a la biblioteca local y Hakufu pasará a usar esas copias. Los originales no se borran: puedes eliminarlos tú después si quieres liberar espacio."/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                             <Button Classes="ghost"
                                     Content="Cancelar"

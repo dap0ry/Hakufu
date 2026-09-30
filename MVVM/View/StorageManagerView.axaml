@@ -1,0 +1,332 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.StorageManagerView"
+             x:DataType="vm:StorageManagerViewModel">
+
+    <UserControl.Styles>
+        <!-- Panel gris de confirmación / progreso / resultado -->
+        <Style Selector="Border.panel">
+            <Setter Property="Background" Value="{DynamicResource SidebarBackground}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+
+        <!-- Flecha de expandir/colapsar la colección (▸ / ▾) -->
+        <Style Selector="ToggleButton.expander">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="Transparent">
+                        <Path Name="Arrow"
+                              Data="M0,0 L5,4 L0,8 Z"
+                              Fill="{TemplateBinding Foreground}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="ToggleButton.expander:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="ToggleButton.expander:checked /template/ Path#Arrow">
+            <Setter Property="RenderTransform" Value="rotate(90deg)"/>
+        </Style>
+
+        <!-- CheckBox de Fluent con los colores del tema -->
+        <Style Selector="CheckBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="CheckBox /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
+        </Style>
+        <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+            <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+        </Style>
+        <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
+            <Setter Property="Fill" Value="{DynamicResource ButtonForeground}"/>
+        </Style>
+        <Style Selector="CheckBox:disabled">
+            <Setter Property="Opacity" Value="0.4"/>
+        </Style>
+    </UserControl.Styles>
+
+    <!-- 496 = MaxWidth del modal (560) menos su Padding (2 × 32) -->
+    <StackPanel Width="496">
+
+        <!-- Header -->
+        <TextBlock Text="Gestionar espacio"
+                   FontSize="16" FontWeight="SemiBold"
+                   Margin="0,0,0,4"/>
+        <TextBlock Text="Borra colecciones enteras o tomos sueltos para liberar espacio"
+                   FontSize="12"
+                   Foreground="{DynamicResource TextMuted}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,20"/>
+
+        <!-- ── LIMPIAR ESPACIO (migrar externos a biblioteca) ── -->
+        <Border BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="1" CornerRadius="8"
+                Padding="16" Margin="0,0,0,16">
+            <StackPanel>
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Limpiar espacio"
+                                   FontSize="13" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding MigrateHintText}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,12,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Classes="ghost"
+                            Content="Limpiar espacio"
+                            Padding="14,8"
+                            VerticalAlignment="Center"
+                            Command="{Binding RequestMigrateCommand}">
+                        <Button.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                <Binding Path="HasExternalMangas"/>
+                                <Binding Path="!ShowMigrateConfirm"/>
+                                <Binding Path="!IsMigrating"/>
+                            </MultiBinding>
+                        </Button.IsVisible>
+                    </Button>
+                </Grid>
+
+                <!-- Confirmación -->
+                <Border Classes="panel" Margin="0,4,0,0"
+                        IsVisible="{Binding ShowMigrateConfirm}">
+                    <StackPanel>
+                        <TextBlock Text="¿Confirmar limpieza?"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock FontSize="11"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,10"
+                                   Text="Los archivos se copiarán a la biblioteca local y luego se eliminarán de sus ubicaciones originales. Esta acción no se puede deshacer."/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="ghost"
+                                    Content="Cancelar"
+                                    Padding="14,7"
+                                    Command="{Binding CancelMigrateCommand}"/>
+                            <Button Classes="primary"
+                                    Content="Sí, limpiar"
+                                    Padding="14,7"
+                                    Command="{Binding ConfirmMigrateCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Progreso -->
+                <Border Classes="panel" Margin="0,4,0,0"
+                        IsVisible="{Binding IsMigrating}">
+                    <StackPanel Spacing="8">
+                        <ProgressBar IsIndeterminate="True" Height="3" MinHeight="3"
+                                     Foreground="{DynamicResource ProgressFill}"
+                                     Background="{DynamicResource ProgressTrack}"/>
+                        <TextBlock Text="{Binding MigrateProgressText}"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Resultado -->
+                <Border Classes="panel" Margin="0,4,0,0">
+                    <Border.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="!IsMigrating"/>
+                            <Binding Path="MigrateProgressText" Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+                        </MultiBinding>
+                    </Border.IsVisible>
+                    <TextBlock Text="{Binding MigrateProgressText}"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextMuted}"/>
+                </Border>
+
+            </StackPanel>
+        </Border>
+
+        <!-- ── ÁRBOL COLECCIONES → TOMOS ── -->
+        <TextBlock Text="Borrar colecciones o tomos sueltos"
+                   FontSize="11" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextMuted}"
+                   Margin="0,0,0,8"/>
+
+        <Border BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="1" CornerRadius="8"
+                ClipToBounds="True"
+                Margin="0,0,0,4">
+            <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <!-- Vacío -->
+                    <TextBlock Text="No tienes colecciones todavía."
+                               FontSize="12"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="18,16"
+                               IsVisible="{Binding !HasCollections}"/>
+
+                    <ItemsControl ItemsSource="{Binding Collections}"
+                                  IsVisible="{Binding HasCollections}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:StorageCollectionEntryViewModel">
+                                <StackPanel>
+
+                                    <!-- Fila de la colección -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="14,10,14,10">
+
+                                        <ToggleButton Grid.Column="0"
+                                                      Classes="expander"
+                                                      IsChecked="{Binding IsExpanded}"
+                                                      Width="20" Height="20"
+                                                      Margin="0,0,10,0"
+                                                      VerticalAlignment="Center"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="13" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding CountText}"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource TextMuted}"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding SizeText}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="10,0,14,0"/>
+
+                                        <CheckBox Grid.Column="3"
+                                                  IsChecked="{Binding IsSelected}"
+                                                  VerticalAlignment="Center"
+                                                  ToolTip.Tip="Borrar la colección entera"/>
+                                    </Grid>
+
+                                    <!-- Tomos de la colección -->
+                                    <ItemsControl ItemsSource="{Binding Mangas}"
+                                                  IsVisible="{Binding IsExpanded}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:StorageMangaEntryViewModel">
+                                                <Grid ColumnDefinitions="*,Auto,Auto" Margin="44,2,14,2">
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding Title}"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondary}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding SizeText}"
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="12,0,14,0"/>
+                                                    <CheckBox Grid.Column="2"
+                                                              IsChecked="{Binding IsSelected}"
+                                                              IsEnabled="{Binding IsEnabled}"
+                                                              VerticalAlignment="Center"
+                                                              ToolTip.Tip="Borrar solo este tomo"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="14,4,14,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Barra de estado -->
+        <TextBlock Text="{Binding StatusText}"
+                   FontSize="11"
+                   Foreground="{DynamicResource TextMuted}"
+                   Margin="0,0,0,14"/>
+
+        <!-- Confirmación de borrado -->
+        <Border Classes="panel" Margin="0,0,0,14"
+                IsVisible="{Binding ShowDeleteConfirm}">
+            <StackPanel>
+                <TextBlock Text="{Binding DeleteConfirmText}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextMuted}"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,10"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button Classes="ghost"
+                            Content="Cancelar"
+                            Padding="14,7"
+                            Command="{Binding CancelDeleteCommand}"/>
+                    <Button Classes="primary"
+                            Padding="14,7"
+                            Command="{Binding ConfirmDeleteCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ContentControl Template="{StaticResource IconPixelTrash}"
+                                            Width="12" Height="12"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource ButtonForeground}"/>
+                            <TextBlock Text="Sí, eliminar" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Ruta de los datos -->
+        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+            <TextBlock Grid.Column="0"
+                       FontSize="11"
+                       Foreground="{DynamicResource TextMuted}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       Margin="0,0,10,0">
+                <Run Text="Todos tus datos se encuentran en: "/>
+                <Run Text="{Binding DataPathText}" FontWeight="SemiBold"/>
+            </TextBlock>
+            <Button Grid.Column="1"
+                    Classes="ghost"
+                    Content="Abrir carpeta"
+                    Padding="12,7" FontSize="11"
+                    VerticalAlignment="Center"
+                    Command="{Binding OpenFolderCommand}"/>
+        </Grid>
+
+        <!-- Acciones -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+            <Button Classes="ghost"
+                    Content="Cerrar"
+                    Padding="20,10"
+                    Command="{Binding CloseCommand}"/>
+            <Button Classes="primary"
+                    Padding="20,10"
+                    Command="{Binding RequestDeleteCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ContentControl Template="{StaticResource IconPixelTrash}"
+                                    Width="13" Height="13"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource ButtonForeground}"/>
+                    <TextBlock Text="Eliminar seleccionados" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

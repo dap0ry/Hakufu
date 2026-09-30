@@ -32,7 +32,7 @@ RID="${1:-$(detect_rid)}"
 VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Hakufu.csproj | head -1)"
 OUT="publish/Hakufu-${RID}"
 
-echo "Publicando Hakufu ${VERSION} para $RID…"
+echo "Publicando Hakufu ${VERSION} para ${RID}…"
 rm -rf "${OUT}"
 dotnet publish Hakufu.csproj -c Release -r "${RID}" --self-contained true \
   -p:DebugType=none -o "${OUT}"

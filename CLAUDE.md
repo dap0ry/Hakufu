@@ -4,73 +4,93 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Hakufu** is an offline manga manager WPF desktop application targeting **.NET 10 on Windows**, built by Daniel Poza.
-It manages PDF and CBR/CBZ manga files locally — no backend, no internet required.
+**Hakufu** is an offline manga manager/reader built with **Avalonia 11.3** on **.NET 10**, running on
+Windows, macOS and Linux. Built by Daniel Poza and friends. It manages PDF and CBR/CBZ files locally —
+**no backend, no accounts, no network access at all** (don't add any: it's a product decision).
+Migrated from WPF in October 2026 (spec: `docs/superpowers/specs/2026-10-01-avalonia-offline-design.md`).
 
 ## Commands
 
 ```bash
-dotnet build Hakufu.csproj         # compile
-dotnet run --project Hakufu.csproj # launch app
-dotnet restore                     # restore NuGet packages
-dotnet tool restore                # restore vpk (Velopack CLI) as a local tool
-.\Build-Release.ps1 -Version "0.9.0"   # publish + package a Velopack release → Releases\Hakufu-win-Setup.exe
+dotnet build Hakufu.csproj            # compile
+dotnet run --project Hakufu.csproj    # launch app
+dotnet test tests/Hakufu.Tests        # tests (xUnit + Avalonia.Headless, real Skia)
+./scripts/publish.sh [rid]            # macOS/Linux self-contained publish (.app on macOS)
+.\scripts\publish.ps1 [-Rid win-x64]  # Windows self-contained publish + zip
 ```
 
-Local data is stored at `%LOCALAPPDATA%\Hakufu\data.json`; cover image cache at `%LOCALAPPDATA%\Hakufu\covers\`.
-
-Packaging/install uses **Velopack** (`Velopack` NuGet package + `vpk` CLI) — a single
-`Hakufu-win-Setup.exe` installs per-user (no admin) to `%LocalAppData%\Hakufu`, and the app
-checks/downloads updates from GitHub Releases in the background at startup
-(`Services/UpdateService.cs`), applying them on next restart via `UpdateViewModel.RestartCommand`.
-See `docs/superpowers/specs/2026-08-16-velopack-installer-design.md` for the full design.
+Data folder: `AppPaths.DataDir` = `Environment.SpecialFolder.ApplicationData/Hakufu`
+(`%APPDATA%\Hakufu` on Windows, `~/.config/Hakufu` on macOS/Linux), overridable with the
+`HAKUFU_DATA_DIR` env var (tests rely on this). Never hardcode paths — use `Data/AppPaths.cs`.
 
 ## Architecture
 
-The project follows strict **MVVM** with manual dependency injection composed in `App.xaml.cs`.
+Strict **MVVM** with manual dependency injection in `CompositionRoot.cs` (used by `App.axaml.cs`
+and by the view smoke tests).
 
 ```
-App.xaml.cs                  ← composition root; creates all services + MainWindow
-MainWindow.xaml/.cs          ← shell: sidebar nav + ContentControl + modal overlay
+Program.cs / App.axaml(.cs)  ← Avalonia bootstrap; loads data.json, builds CompositionRoot, shows MainWindow
+CompositionRoot.cs           ← creates all services + the ViewModel factory for NavigationService
+ViewLocator.cs               ← XxxViewModel → XxxView by naming convention (no registration needed)
+MainWindow.axaml(.cs)        ← shell: ContentControl + modal overlay; zen mode = WindowState.FullScreen
 MVVM/
   Model/                     ← plain data classes (Manga, Collection, ReadingProgress, …)
-  ViewModel/                 ← BaseViewModel, RelayCommand, AsyncRelayCommand + all VMs
-  View/                      ← UserControls (one per ViewModel), Controls/AdaptiveItemsControl
+  ViewModel/                 ← BaseViewModel, RelayCommand, AsyncRelayCommand, CommandRequery + all VMs
+  View/                      ← UserControls (.axaml), one per ViewModel
 Data/
-  IDataRepository / JsonDataRepository  ← load/save AppDataStore to JSON
+  AppPaths                   ← all folder locations
+  IDataRepository / JsonDataRepository  ← load/save AppDataStore to data.json
 Services/
   NavigationService          ← ContentControl dispatch via Func<Type, object?, BaseViewModel>
-  ThemeService               ← swaps MergedDictionaries[0] at runtime
+  ThemeService               ← swaps Application.Resources.MergedDictionaries[0] + ThemeVariant
   DialogService              ← modal overlay callbacks wired into MainWindowViewModel
-  LibraryService             ← collection + manga CRUD on top of IDataRepository
-  ProfileService             ← favorites + reading history
-  CoverService               ← PDF/CBR first-page extraction via Docnet.Core / ZipArchive
-  PageLoaderService          ← per-session page loader with sliding-window memory cache
-  FilePickerService          ← wraps OpenFileDialog
+  LibraryService / ProfileService  ← collections, mangas, favorites, history
+  CoverService / PageLoaderService ← PDF (Docnet/pdfium) + CBR/CBZ (SharpCompress) → Avalonia Bitmap
+  BackupService              ← local .zip export/import; rebases stored paths to the new data folder
+  FilePickerService          ← Avalonia StorageProvider (async) + OpenFolder (explorer/open/xdg-open)
+  WallpaperService / CustomizationService ← user images, copied into the data folder
 Assets/
-  Themes/LightTheme.xaml, DarkTheme.xaml   ← all brushes; DynamicResource used everywhere
-  Styles/GlobalStyles.xaml, NavButton.xaml  ← shared control templates + styles
-Converters/                  ← BoolToVisibility, NullToVisibility, Equality, PercentageWidth
+  Themes/LightTheme.axaml, DarkTheme.axaml  ← all brushes; always use DynamicResource
+  Styles/GlobalStyles.axaml   ← shared styles as CLASSES (Classes="primary", "ghost", "icon", "card", "caption"…)
+  Styles/PixelIcons.axaml     ← pixel-art icons as ContentControl templates (Template="{StaticResource IconPixelStar}")
+Converters/                  ← PathToBitmap, PathAndOpacityToImageBrush, Equality, PercentageWidth, BoolToOpacity
 ```
 
 ### Navigation
 
-`NavigationService` holds a factory `Func<Type, object?, BaseViewModel>` defined in `App.xaml.cs`. Calling `NavigateTo<T>()` or `NavigateTo<T>(param)` creates the VM and sets `CurrentViewModel`. `MainWindowViewModel` propagates this to `CurrentView`. `App.xaml` contains `DataTemplate` entries mapping each ViewModel type to its View — `ContentControl` dispatches automatically.
+`NavigationService` holds a factory defined in `CompositionRoot`. `NavigateTo<T>()` / `NavigateTo<T>(param)`
+creates the VM and sets `CurrentViewModel`; `MainWindowViewModel` propagates it to `CurrentView`, and
+`ViewLocator` picks the view. A new screen = new `XxxViewModel` + `MVVM/View/XxxView.axaml` + one line in
+the factory.
 
-### Modal overlay
+### Commands
 
-`DialogService.Register(show, close)` is called once by `MainWindowViewModel` to wire up overlay callbacks. Any service or VM can call `IDialogService.ShowModal(vm)` to display a centered card over a dimmed background. The overlay is a `Grid` with `Panel.ZIndex=100` in `MainWindow.xaml`, `Visibility` bound to `IsModalOpen`.
+WPF's `CommandManager` doesn't exist in Avalonia. `CommandRequery` replaces it: every
+`BaseViewModel.OnPropertyChanged` and every click/key in `MainWindow` re-evaluates `CanExecute` of all
+`RelayCommand`/`AsyncRelayCommand` (weak subscriptions, so commands created per-getter don't leak).
 
-### Theming
+### Views
 
-All color references in every XAML file use `DynamicResource` (never `StaticResource`). `ThemeService.SetTheme()` replaces `MergedDictionaries[0]` with the new dictionary. The active theme name is persisted in `AppDataStore.ActiveTheme` and reapplied on startup.
+- Compiled bindings are on by default: every view and `DataTemplate` declares `x:DataType`.
+- Styles are classes, not keys (see the WPF→Avalonia table in the spec). No global TextBlock color:
+  text inherits `Foreground` from `MainWindow`.
+- Colors: always `{DynamicResource Key}` so theme switching and the custom wallpaper work.
+- Images from a stored path need `Converter={StaticResource PathToBitmap}`.
 
 ### PDF / CBR rendering
 
-`CoverService` and `PageLoaderService` use **Docnet.Core** (wraps native pdfium) for PDF pages and `System.IO.Compression.ZipArchive` for CBR/CBZ files (which are ZIP archives of images). `BitmapSource.Freeze()` is always called before returning from a background thread. `PageLoaderService` keeps a sliding window of `[current−1 .. current+2]` decoded pages in memory and disposes the rest.
+`Docnet.Core` ships native pdfium for win/linux/osx (x64 + arm64); calls are serialized (pdfium is not
+thread-safe). CBR/CBZ via SharpCompress, pages ordered by entry name (ordinal, case-insensitive).
+`PageLoaderService` keeps a sliding window of `[current−1 .. current+2]` decoded pages. A missing or
+corrupt file opens with 0 pages instead of throwing.
 
-### Key constraints
+### Tests
 
-- `StackPanel.Spacing` is **not available in WPF** — use `Margin` on child elements instead.
-- `LetterSpacing` is **not a WPF property** — use `Typography` or omit it.
-- Parameterized navigation (e.g., opening a collection or reader) uses `NavigateTo<T>(object param)` where the factory in `App.xaml.cs` casts `param` to the expected type.
+`tests/Hakufu.Tests`: service tests plus view smoke tests. `ViewSmoke.Start()` boots the real `App` +
+`MainWindow` headless with a sample library; `AssertShows<TView>()` checks that a screen actually
+renders. Add one for every new view.
+
+## Conventions
+
+- Every change is tied to a Jira **HMR** ticket: branches `feat/HMR-12-…`, commits `HMR-12 …`.
+- UI text is Spanish.

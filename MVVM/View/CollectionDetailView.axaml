@@ -1,0 +1,237 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.CollectionDetailView"
+             x:DataType="vm:CollectionDetailViewModel">
+
+    <UserControl.Styles>
+        <!-- Tarjeta de manga: botón sin cromo que se aclara al pasar el ratón
+             (en WPF era un Border con MouseBinding). -->
+        <Style Selector="Button.mangaCard">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root" Background="Transparent">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.mangaCard:pointerover /template/ Border#Root">
+            <Setter Property="Opacity" Value="0.85"/>
+        </Style>
+
+        <!-- Botón de favorito (estrella sobre la portada) -->
+        <Style Selector="Button.star">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Background="Transparent"
+                                      Content="{TemplateBinding Content}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="ContentControl.starIcon">
+            <Setter Property="Foreground" Value="#CCFFFFFF"/>
+        </Style>
+        <Style Selector="ContentControl.starIcon.favorite">
+            <Setter Property="Foreground" Value="#FFD84A"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="32,28,32,20"
+                BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Back button -->
+                <Button Grid.Column="0"
+                        Classes="ghost"
+                        Content="← Biblioteca"
+                        Command="{Binding GoBackCommand}"
+                        Margin="0,0,20,0"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding CollectionName}"
+                           Classes="title"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Normal mode -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0"
+                                IsVisible="{Binding !IsSelectionMode}">
+                        <TextBlock Text="Ordenar:" VerticalAlignment="Center"
+                                   Classes="caption" Margin="0,0,8,0"/>
+                        <Button Classes="ghost" Content="Nombre"
+                                Padding="12,7" Margin="0,0,4,0" FontSize="11"
+                                Command="{Binding SortByNameCommand}"
+                                Opacity="{Binding IsSortByName, Converter={StaticResource BoolToOpacity}}"/>
+                        <Button Classes="ghost" Content="Fecha"
+                                Padding="12,7" Margin="0,0,4,0" FontSize="11"
+                                Command="{Binding SortByDateCommand}"
+                                Opacity="{Binding IsSortByDate, Converter={StaticResource BoolToOpacity}}"/>
+                        <Button Classes="ghost" Content="Personalizado"
+                                Padding="12,7" FontSize="11"
+                                Command="{Binding OpenReorderCommand}"
+                                Opacity="{Binding IsSortByCustom, Converter={StaticResource BoolToOpacity}}"/>
+                    </StackPanel>
+                    <Button Classes="ghost"
+                            Content="Seleccionar"
+                            Padding="16,10"
+                            Margin="0,0,12,0"
+                            Command="{Binding ToggleSelectionModeCommand}"
+                            IsVisible="{Binding !IsSelectionMode}"/>
+                    <Button Classes="primary"
+                            Command="{Binding AddMangaCommand}"
+                            IsVisible="{Binding !IsSelectionMode}">
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Template="{StaticResource IconPixelBooks}"
+                                            Width="14" Height="14" Margin="0,0,8,0"/>
+                            <TextBlock Text="Agregar manga"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- Selection mode -->
+                    <Button Classes="ghost"
+                            Content="Cancelar"
+                            Padding="16,10"
+                            Margin="0,0,12,0"
+                            Command="{Binding ToggleSelectionModeCommand}"
+                            IsVisible="{Binding IsSelectionMode}"/>
+                    <Button Classes="primary"
+                            Padding="14,10"
+                            Command="{Binding DeleteSelectedCommand}"
+                            IsVisible="{Binding IsSelectionMode}">
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Template="{StaticResource IconPixelTrash}"
+                                            Width="14" Height="14" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding SelectedCount, StringFormat='Eliminar ({0})'}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Manga grid -->
+        <ScrollViewer Grid.Row="1" Padding="32,24,32,0"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Mangas}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="{Binding $parent[UserControl].((vm:CollectionDetailViewModel)DataContext).ItemsPerRow}"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MangaCardViewModel">
+                        <Button Classes="mangaCard"
+                                Margin="6"
+                                Command="{Binding $parent[UserControl].((vm:CollectionDetailViewModel)DataContext).CardClickCommand}"
+                                CommandParameter="{Binding}">
+                            <StackPanel>
+                                <!-- Cover + selection overlay -->
+                                <Grid>
+                                    <Border CornerRadius="6"
+                                            Background="{DynamicResource CardBackground}"
+                                            BorderBrush="{DynamicResource CardBorder}"
+                                            BorderThickness="1"
+                                            BoxShadow="0 2 8 0 #1F000000">
+                                        <Image Source="{Binding Cover}"
+                                               Stretch="Uniform"
+                                               RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                    </Border>
+                                    <!-- Selection tint -->
+                                    <Border CornerRadius="6"
+                                            Background="{DynamicResource AccentColor}"
+                                            Opacity="0.22"
+                                            IsVisible="{Binding IsSelected}"/>
+                                    <!-- Checkmark -->
+                                    <Border Width="26" Height="26" CornerRadius="13"
+                                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                                            Margin="0,6,6,0"
+                                            Background="{DynamicResource AccentColor}"
+                                            IsVisible="{Binding IsSelected}">
+                                        <TextBlock Text="✓" Foreground="White"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <!-- Favorito -->
+                                    <Button Classes="star"
+                                            ZIndex="6"
+                                            HorizontalAlignment="Left" VerticalAlignment="Top"
+                                            Margin="4,4,0,0"
+                                            Command="{Binding ToggleFavoriteCommand}"
+                                            ToolTip.Tip="Manga favorito">
+                                        <Border Width="22" Height="22" CornerRadius="11" Background="#66000000">
+                                            <ContentControl Classes="starIcon"
+                                                            Classes.favorite="{Binding IsFavorite}"
+                                                            Template="{StaticResource IconPixelStar}"
+                                                            Width="12" Height="12"
+                                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Title -->
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="12"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="2,6,2,2"
+                                           ToolTip.Tip="{Binding Title}"/>
+
+                                <!-- Progress bar -->
+                                <Grid Height="3" Margin="2,0,2,4">
+                                    <Rectangle Fill="{DynamicResource ProgressTrack}" RadiusX="2" RadiusY="2"/>
+                                    <Rectangle Fill="{DynamicResource ProgressFill}" RadiusX="2" RadiusY="2"
+                                               HorizontalAlignment="Left">
+                                        <Rectangle.Width>
+                                            <MultiBinding Converter="{StaticResource PercentageWidth}">
+                                                <Binding Path="ProgressPct"/>
+                                                <Binding Path="$parent[Grid].Bounds.Width"/>
+                                            </MultiBinding>
+                                        </Rectangle.Width>
+                                    </Rectangle>
+                                </Grid>
+                            </StackPanel>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Bottom slider bar -->
+        <Border Grid.Row="2" Padding="32,12"
+                Background="{DynamicResource AppBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto,180">
+                <TextBlock Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Classes="caption"
+                           Text="{Binding Mangas.Count, StringFormat='{}{0} manga(s)'}"/>
+                <TextBlock Grid.Column="1" Text="Tamaño: "
+                           Classes="caption"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"/>
+                <Slider Grid.Column="2"
+                        Classes="compact"
+                        Minimum="3" Maximum="10" SmallChange="1" LargeChange="1"
+                        TickFrequency="1" IsSnapToTickEnabled="True"
+                        Value="{Binding ItemsPerRow}"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -22,7 +22,10 @@ public partial class App : Application
             // Se carga de forma síncrona antes de crear la ventana: data.json
             // es pequeño y así la primera pantalla ya sale con la biblioteca.
             _repo = new JsonDataRepository();
-            _repo.LoadAsync().GetAwaiter().GetResult();
+            // Task.Run: esperar un async bloqueando el hilo de UI (que ya tiene
+            // el SynchronizationContext de Avalonia) es un deadlock en cuanto
+            // alguna continuación intente volver a él.
+            Task.Run(_repo.LoadAsync).GetAwaiter().GetResult();
 
             var mainWindow = new MainWindow();
             try
@@ -57,6 +60,6 @@ public partial class App : Application
         if (_repo is null) return;
         var elapsed = (long)(DateTime.Now - _sessionStart).TotalSeconds;
         _repo.Current.TotalUsageSeconds += elapsed;
-        _repo.SaveAsync().GetAwaiter().GetResult();
+        Task.Run(_repo.SaveAsync).GetAwaiter().GetResult(); // ver LoadAsync arriba
     }
 }

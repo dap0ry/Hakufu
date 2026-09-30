@@ -36,6 +36,9 @@ public partial class MainWindow : Window
         if (_reader is not null)
         {
             _reader.ZenModeChanged -= Reader_ZenModeChanged;
+            // Cierra el documento de pdfium (Docnet no tiene finalizador: sin
+            // esto cada PDF abierto se quedaba abierto hasta cerrar la app).
+            _reader.Dispose();
             _reader = null;
             // Salir del lector estando en zen: volver al tamaño normal.
             if (WindowState == WindowState.FullScreen) WindowState = _preZenState;

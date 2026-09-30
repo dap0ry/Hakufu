@@ -12,9 +12,13 @@ public class FilePickerService : IFilePickerService
         (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)
             ?.MainWindow?.StorageProvider;
 
+    // Los selectores de GTK (Linux) distinguen mayúsculas en los patrones:
+    // sin "*.CBZ" no se verían "Tomo 01.CBZ" ni "foto.JPG".
     private static FilePickerFileType ToFileType(FileFilter f) => new(f.Name)
     {
-        Patterns = f.Extensions.Select(e => $"*.{e}").ToArray()
+        Patterns = f.Extensions
+            .SelectMany(e => new[] { $"*.{e.ToLowerInvariant()}", $"*.{e.ToUpperInvariant()}" })
+            .ToArray()
     };
 
     public async Task<string[]> PickFilesAsync(string title, FileFilter filter, bool multiSelect = true)

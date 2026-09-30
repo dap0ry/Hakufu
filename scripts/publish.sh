@@ -77,7 +77,8 @@ case "$RID" in
 PLIST
 
     # Sin firma de Apple (cuenta de 99 €/año) basta una firma "ad hoc" para
-    # que los Mac con chip Apple lo ejecuten. La primera vez: clic derecho → Abrir.
+    # que los Mac con chip Apple lo ejecuten. Si se descarga (no hecho en este
+    # Mac): xattr -dr com.apple.quarantine Hakufu.app
     if command -v codesign >/dev/null; then
       codesign --force --deep --sign - "$APP"
     fi

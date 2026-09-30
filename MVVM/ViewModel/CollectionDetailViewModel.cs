@@ -177,7 +177,15 @@ public class CollectionDetailViewModel : BaseViewModel
 
     private static async Task<int> GetPageCountAsync(string filePath)
     {
+        // Un archivo dañado cuenta como 0 páginas en vez de tumbar la app
+        // (esto corre dentro de un async void de RelayCommand).
         return await Task.Run(() =>
+        {
+            try { return Count(); }
+            catch { return 0; }
+        });
+
+        int Count()
         {
             var ext = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
             if (ext == ".pdf")
@@ -193,6 +201,6 @@ public class CollectionDetailViewModel : BaseViewModel
             return archive.Entries.Count(e =>
                 !e.IsDirectory &&
                 imageExts.Contains(System.IO.Path.GetExtension(e.Key ?? "").ToLowerInvariant()));
-        });
+        }
     }
 }

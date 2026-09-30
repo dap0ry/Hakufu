@@ -65,6 +65,10 @@ public class BackupService(IDataRepository repo) : IBackupService
 
             using (zip)
             {
+                // Sin el manifiesto no es una copia de Hakufu: cualquier otro zip
+                // con un "data.json" dentro vaciaría la biblioteca.
+                if (ReadManifest(zip) is not { } manifest) return false;
+
                 var dataEntry = zip.GetEntry(DataEntry);
                 if (dataEntry is null) return false;
 
@@ -77,25 +81,47 @@ public class BackupService(IDataRepository repo) : IBackupService
                 catch { return false; }
                 if (store is null) return false;
 
-                var oldDataDir = ReadManifest(zip)?.DataDir;
-                var dataDir    = AppPaths.DataDir;
+                var dataDir = AppPaths.DataDir;
 
-                var media = zip.Entries
-                    .Where(e => !string.IsNullOrEmpty(e.Name) && IsMediaEntry(e.FullName))
-                    .ToList();
-                for (var i = 0; i < media.Count; i++)
+                // Primero todo a una carpeta temporal y después se mueve: si un
+                // fichero falla (nombre no válido en este sistema, disco lleno…)
+                // la biblioteca actual queda intacta.
+                var staging = Path.Combine(dataDir, $".import-{Guid.NewGuid():N}");
+                try
                 {
-                    var dest = Path.GetFullPath(Path.Combine(dataDir, media[i].FullName));
-                    // Protección "zip slip": nada puede escribirse fuera de la carpeta de datos.
-                    if (!dest.StartsWith(Path.GetFullPath(dataDir) + Path.DirectorySeparatorChar)) continue;
-                    Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-                    media[i].ExtractToFile(dest, overwrite: true);
-                    progress?.Report((i + 1) / (double)Math.Max(1, media.Count));
+                    var stagingFull = Path.GetFullPath(staging) + Path.DirectorySeparatorChar;
+                    var media = zip.Entries
+                        .Where(e => !string.IsNullOrEmpty(e.Name) && IsMediaEntry(e.FullName))
+                        .ToList();
+                    var extracted = new List<string>();
+                    for (var i = 0; i < media.Count; i++)
+                    {
+                        var dest = Path.GetFullPath(Path.Combine(staging, media[i].FullName));
+                        // Protección "zip slip": nada puede escribirse fuera de la carpeta temporal.
+                        if (!dest.StartsWith(stagingFull)) continue;
+                        Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                        media[i].ExtractToFile(dest, overwrite: true);
+                        extracted.Add(dest);
+                        progress?.Report((i + 1) / (double)Math.Max(1, media.Count) * 0.9);
+                    }
+
+                    foreach (var file in extracted)
+                    {
+                        var target = Path.Combine(dataDir, Path.GetRelativePath(staging, file));
+                        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                        File.Move(file, target, overwrite: true);
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+                finally
+                {
+                    try { Directory.Delete(staging, recursive: true); } catch { }
                 }
 
-                if (oldDataDir is not null)
-                    RebasePaths(store, oldDataDir, dataDir);
-
+                RebasePaths(store, manifest.DataDir, dataDir);
                 repo.Replace(store);
                 return true;
             }

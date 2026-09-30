@@ -39,7 +39,7 @@ dotnet test tests/Hakufu.Tests        # tests
 ./scripts/install-linux.sh            # Linux: instala en ~/.local y lo añade al menú
 ```
 
-- **macOS:** `./scripts/publish.sh` crea `publish/Hakufu.app`. Arrástralo a Aplicaciones. No está firmado con cuenta de Apple, así que la primera vez se abre con **clic derecho → Abrir**.
+- **macOS:** `./scripts/publish.sh` crea `publish/Hakufu.app`. Arrástralo a Aplicaciones. Hecho en tu propio Mac se abre sin más. Si lo descargas (p. ej. el zip de *Actions*), macOS lo bloquea porque no está firmado con cuenta de Apple: `xattr -dr com.apple.quarantine /Applications/Hakufu.app`, o Ajustes del Sistema → Privacidad y seguridad → *Abrir igualmente*.
 - **CI:** cada push compila, pasa los tests y genera la app para `win-x64`, `linux-x64`, `osx-arm64` y `osx-x64` (pestaña *Actions* → *Artifacts*).
 
 ### Dónde guarda los datos

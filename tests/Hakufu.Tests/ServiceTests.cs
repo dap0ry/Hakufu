@@ -41,6 +41,27 @@ public class DataRepositoryTests
         Assert.Equal(0.5, repo.Current.Customization.NavIcons["account"].Opacity);
     }
 
+    // App carga y guarda bloqueando el hilo de UI (antes de mostrar la ventana y
+    // al salir). Con alguna continuación que volviera a ese hilo, la app se
+    // colgaba al arrancar (con data.json grande) o no terminaba al cerrar (con
+    // data.json pequeño). El Wait con límite hace que el test falle en vez de colgarse.
+    [AvaloniaFact]
+    public void Load_and_save_can_block_the_ui_thread_without_deadlock()
+    {
+        foreach (var mangas in new[] { 0, 3, 200 })
+        {
+            using var tmp = new TempDataDir();
+            var repo = new JsonDataRepository();
+            for (var i = 0; i < mangas; i++)
+                repo.Current.Mangas.Add(new Manga { Title = $"Tomo {i}", FilePath = $"/m/{i}.cbz" });
+
+            Assert.True(repo.SaveAsync().Wait(TimeSpan.FromSeconds(10)), $"SaveAsync bloqueado ({mangas} mangas)");
+            var again = new JsonDataRepository();
+            Assert.True(again.LoadAsync().Wait(TimeSpan.FromSeconds(10)), $"LoadAsync bloqueado ({mangas} mangas)");
+            Assert.Equal(mangas, again.Current.Mangas.Count);
+        }
+    }
+
     [Fact]
     public async Task Corrupt_data_file_starts_empty_instead_of_crashing()
     {
@@ -223,7 +244,14 @@ public class BackupServiceTests
         var notZip  = Path.Combine(tmp.Root, "texto.zip");
         await File.WriteAllTextAsync(notZip, "hola");
 
+        // Zip de otra app que casualmente trae un data.json (sin manifiesto de Hakufu).
+        var otherApp = Path.Combine(tmp.Root, "otra-app.zip");
+        using (var archive = ZipFile.Open(otherApp, ZipArchiveMode.Create))
+        using (var s = new StreamWriter(archive.CreateEntry("data.json").Open()))
+            await s.WriteAsync("""{ "version": 3, "items": [] }""");
+
         var svc = new BackupService(repo);
+        Assert.False(await svc.ImportAsync(otherApp));
         Assert.False(await svc.ImportAsync(foreign));
         Assert.False(await svc.ImportAsync(notZip));
         Assert.False(await svc.ImportAsync(Path.Combine(tmp.Root, "no existe.zip")));
@@ -240,6 +268,8 @@ public class BackupServiceTests
         var zip = Path.Combine(tmp.Root, "malicioso.zip");
         using (var archive = ZipFile.Open(zip, ZipArchiveMode.Create))
         {
+            using (var s = new StreamWriter(archive.CreateEntry("hakufu-backup.json").Open()))
+                await s.WriteAsync("""{ "Version": 1, "DataDir": "C:\\x", "CreatedAt": "2026-10-01T00:00:00" }""");
             using (var s = new StreamWriter(archive.CreateEntry("data.json").Open()))
                 await s.WriteAsync("{}");
             using (var s = new StreamWriter(archive.CreateEntry("covers/../../fuera.txt").Open()))

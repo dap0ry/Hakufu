@@ -47,11 +47,18 @@ public class JsonDataRepository : IDataRepository
         try
         {
             // FileShare.ReadWrite permite que SaveAsync escriba aunque este stream esté abierto
-            await using var stream = new FileStream(
+            var stream = new FileStream(
                 DataFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite,
                 bufferSize: 4096, useAsync: true);
-            Current = Normalize(await JsonSerializer.DeserializeAsync<AppDataStore>(stream, JsonOptions)
-                                ?? new AppDataStore());
+            // ConfigureAwait(false) en TODOS los await (también el DisposeAsync
+            // del using): si alguien espera esto bloqueando el hilo de UI, una
+            // continuación encolada en ese hilo sería un deadlock.
+            await using (stream.ConfigureAwait(false))
+            {
+                Current = Normalize(await JsonSerializer.DeserializeAsync<AppDataStore>(stream, JsonOptions)
+                                        .ConfigureAwait(false)
+                                    ?? new AppDataStore());
+            }
         }
         catch
         {
@@ -65,10 +72,11 @@ public class JsonDataRepository : IDataRepository
         try
         {
             Directory.CreateDirectory(DataDir);
-            await using var stream = new FileStream(
+            var stream = new FileStream(
                 DataFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite,
                 bufferSize: 4096, useAsync: true);
-            await JsonSerializer.SerializeAsync(stream, Current, JsonOptions).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
+                await JsonSerializer.SerializeAsync(stream, Current, JsonOptions).ConfigureAwait(false);
         }
         finally
         {

@@ -23,14 +23,14 @@ public class AsyncRelayCommand : ICommand
         private set
         {
             _isExecuting = value;
-            CommandManager.InvalidateRequerySuggested();
+            CommandRequery.Invalidate();
         }
     }
 
     public event EventHandler? CanExecuteChanged
     {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
+        add => CommandRequery.RequerySuggested += value;
+        remove => CommandRequery.RequerySuggested -= value;
     }
 
     public bool CanExecute(object? parameter) => !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);

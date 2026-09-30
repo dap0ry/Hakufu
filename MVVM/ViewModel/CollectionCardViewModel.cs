@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -12,7 +12,7 @@ public class CollectionCardViewModel : BaseViewModel
     public string Name       => Model.Name;
     public int    MangaCount => Model.MangaIds.Count;
 
-    public ObservableCollection<BitmapSource> CoverPreviews { get; } = [];
+    public ObservableCollection<Bitmap> CoverPreviews { get; } = [];
 
     private bool _isSelected;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }

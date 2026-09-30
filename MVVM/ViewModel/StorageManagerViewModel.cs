@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using Hakufu.Services;
 
@@ -9,9 +8,9 @@ public class StorageManagerViewModel : BaseViewModel
 {
     private readonly IDialogService _dialog;
     private readonly LibraryService _library;
+    private readonly IFilePickerService _files;
 
-    private static readonly string HakufuDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
+    private static string HakufuDir => Hakufu.Data.AppPaths.DataDir;
 
     public string DataPathText => HakufuDir;
 
@@ -95,7 +94,7 @@ public class StorageManagerViewModel : BaseViewModel
         _externalCount == 0
             ? "Todos los mangas ya están en la biblioteca local."
             : $"{_externalCount} archivo{(_externalCount != 1 ? "s" : "")} fuera de la biblioteca. " +
-              "Se copiarán a %APPDATA%\\Hakufu\\biblioteca (los originales no se borran).";
+              $"Se copiarán a {Hakufu.Data.AppPaths.LibraryDir} (los originales no se borran).";
 
     // ── Commands ─────────────────────────────────────────────────────────────
 
@@ -106,9 +105,7 @@ public class StorageManagerViewModel : BaseViewModel
 
     public RelayCommand OpenFolderCommand => new(() =>
     {
-        Directory.CreateDirectory(HakufuDir);
-        try { Process.Start(new ProcessStartInfo("explorer.exe", $"\"{HakufuDir}\"") { UseShellExecute = true }); }
-        catch { /* explorer no disponible, ignorar */ }
+        _files.OpenFolder(HakufuDir);
     });
 
     public RelayCommand RequestDeleteCommand => new(() =>
@@ -140,10 +137,11 @@ public class StorageManagerViewModel : BaseViewModel
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
-    public StorageManagerViewModel(IDialogService dialog, LibraryService library)
+    public StorageManagerViewModel(IDialogService dialog, LibraryService library, IFilePickerService files)
     {
         _dialog  = dialog;
         _library = library;
+        _files   = files;
         LoadTree();
         ExternalCount = _library.CountExternalMangas();
     }

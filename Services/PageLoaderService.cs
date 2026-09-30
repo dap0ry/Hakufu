@@ -1,21 +1,16 @@
 using System.Collections.Concurrent;
-using System.IO;
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Docnet.Core;
 using Docnet.Core.Models;
 using Docnet.Core.Readers;
 using Hakufu.MVVM.Model;
 using SharpCompress.Archives;
-using SharpCompress.Common;
 using SharpCompress.Readers;
 
 namespace Hakufu.Services;
 
 public class PageLoaderService : IPageLoaderService
 {
-    private static readonly HashSet<string> ImageExtensions =
-        [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"];
-
     private readonly string _ext;
     private readonly string _filePath;
 
@@ -25,8 +20,8 @@ public class PageLoaderService : IPageLoaderService
     // CBR/CBZ-specific — sorted list of (entryKey) for index-based access
     private List<string>? _entryKeys;
 
-    // Page cache: sliding window ±2 around current page
-    private readonly ConcurrentDictionary<int, BitmapSource> _cache = new();
+    // Page cache: sliding window around current page
+    private readonly ConcurrentDictionary<int, Bitmap> _cache = new();
     private readonly SemaphoreSlim _loadLock = new(1, 1);
 
     public int TotalPages { get; private set; }
@@ -36,10 +31,20 @@ public class PageLoaderService : IPageLoaderService
         _filePath = manga.FilePath;
         _ext = Path.GetExtension(_filePath).ToLowerInvariant();
 
-        if (_ext == ".pdf")
-            InitPdf();
-        else
-            InitArchive();
+        // Un manga movido o borrado, o un archivo dañado, se abre con 0 páginas
+        // en vez de tumbar la app.
+        if (!File.Exists(_filePath)) return;
+        try
+        {
+            if (_ext == ".pdf")
+                InitPdf();
+            else
+                InitArchive();
+        }
+        catch
+        {
+            TotalPages = 0;
+        }
     }
 
     private void InitPdf()
@@ -48,14 +53,13 @@ public class PageLoaderService : IPageLoaderService
         TotalPages = _docReader.GetPageCount();
     }
 
-    
     private void InitArchive()
     {
         // Open once just to enumerate entry keys; re-open per-page to support RAR sequential reads
         using var archive = ArchiveFactory.OpenArchive(_filePath, new ReaderOptions());
         _entryKeys = archive.Entries
             .Where(e => !e.IsDirectory &&
-                        ImageExtensions.Contains(
+                        CoverService.ImageExtensions.Contains(
                             Path.GetExtension(e.Key ?? "").ToLowerInvariant()))
             .OrderBy(e => e.Key, StringComparer.OrdinalIgnoreCase)
             .Select(e => e.Key!)
@@ -65,7 +69,7 @@ public class PageLoaderService : IPageLoaderService
 
     // ── Public interface ──────────────────────────────────────────────────────
 
-    public async Task<BitmapSource?> LoadPageAsync(int pageIndex)
+    public async Task<Bitmap?> LoadPageAsync(int pageIndex)
     {
         if (pageIndex < 0 || pageIndex >= TotalPages) return null;
         if (_cache.TryGetValue(pageIndex, out var cached)) return cached;
@@ -75,7 +79,11 @@ public class PageLoaderService : IPageLoaderService
         {
             if (_cache.TryGetValue(pageIndex, out cached)) return cached;
 
-            var bitmap = await Task.Run(() => RenderPage(pageIndex));
+            var bitmap = await Task.Run(() =>
+            {
+                try { return RenderPage(pageIndex); }
+                catch { return null; }
+            });
             if (bitmap is not null)
                 _cache[pageIndex] = bitmap;
             return bitmap;
@@ -104,24 +112,18 @@ public class PageLoaderService : IPageLoaderService
 
     // ── Rendering ─────────────────────────────────────────────────────────────
 
-    private BitmapSource? RenderPage(int pageIndex)
+    private Bitmap? RenderPage(int pageIndex)
         => _ext == ".pdf" ? RenderPdfPage(pageIndex) : RenderArchivePage(pageIndex);
 
-    private BitmapSource? RenderPdfPage(int pageIndex)
+    private Bitmap? RenderPdfPage(int pageIndex)
     {
         if (_docReader is null) return null;
         using var pageReader = _docReader.GetPageReader(pageIndex);
-        int w   = pageReader.GetPageWidth();
-        int h   = pageReader.GetPageHeight();
-        byte[] raw = pageReader.GetImage();
-
-        var bmp = BitmapSource.Create(w, h, 96, 96,
-            System.Windows.Media.PixelFormats.Bgra32, null, raw, w * 4);
-        bmp.Freeze();
-        return bmp;
+        return BitmapHelper.FromBgra(
+            pageReader.GetImage(), pageReader.GetPageWidth(), pageReader.GetPageHeight());
     }
 
-    private BitmapSource? RenderArchivePage(int pageIndex)
+    private Bitmap? RenderArchivePage(int pageIndex)
     {
         if (_entryKeys is null || pageIndex >= _entryKeys.Count) return null;
         var targetKey = _entryKeys[pageIndex];
@@ -134,14 +136,7 @@ public class PageLoaderService : IPageLoaderService
         using var ms = new MemoryStream();
         entry.WriteTo(ms);
         ms.Position = 0;
-
-        var img = new BitmapImage();
-        img.BeginInit();
-        img.CacheOption  = BitmapCacheOption.OnLoad;
-        img.StreamSource = ms;
-        img.EndInit();
-        img.Freeze();
-        return img;
+        return BitmapHelper.FromStream(ms);
     }
 
     public void Dispose()

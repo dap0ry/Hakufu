@@ -1,14 +1,11 @@
 using System.Globalization;
-using System.Windows.Data;
+using Avalonia.Data.Converters;
 
 namespace Hakufu.Converters;
 
 /// <summary>Multi-binding converter: returns true if all values are equal.</summary>
 public class EqualityConverter : IMultiValueConverter
 {
-    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        => values.Length >= 2 && Equals(values[0], values[1]);
-
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        => throw new NotSupportedException();
+    public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+        => values.Count >= 2 && Equals(values[0], values[1]);
 }

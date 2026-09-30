@@ -1,3 +1,6 @@
 <Solution>
   <Project Path="Hakufu.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Hakufu.Tests/Hakufu.Tests.csproj" />
+  </Folder>
 </Solution>

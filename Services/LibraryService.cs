@@ -8,9 +8,7 @@ public class LibraryService
 {
     private readonly IDataRepository _repo;
 
-    private static readonly string BibliotecaDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "Hakufu", "biblioteca");
+    private static string BibliotecaDir => AppPaths.LibraryDir;
 
     public LibraryService(IDataRepository repo) => _repo = repo;
 

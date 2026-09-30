@@ -11,19 +11,20 @@ public class SettingsViewModel : BaseViewModel
     private readonly INavigationService _nav;
     private readonly IDialogService     _dialog;
     private readonly LibraryService     _library;
+    private readonly IFilePickerService _files;
 
-    private static readonly string HakufuDataDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
+    private static string HakufuDataDir => Hakufu.Data.AppPaths.DataDir;
 
     public SettingsViewModel(IThemeService theme, IDataRepository repo,
                              INavigationService nav, IDialogService dialog,
-                             LibraryService library)
+                             LibraryService library, IFilePickerService files)
     {
         _theme   = theme;
         _repo    = repo;
         _nav     = nav;
         _dialog  = dialog;
         _library = library;
+        _files   = files;
         _isDarkTheme = _theme.CurrentTheme == AppTheme.Dark;
 
         _ = LoadStorageSizesAsync();
@@ -108,7 +109,7 @@ public class SettingsViewModel : BaseViewModel
     }
 
     public RelayCommand OpenStorageManagerCommand => new(() =>
-        _dialog.ShowModal(new StorageManagerViewModel(_dialog, _library)));
+        _dialog.ShowModal(new StorageManagerViewModel(_dialog, _library, _files)));
 
     public string VersionText =>
         $"Versión {System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "?"}";
@@ -117,11 +118,11 @@ public class SettingsViewModel : BaseViewModel
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 
-    // Cierra Hakufu de verdad (termina el proceso) — a diferencia de la X de
-    // la ventana, que solo la oculta en la bandeja del sistema.
+    // Cierra Hakufu (igual que la X de la ventana).
     public RelayCommand ExitApplicationCommand => new(() =>
     {
-        if (System.Windows.Application.Current.MainWindow is Hakufu.MainWindow mw)
-            mw.RequestExit();
+        if (Avalonia.Application.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            desktop.MainWindow?.Close();
     });
 }

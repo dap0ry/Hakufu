@@ -1,4 +1,4 @@
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Hakufu.Data;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
@@ -10,43 +10,34 @@ public class HomeViewModel : BaseViewModel
     private readonly LibraryService     _library;
     private readonly ICoverService      _cover;
     private readonly INavigationService _nav;
-    private readonly ISessionService    _session;
-    private readonly HakufuApiClient    _api;
     private readonly IDataRepository    _repo;
 
-    private string?       _lastMangaTitle;
-    private BitmapSource? _lastMangaCover;
+    private string? _lastMangaTitle;
+    private Bitmap? _lastMangaCover;
 
-    public string?       LastMangaTitle { get => _lastMangaTitle; private set => SetProperty(ref _lastMangaTitle, value); }
-    public BitmapSource? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
+    public string? LastMangaTitle { get => _lastMangaTitle; private set => SetProperty(ref _lastMangaTitle, value); }
+    public Bitmap? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
     public bool HasLastManga => LastMangaTitle is not null;
-
-    public bool    IsLoggedIn     => _session.IsLoggedIn;
-    public string  SessionLabel   => _session.IsLoggedIn ? _session.Username! : "Cuenta";
-    public string? AvatarUrl      => _session.AvatarUrl;
-    public bool    HasAvatar      => !string.IsNullOrEmpty(_session.AvatarUrl);
-    public bool    ShowAvatarArea => _session.IsLoggedIn;
-    public string  SessionInitial => _session.Username?.Length > 0 ? _session.Username[0].ToString().ToUpper() : "?";
 
     // ── Personalización (100% local, ver HomeCustomization) ─────────────────
     // Se exponen los CustomizationImage completos (Path + Opacity) — HomeView
     // se engancha a las sub-propiedades directamente (p. ej. "LibraryIcon.Path").
     public CustomizationImage? LeftPanelBackground => _repo.Current.Customization.LeftPanelBackground;
 
+    // La tesela de Copia de seguridad ocupa el hueco de la antigua "Cuenta" y
+    // conserva su clave ("account") para no perder imágenes ya elegidas.
     public CustomizationImage? LibraryIcon     => IconFor("library");
     public CustomizationImage? ProfileIcon     => IconFor("profile");
-    public CustomizationImage? FriendsIcon     => IconFor("friends");
     public CustomizationImage? SettingsIcon    => IconFor("settings");
     public CustomizationImage? HelpIcon        => IconFor("help");
-    public CustomizationImage? AccountIcon     => IconFor("account");
+    public CustomizationImage? BackupIcon      => IconFor("account");
     public CustomizationImage? PersonalizeIcon => IconFor("personalize");
 
     public CustomizationImage? LibraryBackground     => BackgroundFor("library");
     public CustomizationImage? ProfileBackground     => BackgroundFor("profile");
-    public CustomizationImage? FriendsBackground     => BackgroundFor("friends");
     public CustomizationImage? SettingsBackground    => BackgroundFor("settings");
     public CustomizationImage? HelpBackground        => BackgroundFor("help");
-    public CustomizationImage? AccountBackground     => BackgroundFor("account");
+    public CustomizationImage? BackupBackground      => BackgroundFor("account");
     public CustomizationImage? PersonalizeBackground => BackgroundFor("personalize");
 
     private CustomizationImage? IconFor(string key)
@@ -56,13 +47,11 @@ public class HomeViewModel : BaseViewModel
         => _repo.Current.Customization.NavBackgrounds.TryGetValue(key, out var img) ? img : null;
 
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
-                         ISessionService session, HakufuApiClient api, IDataRepository repo)
+                         IDataRepository repo)
     {
         _library = library;
         _cover   = cover;
         _nav     = nav;
-        _session = session;
-        _api     = api;
         _repo    = repo;
         _ = LoadAsync();
     }
@@ -76,37 +65,13 @@ public class HomeViewModel : BaseViewModel
             LastMangaCover = await _cover.GetCoverAsync(last);
             OnPropertyChanged(nameof(HasLastManga));
         }
-
-        if (_session.IsLoggedIn && string.IsNullOrEmpty(_session.AvatarUrl))
-        {
-            try
-            {
-                var profile = await _api.GetPublicProfileAsync(_session.Username!);
-                if (!string.IsNullOrEmpty(profile?.AvatarUrl))
-                {
-                    _session.SetSession(_session.Username!, _session.Token!, profile.AvatarUrl);
-                    OnPropertyChanged(nameof(AvatarUrl));
-                    OnPropertyChanged(nameof(HasAvatar));
-                }
-            }
-            catch { }
-        }
     }
 
-    public RelayCommand NavLibraryCommand  => new(() => _nav.NavigateTo<LibraryViewModel>());
-    public RelayCommand NavProfileCommand  => new(() => _nav.NavigateTo<ProfileViewModel>());
-    public RelayCommand NavSettingsCommand => new(() => _nav.NavigateTo<SettingsViewModel>());
-    public RelayCommand NavHelpCommand     => new(() => _nav.NavigateTo<HelpViewModel>());
-    public RelayCommand NavAccountCommand  => new(() =>
-    {
-        if (_session.IsLoggedIn)
-            _nav.NavigateTo<SyncViewModel>();
-        else
-            _nav.NavigateTo<AccountViewModel>();
-    });
-
-    public RelayCommand NavFriendsCommand => new(() => _nav.NavigateTo<FriendsViewModel>());
-
+    public RelayCommand NavLibraryCommand   => new(() => _nav.NavigateTo<LibraryViewModel>());
+    public RelayCommand NavProfileCommand   => new(() => _nav.NavigateTo<ProfileViewModel>());
+    public RelayCommand NavSettingsCommand  => new(() => _nav.NavigateTo<SettingsViewModel>());
+    public RelayCommand NavHelpCommand      => new(() => _nav.NavigateTo<HelpViewModel>());
+    public RelayCommand NavBackupCommand    => new(() => _nav.NavigateTo<BackupViewModel>());
     public RelayCommand NavCustomizeCommand => new(() => _nav.NavigateTo<CustomizationViewModel>());
 
     public RelayCommand ContinueReadingCommand => new(() =>

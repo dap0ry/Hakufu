@@ -1,10 +1,10 @@
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Hakufu.Services;
 
 public interface IPageLoaderService : IDisposable
 {
     int TotalPages { get; }
-    Task<BitmapSource?> LoadPageAsync(int pageIndex);
+    Task<Bitmap?> LoadPageAsync(int pageIndex);
     void Preload(int currentPage);
 }

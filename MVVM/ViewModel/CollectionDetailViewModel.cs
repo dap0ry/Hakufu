@@ -107,10 +107,8 @@ public class CollectionDetailViewModel : BaseViewModel
 
     public RelayCommand AddMangaCommand => new(async () =>
     {
-        var files = _filePicker.PickFiles(
-            "Agregar manga",
-            "Archivos de manga|*.pdf;*.cbr;*.cbz",
-            multiSelect: true);
+        var files = await _filePicker.PickFilesAsync(
+            "Agregar manga", FileFilter.Mangas, multiSelect: true);
 
         foreach (var file in files)
         {

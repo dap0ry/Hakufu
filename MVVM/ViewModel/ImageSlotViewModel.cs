@@ -61,12 +61,10 @@ public class ImageSlotViewModel : BaseViewModel
         _onOpacityChanged = onOpacityChanged;
     }
 
-    public RelayCommand PickCommand => new(() =>
+    public RelayCommand PickCommand => new(async () =>
     {
-        var files = _filePicker.PickFiles(
-            "Elegir imagen",
-            "Imágenes|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.webp",
-            multiSelect: false);
+        var files = await _filePicker.PickFilesAsync(
+            "Elegir imagen", FileFilter.Images, multiSelect: false);
         if (files.Length == 0) return;
 
         var saved = _customization.SaveImage(files[0], _slotKey);

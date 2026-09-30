@@ -1,4 +1,5 @@
 using System.IO;
+using Hakufu.Data;
 
 namespace Hakufu.Services;
 
@@ -10,9 +11,7 @@ namespace Hakufu.Services;
 // ("panel.left", "nav.library.icon", …), no contiene datos del usuario.
 public class CustomizationService : ICustomizationService
 {
-    private static readonly string CustomizationDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "Hakufu", "customization");
+    private static string CustomizationDir => AppPaths.CustomizationDir;
 
     public string SaveImage(string sourceFilePath, string slotKey)
     {

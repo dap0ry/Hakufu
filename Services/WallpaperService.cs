@@ -1,7 +1,5 @@
-using System.IO;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Media;
 
 namespace Hakufu.Services;
 
@@ -9,37 +7,25 @@ public class WallpaperService : IWallpaperService
 {
     public void Apply(string? imagePath, double opacity)
     {
-        if (string.IsNullOrWhiteSpace(imagePath) || !File.Exists(imagePath))
+        var resources = Application.Current!.Resources;
+
+        var bmp = BitmapHelper.TryLoad(imagePath);
+        if (bmp is null)
         {
             // Sin override: vuelve a caer al AppBackground normal del tema
-            // (definido en LightTheme.xaml / DarkTheme.xaml).
-            Application.Current.Resources.Remove("AppBackground");
+            // (definido en LightTheme.axaml / DarkTheme.axaml).
+            resources.Remove("AppBackground");
             return;
         }
 
-        try
+        // Asignado directamente en Application.Resources (no en una de sus
+        // MergedDictionaries): una clave puesta aquí gana a la misma clave del
+        // diccionario del tema, así que sustituye al AppBackground activo sin
+        // pelearse con ThemeService.SetTheme() cuando cambia de tema.
+        resources["AppBackground"] = new ImageBrush(bmp)
         {
-            var bmp = new BitmapImage();
-            bmp.BeginInit();
-            bmp.UriSource     = new Uri(imagePath, UriKind.Absolute);
-            bmp.CacheOption   = BitmapCacheOption.OnLoad;
-            bmp.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            bmp.EndInit();
-            bmp.Freeze();
-
-            var brush = new ImageBrush(bmp) { Stretch = Stretch.UniformToFill, Opacity = opacity };
-            brush.Freeze();
-
-            // Asignado directamente en Application.Resources (no en una de
-            // sus MergedDictionaries) — una clave puesta aquí siempre gana a
-            // la misma clave definida solo dentro de una merged dictionary,
-            // así que sustituye al AppBackground del tema activo sin
-            // pelearse con ThemeService.SetTheme() cuando cambia de tema.
-            Application.Current.Resources["AppBackground"] = brush;
-        }
-        catch
-        {
-            Application.Current.Resources.Remove("AppBackground");
-        }
+            Stretch = Stretch.UniformToFill,
+            Opacity = opacity
+        };
     }
 }

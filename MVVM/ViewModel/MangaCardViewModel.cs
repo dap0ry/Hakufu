@@ -1,4 +1,4 @@
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -10,8 +10,8 @@ public class MangaCardViewModel : BaseViewModel
 
     public Manga Model { get; }
 
-    private BitmapSource? _cover;
-    public BitmapSource? Cover { get => _cover; private set => SetProperty(ref _cover, value); }
+    private Bitmap? _cover;
+    public Bitmap? Cover { get => _cover; private set => SetProperty(ref _cover, value); }
 
     public string Title      => Model.Title;
     public int    TotalPages => Model.TotalPages;

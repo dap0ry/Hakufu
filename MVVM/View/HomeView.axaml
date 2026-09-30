@@ -1,0 +1,379 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.HomeView"
+             x:DataType="vm:HomeViewModel">
+
+    <UserControl.Styles>
+
+        <!-- ── Tile de navegación: icono + etiqueta, resalta en hover ──
+             Background sale de TemplateBinding a propósito: así un botón puede
+             traer su propio ImageBrush personalizado (PathAndOpacityToImageBrush)
+             en vez del CardBackground de siempre.
+             El ContentPresenter NO se llama PART_ContentPresenter para que no le
+             afecten los estilos :pointerover del tema Fluent. -->
+        <Style Selector="Button.navTile">
+            <Setter Property="Background"                 Value="{DynamicResource CardBackground}"/>
+            <Setter Property="Foreground"                 Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness"            Value="1"/>
+            <Setter Property="BorderBrush"                Value="{DynamicResource CardBorder}"/>
+            <Setter Property="Cursor"                     Value="Hand"/>
+            <Setter Property="HorizontalAlignment"        Value="Stretch"/>
+            <Setter Property="VerticalAlignment"          Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment"   Value="Stretch"/>
+            <Setter Property="Padding"                    Value="18,16"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="TileContent"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.navTile:pointerover /template/ Border#Root">
+            <Setter Property="Background"  Value="{DynamicResource HoverBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+        </Style>
+        <Style Selector="Button.navTile:pressed /template/ Border#Root">
+            <Setter Property="Opacity" Value="0.8"/>
+        </Style>
+
+        <!-- Fondo de icono: cuadrado redondeado con tinte de acento.
+             OJO: Opacity va solo en el fondo — si el icono va DENTRO de este
+             Border como hijo, hereda la opacidad y queda casi invisible.
+             El icono debe ir como hermano encima, en un Grid, no como hijo. -->
+        <Style Selector="Border.iconBadge">
+            <Setter Property="Width"        Value="40"/>
+            <Setter Property="Height"       Value="40"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Background"   Value="{DynamicResource AccentColor}"/>
+            <Setter Property="Opacity"      Value="0.14"/>
+        </Style>
+
+        <!-- Etiqueta de las teselas pequeñas -->
+        <Style Selector="TextBlock.tileLabel">
+            <Setter Property="FontSize"          Value="14"/>
+            <Setter Property="FontWeight"        Value="Medium"/>
+            <Setter Property="Foreground"        Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin"            Value="14,0,0,0"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="52*,48*">
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- LEFT  — título + navegación                    -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <Border Grid.Column="0"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,1,0">
+            <Border.Background>
+                <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="SidebarBackground">
+                    <Binding Path="LeftPanelBackground?.Path"/>
+                    <Binding Path="LeftPanelBackground?.Opacity"/>
+                </MultiBinding>
+            </Border.Background>
+            <Grid Margin="56,40,56,32" RowDefinitions="Auto,Auto,*,Auto">
+
+                <!-- ── TÍTULO ── -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,36">
+                    <TextBlock>
+                        <Run Text="HAKU" FontSize="52" FontWeight="Black" Foreground="{DynamicResource TextPrimary}"/>
+                        <Run Text="FU"   FontSize="52" FontWeight="Black" Foreground="{DynamicResource AccentColor}"/>
+                    </TextBlock>
+                    <Rectangle Height="4" Width="56" HorizontalAlignment="Left"
+                               Fill="{DynamicResource AccentColor}" Margin="2,6,0,0"/>
+                    <TextBlock Text="Tu biblioteca de manga"
+                               FontSize="13" Foreground="{DynamicResource TextMuted}"
+                               Margin="2,10,0,0"/>
+                </StackPanel>
+
+                <!-- ── ACCIÓN PRINCIPAL ── -->
+                <Button Grid.Row="1" Classes="navTile"
+                        Command="{Binding NavLibraryCommand}"
+                        Margin="0,0,0,10" Padding="22,20">
+                    <Button.Background>
+                        <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                            <Binding Path="LibraryBackground?.Path"/>
+                            <Binding Path="LibraryBackground?.Opacity"/>
+                        </MultiBinding>
+                    </Button.Background>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Grid Grid.Column="0" Width="48" Height="48">
+                            <Border Classes="iconBadge" Width="48" Height="48" Opacity="0.18"
+                                    IsVisible="{Binding LibraryIcon?.Path, Converter={x:Static StringConverters.IsNullOrEmpty}, FallbackValue=True}"/>
+                            <Border CornerRadius="10" ClipToBounds="True"
+                                    IsVisible="{Binding LibraryIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                                <Image Source="{Binding LibraryIcon?.Path, Converter={StaticResource PathToBitmap}}"
+                                       Stretch="UniformToFill"
+                                       Opacity="{Binding LibraryIcon?.Opacity, TargetNullValue=1}"
+                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                            </Border>
+                        </Grid>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="18,0,0,0">
+                            <TextBlock Text="Biblioteca" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Tus colecciones y mangas" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="→" FontSize="18" Foreground="{DynamicResource AccentColor}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+                <!-- ── CUADRÍCULA DE ACCESOS ──
+                     Sin "Amigos" quedan cinco teselas: dos filas de dos y
+                     "Personalizar" ocupando la fila de abajo entera, sin huecos. -->
+                <Grid Grid.Row="2" Margin="0,16,0,0"
+                      ColumnDefinitions="*,*" RowDefinitions="*,*,*">
+
+                    <!-- Perfil -->
+                    <Button Grid.Row="0" Grid.Column="0" Classes="navTile"
+                            Command="{Binding NavProfileCommand}" Margin="0,0,6,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="ProfileBackground?.Path"/>
+                                <Binding Path="ProfileBackground?.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="40" Height="40" VerticalAlignment="Center">
+                                <Border Classes="iconBadge"
+                                        IsVisible="{Binding ProfileIcon?.Path, Converter={x:Static StringConverters.IsNullOrEmpty}, FallbackValue=True}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        IsVisible="{Binding ProfileIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                                    <Image Source="{Binding ProfileIcon?.Path, Converter={StaticResource PathToBitmap}}"
+                                           Stretch="UniformToFill"
+                                           Opacity="{Binding ProfileIcon?.Opacity, TargetNullValue=1}"
+                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Classes="tileLabel" Text="Perfil"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Ajustes -->
+                    <Button Grid.Row="0" Grid.Column="1" Classes="navTile"
+                            Command="{Binding NavSettingsCommand}" Margin="6,0,0,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="SettingsBackground?.Path"/>
+                                <Binding Path="SettingsBackground?.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="40" Height="40" VerticalAlignment="Center">
+                                <Border Classes="iconBadge"
+                                        IsVisible="{Binding SettingsIcon?.Path, Converter={x:Static StringConverters.IsNullOrEmpty}, FallbackValue=True}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        IsVisible="{Binding SettingsIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                                    <Image Source="{Binding SettingsIcon?.Path, Converter={StaticResource PathToBitmap}}"
+                                           Stretch="UniformToFill"
+                                           Opacity="{Binding SettingsIcon?.Opacity, TargetNullValue=1}"
+                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Classes="tileLabel" Text="Ajustes"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Ayuda -->
+                    <Button Grid.Row="1" Grid.Column="0" Classes="navTile"
+                            Command="{Binding NavHelpCommand}" Margin="0,0,6,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="HelpBackground?.Path"/>
+                                <Binding Path="HelpBackground?.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="40" Height="40" VerticalAlignment="Center">
+                                <Border Classes="iconBadge"
+                                        IsVisible="{Binding HelpIcon?.Path, Converter={x:Static StringConverters.IsNullOrEmpty}, FallbackValue=True}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        IsVisible="{Binding HelpIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                                    <Image Source="{Binding HelpIcon?.Path, Converter={StaticResource PathToBitmap}}"
+                                           Stretch="UniformToFill"
+                                           Opacity="{Binding HelpIcon?.Opacity, TargetNullValue=1}"
+                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Classes="tileLabel" Text="Ayuda"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Copia de seguridad (antes "Cuenta"; conserva su personalización) -->
+                    <Button Grid.Row="1" Grid.Column="1" Classes="navTile"
+                            Command="{Binding NavBackupCommand}" Margin="6,0,0,6">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="BackupBackground?.Path"/>
+                                <Binding Path="BackupBackground?.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="40" Height="40" VerticalAlignment="Center">
+                                <Border Classes="iconBadge"
+                                        IsVisible="{Binding BackupIcon?.Path, Converter={x:Static StringConverters.IsNullOrEmpty}, FallbackValue=True}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        IsVisible="{Binding BackupIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                                    <Image Source="{Binding BackupIcon?.Path, Converter={StaticResource PathToBitmap}}"
+                                           Stretch="UniformToFill"
+                                           Opacity="{Binding BackupIcon?.Opacity, TargetNullValue=1}"
+                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Classes="tileLabel" Text="Copia de seguridad"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Personalizar (fila entera) -->
+                    <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Classes="navTile"
+                            Command="{Binding NavCustomizeCommand}">
+                        <Button.Background>
+                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="CardBackground">
+                                <Binding Path="PersonalizeBackground?.Path"/>
+                                <Binding Path="PersonalizeBackground?.Opacity"/>
+                            </MultiBinding>
+                        </Button.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <Grid Width="40" Height="40" VerticalAlignment="Center">
+                                <Border Classes="iconBadge"
+                                        IsVisible="{Binding PersonalizeIcon?.Path, Converter={x:Static StringConverters.IsNullOrEmpty}, FallbackValue=True}"/>
+                                <Border CornerRadius="10" ClipToBounds="True"
+                                        IsVisible="{Binding PersonalizeIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                                    <Image Source="{Binding PersonalizeIcon?.Path, Converter={StaticResource PathToBitmap}}"
+                                           Stretch="UniformToFill"
+                                           Opacity="{Binding PersonalizeIcon?.Opacity, TargetNullValue=1}"
+                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Classes="tileLabel" Text="Personalizar"/>
+                        </StackPanel>
+                    </Button>
+
+                </Grid>
+
+                <!-- ── FOOTER ── (sin enlace: la app no abre URLs de red) -->
+                <TextBlock Grid.Row="3"
+                           Text="por Daniel Poza Rivera"
+                           Foreground="{DynamicResource TextMuted}"
+                           FontSize="11"
+                           Margin="0,20,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- RIGHT  — continuar leyendo                     -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <Grid Grid.Column="1" Background="{DynamicResource AppBackground}" ClipToBounds="True">
+
+            <!-- Patrón decorativo de fondo: círculos suaves con el color de acento -->
+            <Canvas IsHitTestVisible="False">
+                <Ellipse Canvas.Right="-120" Canvas.Top="-120" Width="360" Height="360"
+                         Fill="{DynamicResource AccentColor}" Opacity="0.05"/>
+                <Ellipse Canvas.Right="40" Canvas.Bottom="-160" Width="300" Height="300"
+                         Fill="{DynamicResource AccentColor}" Opacity="0.04"/>
+            </Canvas>
+
+            <!-- Estado vacío -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        IsVisible="{Binding !HasLastManga}">
+                <Border Width="72" Height="72" CornerRadius="36"
+                        Background="{DynamicResource AccentColor}" Opacity="0.12"
+                        HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <TextBlock Text="Sin lectura reciente"
+                           Classes="subtitle"
+                           Foreground="{DynamicResource TextPrimary}"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Abre Biblioteca para empezar a leer"
+                           Classes="caption"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0"/>
+            </StackPanel>
+
+            <!-- Manga en curso -->
+            <Grid IsVisible="{Binding HasLastManga}">
+
+                <!-- Portada de fondo (decorativa) -->
+                <Image Source="{Binding LastMangaCover}"
+                       Stretch="UniformToFill"
+                       Opacity="0.07"
+                       RenderOptions.BitmapInterpolationMode="LowQuality"/>
+
+                <!-- Degradado sobre el fondo -->
+                <Border>
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                            <GradientStop Color="#55000000" Offset="0"/>
+                            <GradientStop Color="#00000000" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+
+                <!-- Contenido centrado -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MaxWidth="280">
+
+                    <!-- Portada principal (flotante). La sombra va en el Border de
+                         fuera: el de dentro recorta la imagen y recortaría también
+                         la sombra. -->
+                    <Border Width="220" Height="310"
+                            CornerRadius="6"
+                            BoxShadow="0 0 40 0 #52000000"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,28">
+                        <Border.RenderTransform>
+                            <RotateTransform Angle="-1.5"/>
+                        </Border.RenderTransform>
+                        <Border CornerRadius="6"
+                                Background="{DynamicResource CardBackground}"
+                                BorderBrush="{DynamicResource CardBorder}"
+                                BorderThickness="1"
+                                ClipToBounds="True">
+                            <Image Source="{Binding LastMangaCover}"
+                                   Stretch="UniformToFill"
+                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                        </Border>
+                    </Border>
+
+                    <!-- Etiqueta -->
+                    <TextBlock Text="CONTINUAR LEYENDO"
+                               Foreground="{DynamicResource TextMuted}"
+                               FontSize="9"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,8"/>
+
+                    <!-- Título -->
+                    <TextBlock Text="{Binding LastMangaTitle}"
+                               FontSize="17"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimary}"
+                               TextAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,20"/>
+
+                    <!-- Botón -->
+                    <Button Classes="primary"
+                            Content="Continuar leyendo"
+                            HorizontalAlignment="Center"
+                            Padding="28,11"
+                            Command="{Binding ContinueReadingCommand}"/>
+
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+    </Grid>
+</UserControl>

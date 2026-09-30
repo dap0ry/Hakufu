@@ -1,0 +1,227 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="40,24,40,24">
+            <Grid ColumnDefinitions="Auto,*">
+                <Button Grid.Column="0"
+                        Classes="ghost"
+                        Content="← Inicio"
+                        Command="{Binding GoBackCommand}"
+                        Margin="0,0,24,0"/>
+                <TextBlock Grid.Column="1" Text="AJUSTES"
+                           FontSize="11" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMuted}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- ═══ BODY ═══
+             El ScrollViewer de Avalonia ya estira el contenido al alto visible,
+             así que VerticalAlignment="Center" centra sin el MinHeight de WPF. -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Width="560" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Margin="40,40,40,40">
+
+                <!-- ── TEMA ── -->
+                <Border Classes="card" Padding="0"
+                        Margin="0,0,0,20" ClipToBounds="True">
+                    <Grid RowDefinitions="Auto,Auto">
+
+                        <!-- Visual preview (colores fijos a propósito: muestra los dos temas) -->
+                        <Grid Grid.Row="0" Height="88" ColumnDefinitions="*,*">
+                            <Border Grid.Column="0" Background="#F2F2F2">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="Aa"
+                                               FontSize="24" FontWeight="Medium"
+                                               Foreground="#1A1A1A"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="CLARO"
+                                               FontSize="9" FontWeight="SemiBold"
+                                               Foreground="#999999"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Background="#111111">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="Aa"
+                                               FontSize="24" FontWeight="Medium"
+                                               Foreground="#F0F0F0"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="OSCURO"
+                                               FontSize="9" FontWeight="SemiBold"
+                                               Foreground="#555555"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Toggle row -->
+                        <Border Grid.Row="1"
+                                Padding="24,18"
+                                BorderBrush="{DynamicResource DividerBrush}"
+                                BorderThickness="0,1,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Tema oscuro"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock Text="Cambia entre modo claro y oscuro"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                                <ToggleButton Grid.Column="1"
+                                              Classes="themeToggle"
+                                              IsChecked="{Binding IsDarkTheme}"
+                                              VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ── ESPACIO DE DISCO ── -->
+                <Border Classes="card" Padding="24"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="Espacio de disco usado"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- Aplicación -->
+                        <Grid Margin="0,0,0,10" ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="Aplicación"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding AppSizeText}"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Divider -->
+                        <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="0,0,0,10"/>
+
+                        <!-- Archivos manga del usuario -->
+                        <Grid Margin="0,0,0,10" ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Mangas"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Archivos PDF / CBR / CBZ en tu equipo"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding MangasSizeText}"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Divider -->
+                        <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="0,0,0,10"/>
+
+                        <!-- Caché local Hakufu (ya no siempre es %APPDATA%: en macOS y Linux es ~/.config) -->
+                        <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Caché de Hakufu"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Portadas y datos guardados en la carpeta de datos de Hakufu"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding CachesSizeText}"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Button -->
+                        <Button Classes="ghost"
+                                Content="Gestionar espacio"
+                                HorizontalAlignment="Left"
+                                Padding="16,9"
+                                Command="{Binding OpenStorageManagerCommand}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── ACERCA DE ── -->
+                <Border Classes="card" Padding="24">
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Acerca de"
+                                       FontSize="11" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,12"/>
+                            <TextBlock Text="Hakufu"
+                                       FontSize="22" FontWeight="Black"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="Gestor de mangas offline"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock Text="{Binding VersionText}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,3"/>
+                            <TextBlock Text=".NET 10 · Avalonia · Windows, macOS y Linux"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,3"/>
+                            <TextBlock Text="por Daniel Poza Rivera"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="H"
+                                   FontSize="72" FontWeight="Black"
+                                   Foreground="{DynamicResource DividerBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="24,0,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- ── SALIR ── -->
+                <Border Classes="card" Padding="24" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Salir de Hakufu"
+                                   FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="Cierra Hakufu del todo — lo mismo que darle a la X de la ventana."
+                                   FontSize="12" Foreground="{DynamicResource TextMuted}"
+                                   TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,16"/>
+                        <Button Classes="ghost"
+                                Content="Salir de Hakufu"
+                                HorizontalAlignment="Left" Padding="20,10"
+                                Command="{Binding ExitApplicationCommand}"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

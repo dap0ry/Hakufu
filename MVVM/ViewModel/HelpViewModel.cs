@@ -49,8 +49,8 @@ public class HelpViewModel : BaseViewModel
         new("2. Naturaleza de la Aplicación y ausencia de contenidos propios",
             "Hakufu es, exclusivamente, una herramienta local de organización, catalogación y lectura de archivos " +
             "en formato PDF, CBR y CBZ que el propio Usuario posee, almacena y gestiona en sus propios " +
-            "dispositivos y/o en su propia cuenta personal de servicios de terceros (por ejemplo, Dropbox, " +
-            "cuando el Usuario decide vincularla voluntariamente). La Aplicación NO aloja, NO almacena en " +
+            "dispositivos. La Aplicación funciona íntegramente sin conexión: no requiere cuenta, no se " +
+            "comunica con ningún servidor y no envía datos a ningún sitio. La Aplicación NO aloja, NO almacena en " +
             "servidores propios del Desarrollador, NO indexa, NO cataloga, NO distribuye, NO comparte, NO " +
             "publica, NO enlaza ni NO facilita de ninguna otra forma el acceso a obras protegidas por derechos de " +
             "propiedad intelectual, ni ofrece buscador, directorio, enlace ni mecanismo alguno de descarga de " +
@@ -96,7 +96,7 @@ public class HelpViewModel : BaseViewModel
             "comerciabilidad, idoneidad para un fin concreto, ausencia de errores o disponibilidad ininterrumpida. " +
             "El Desarrollador no garantiza que la Aplicación esté libre de errores, ni que su funcionamiento sea " +
             "ininterrumpido, ni se responsabiliza de la pérdida de datos, archivos, progreso de lectura o " +
-            "configuraciones almacenadas localmente o en servicios de terceros vinculados por el Usuario."),
+            "configuraciones almacenadas localmente o en las copias de seguridad que genere el Usuario."),
 
         new("5. Uso de Inteligencia Artificial",
             "El Usuario queda informado, a los efectos de transparencia exigidos por el Reglamento (UE) 2024/1689 " +
@@ -118,20 +118,20 @@ public class HelpViewModel : BaseViewModel
             "compromiso de corregir, dentro de lo razonable y en la medida de sus posibilidades como proyecto de " +
             "software independiente, los defectos que le sean puestos en conocimiento."),
 
-        new("6. Cuentas de usuario, sincronización con servicios de terceros y protección de datos",
-            "La Aplicación permite, de forma opcional y bajo la exclusiva voluntad del Usuario, la creación de " +
-            "una cuenta personal y la vinculación de servicios de terceros —incluyendo, entre otros, Dropbox— " +
-            "con el fin de sincronizar o respaldar la biblioteca del Usuario. Dicha vinculación se realiza " +
-            "íntegramente mediante los mecanismos oficiales de autenticación del tercero correspondiente (OAuth), " +
-            "sin que el Desarrollador llegue a conocer, almacenar ni tener acceso a las credenciales de acceso " +
-            "del Usuario a dichos servicios. El tratamiento de los datos personales facilitados por el Usuario se " +
-            "realiza de conformidad con el Reglamento (UE) 2016/679, General de Protección de Datos (RGPD), y con " +
-            "la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los " +
-            "derechos digitales (LOPDGDD). El Usuario podrá ejercer en cualquier momento sus derechos de acceso, " +
-            "rectificación, supresión, oposición, limitación del tratamiento y portabilidad dirigiéndose al " +
-            "Desarrollador a través de los canales de contacto habilitados en la propia Aplicación o en su " +
-            "repositorio oficial. Asimismo, resulta de aplicación, en lo pertinente, la Ley 34/2002, de 11 de " +
-            "julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSICE)."),
+        new("6. Funcionamiento local, copias de seguridad y protección de datos",
+            "La Aplicación funciona de forma totalmente local y sin conexión: no dispone de cuentas de usuario, " +
+            "no se conecta a servidores del Desarrollador ni de terceros y no recopila, transmite ni comparte " +
+            "datos personales, estadísticas de uso ni información alguna sobre la biblioteca del Usuario. " +
+            "Toda la información (biblioteca, progreso de lectura, historial, portadas y personalización) se " +
+            "guarda únicamente en el dispositivo del Usuario, en la carpeta de datos de la Aplicación. La " +
+            "Aplicación permite, de forma opcional, exportar e importar una copia de seguridad en un archivo " +
+            "local; el Usuario decide dónde guardarla y es el único responsable de su custodia, así como de " +
+            "cualquier servicio de almacenamiento o sincronización de terceros (por ejemplo, Dropbox, iCloud o " +
+            "Google Drive) en el que decida depositarla por su cuenta, ajeno por completo a la Aplicación y al " +
+            "Desarrollador. Al no existir tratamiento de datos personales por parte del Desarrollador, este no " +
+            "tiene acceso a dicha información; en lo que pudiera resultar de aplicación, rigen el Reglamento (UE) " +
+            "2016/679, General de Protección de Datos (RGPD), y la Ley Orgánica 3/2018, de 5 de diciembre, de " +
+            "Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD)."),
 
         new("7. Limitación de responsabilidad por daños",
             "En ningún caso el Desarrollador será responsable frente al Usuario ni frente a terceros de daños " +

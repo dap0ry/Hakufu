@@ -74,17 +74,9 @@ public partial class ReaderView : UserControl
     private void TopLevel_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Handled || DataContext is not ReaderViewModel vm) return;
-        if (e.KeyModifiers != KeyModifiers.None) return;
 
-        ICommand? command = e.Key switch
-        {
-            Key.Right or Key.Space => vm.NextPageCommand,
-            Key.Left               => vm.PrevPageCommand,
-            Key.Escape             => vm.ExitZenModeCommand,
-            Key.F or Key.F11       => vm.ToggleZenModeCommand,
-            Key.D1 or Key.D2       => vm.ToggleTwoPageCommand,
-            _                      => null,
-        };
+        // Teclas configurables en Ajustes → Atajos de teclado.
+        var command = vm.CommandForKey(e);
         if (command is null) return;
 
         if (command.CanExecute(null)) command.Execute(null);

@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 using Hakufu.MVVM.View;
 using Hakufu.MVVM.ViewModel;
@@ -62,5 +64,56 @@ public class ReaderSettingsTests
         vm.NextPageCommand.Execute(null);
         Assert.Empty(flipLayer.Children);
         Assert.Equal(2, vm.CurrentPage);
+    }
+
+    [AvaloniaFact]
+    public void Shortcuts_can_be_rebound_in_settings_and_the_reader_uses_them()
+    {
+        using var app = ViewSmoke.Start();
+        app.Root.Navigation.NavigateTo<SettingsViewModel>();
+        app.AssertShows<SettingsView>();
+        var settings = Assert.IsType<SettingsViewModel>(app.Root.Navigation.CurrentViewModel);
+
+        // "Página siguiente": primer hueco → pulsar J.
+        var next = settings.Shortcuts.Single(r => r.Action.Id == "next");
+        next.Slots[0].ClickCommand.Execute(null);
+        Assert.True(next.Slots[0].IsCapturing);
+        app.Window.KeyPressQwerty(PhysicalKey.J, RawInputModifiers.None);
+        app.Window.KeyReleaseQwerty(PhysicalKey.J, RawInputModifiers.None);
+        app.Pump();
+        Assert.False(next.Slots[0].IsCapturing);
+        Assert.Equal("J", next.Slots[0].Text);
+
+        // La flecha izquierda pasa a "siguiente": se le quita a "anterior".
+        next.Slots[1].ClickCommand.Execute(null);
+        app.Window.KeyPressQwerty(PhysicalKey.ArrowLeft, RawInputModifiers.None);
+        app.Window.KeyReleaseQwerty(PhysicalKey.ArrowLeft, RawInputModifiers.None);
+        app.Pump();
+        var prev = settings.Shortcuts.Single(r => r.Action.Id == "prev");
+        Assert.All(prev.Slots, s => Assert.False(s.IsAssigned));
+        Assert.Contains("Página anterior", settings.ShortcutNotice);
+
+        // En el lector: J avanza, la flecha derecha ya no.
+        app.Root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
+        app.AssertShows<ReaderView>();
+        var vm = Assert.IsType<ReaderViewModel>(app.Root.Navigation.CurrentViewModel);
+        app.Window.KeyPressQwerty(PhysicalKey.ArrowRight, RawInputModifiers.None);
+        app.Pump();
+        Assert.Equal(0, vm.CurrentPage);
+        app.Window.KeyPressQwerty(PhysicalKey.J, RawInputModifiers.None);
+        app.Pump();
+        Assert.Equal(1, vm.CurrentPage);
+
+        // Combinación con modificador: Ctrl+W cierra el lector (de fábrica).
+        app.Window.KeyPressQwerty(PhysicalKey.W, RawInputModifiers.Control);
+        app.Pump();
+        Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
+
+        // Restablecer vuelve a las de fábrica.
+        app.Root.Navigation.NavigateTo<SettingsViewModel>();
+        settings = Assert.IsType<SettingsViewModel>(app.Root.Navigation.CurrentViewModel);
+        settings.ResetShortcutsCommand.Execute(null);
+        Assert.Equal("→", settings.Shortcuts.Single(r => r.Action.Id == "next").Slots[0].Text);
+        Assert.Empty(app.Root.Repo.Current.Reader.Shortcuts);
     }
 }

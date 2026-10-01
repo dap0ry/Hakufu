@@ -2,6 +2,8 @@ using System.IO;
 using Hakufu.Data;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
+using System.Collections.ObjectModel;
+using Avalonia.Input;
 
 namespace Hakufu.MVVM.ViewModel;
 
@@ -28,6 +30,7 @@ public class SettingsViewModel : BaseViewModel
         _files   = files;
         _isDarkTheme = _theme.CurrentTheme == AppTheme.Dark;
 
+        LoadShortcuts();
         _ = LoadStorageSizesAsync();
     }
 
@@ -91,6 +94,90 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(IsSpeedSlow));
         _ = _repo.SaveAsync();
     }
+
+    // ── Atajos de teclado ───────────────────────────────────────────────────
+
+    public ObservableCollection<ShortcutRowViewModel> Shortcuts { get; } = [];
+
+    private ShortcutSlotViewModel? _capturing;
+    /// <summary>El hueco que está esperando una tecla (la vista le pasa la siguiente que se pulse).</summary>
+    public ShortcutSlotViewModel? CapturingSlot => _capturing;
+
+    private string _shortcutNotice = "";
+    public string ShortcutNotice { get => _shortcutNotice; private set => SetProperty(ref _shortcutNotice, value); }
+
+    private void LoadShortcuts()
+    {
+        StopCapture();
+        Shortcuts.Clear();
+        foreach (var action in ShortcutService.All)
+            Shortcuts.Add(new ShortcutRowViewModel(action, ShortcutService.GetGestures(Reader, action.Id), OnSlotClicked));
+    }
+
+    private void OnSlotClicked(ShortcutSlotViewModel slot)
+    {
+        var again = _capturing == slot;
+        StopCapture();
+        if (again) return; // segundo clic en el mismo hueco: cancelar
+        _capturing = slot;
+        slot.IsCapturing = true;
+        ShortcutNotice = "";
+    }
+
+    private void StopCapture()
+    {
+        if (_capturing is not null) _capturing.IsCapturing = false;
+        _capturing = null;
+    }
+
+    /// <summary>
+    /// Asigna la tecla pulsada al hueco que escucha. Si otra acción ya la usaba,
+    /// se la quita (cada tecla hace una sola cosa). Devuelve false si no había
+    /// ningún hueco escuchando.
+    /// </summary>
+    public bool AssignCapturedKey(KeyGesture gesture)
+    {
+        var slot = _capturing;
+        if (slot is null) return false;
+        StopCapture();
+
+        var notice = "";
+        foreach (var other in Shortcuts.SelectMany(r => r.Slots))
+            if (other != slot && other.Gesture is { } g && g.Equals(gesture))
+            {
+                other.Gesture = null;
+                if (other.Row != slot.Row)
+                    notice = $"{ShortcutService.Display(gesture)} ya no hace «{other.Row.Label}».";
+                Save(other.Row);
+            }
+
+        slot.Gesture = gesture;
+        Save(slot.Row);
+        ShortcutNotice = notice;
+        return true;
+
+        void Save(ShortcutRowViewModel row) => ShortcutService.SetGestures(Reader, row.Action.Id, row.Gestures);
+    }
+
+    public RelayCommand<ShortcutSlotViewModel> ClearShortcutCommand => new(slot =>
+    {
+        if (slot is null) return;
+        StopCapture();
+        slot.Gesture = null;
+        ShortcutService.SetGestures(Reader, slot.Row.Action.Id, slot.Row.Gestures);
+        _ = _repo.SaveAsync();
+    });
+
+    public RelayCommand ResetShortcutsCommand => new(() =>
+    {
+        ShortcutService.ResetAll(Reader);
+        LoadShortcuts();
+        ShortcutNotice = "Atajos de fábrica restaurados.";
+        _ = _repo.SaveAsync();
+    });
+
+    /// <summary>Guarda tras asignar una tecla (la vista llama aquí).</summary>
+    public Task SaveShortcutsAsync() => _repo.SaveAsync();
 
     // ── Storage ──────────────────────────────────────────────────────────────
 

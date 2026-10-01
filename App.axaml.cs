@@ -32,12 +32,14 @@ public partial class App : Application
             try { Directory.Delete(Path.Combine(Data.AppPaths.DataDir, "customization"), recursive: true); }
             catch { /* no existe o no se puede borrar: da igual */ }
 
-            var mainWindow = new MainWindow();
+            var mainWindow = new MainWindow { OwnTitleBar = OperatingSystem.IsLinux() };
             try
             {
                 var root = new CompositionRoot(_repo);
                 root.ApplySavedAppearance();
                 mainWindow.DataContext = root.CreateMainViewModel();
+                // A partir de aquí, cambiar de tema se anima (el de arranque no).
+                root.Theme.Transition = mainWindow.PlayThemeTransition;
                 // La carpeta de la biblioteca puede haber cambiado con Hakufu cerrado.
                 _ = root.Scanner.ScanAsync();
             }

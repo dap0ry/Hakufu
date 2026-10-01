@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Hakufu.MVVM.ViewModel"
+        xmlns:ctl="using:Hakufu.Controls"
         x:Class="Hakufu.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Hakufu" Icon="avares://Hakufu/HakufuLogo.ico"
@@ -11,16 +12,120 @@
         Foreground="{DynamicResource TextPrimary}"
         FontSize="13">
 
-    <!-- Decoraciones nativas del sistema (barra de título de Windows, macOS o
-         Linux): la barra propia de la 0.9.x no se porta. -->
-    <Grid>
+    <Window.Styles>
+        <!-- ═══ Barra de título propia (solo Linux, ver OwnTitleBar) ═══ -->
+        <Style Selector="Border#TitleBar">
+            <Setter Property="Background" Value="{DynamicResource TitleBarBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+        </Style>
+        <Style Selector="Border#TitleBar TextBlock#TitleText">
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+        </Style>
+        <!-- En el lector la barra es oscura en los dos temas, como la del lector -->
+        <Style Selector="Border#TitleBar.reader">
+            <Setter Property="Background" Value="{DynamicResource ReaderBarBackground}"/>
+            <Setter Property="BorderBrush" Value="#1F1F1F"/>
+        </Style>
+        <Style Selector="Border#TitleBar.reader TextBlock#TitleText">
+            <Setter Property="Foreground" Value="#777777"/>
+        </Style>
+
+        <!-- Botones de ventana: plantilla propia (ver la REGLA en GlobalStyles) -->
+        <Style Selector="Button.caption">
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root" Background="{TemplateBinding Background}">
+                        <ContentPresenter Name="ContentHost"
+                                          Content="{TemplateBinding Content}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.caption Path">
+            <Setter Property="Stroke" Value="{DynamicResource TitleBarForeground}"/>
+            <Setter Property="StrokeThickness" Value="1"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Stretch" Value="None"/>
+        </Style>
+        <Style Selector="Button.caption:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        </Style>
+        <Style Selector="Button.caption:pressed /template/ Border#Root">
+            <Setter Property="Background" Value="{DynamicResource SelectedBackground}"/>
+        </Style>
+        <Style Selector="Border#TitleBar.reader Button.caption Path">
+            <Setter Property="Stroke" Value="{DynamicResource ReaderForeground}"/>
+        </Style>
+        <Style Selector="Border#TitleBar.reader Button.caption:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="#252525"/>
+        </Style>
+        <!-- Cerrar: el rojo de la marca -->
+        <Style Selector="Button.caption.close:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="{StaticResource BrandRed}"/>
+        </Style>
+        <Style Selector="Button.caption.close:pressed /template/ Border#Root">
+            <Setter Property="Background" Value="#B80015"/>
+        </Style>
+        <Style Selector="Button.caption.close:pointerover Path">
+            <Setter Property="Stroke" Value="White"/>
+        </Style>
+        <!-- Transparentes, pero tienen que recibir el ratón -->
+        <Style Selector="Panel#ResizeGrips > Border">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+    </Window.Styles>
+
+    <!-- En Windows y macOS, las decoraciones nativas. En Linux muchos gestores
+         de ventanas (niri, Sway, Hyprland… vía XWayland) no dibujan ninguna:
+         ahí va la barra propia con minimizar, pantalla completa y cerrar. -->
+    <Grid Name="Root" RowDefinitions="Auto,*">
+
+        <!-- ═══ Barra de título (solo Linux) ═══ -->
+        <Border Name="TitleBar" Grid.Row="0"
+                Height="36" BorderThickness="0,0,0,1"
+                IsVisible="False"
+                PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Name="TitleText" Grid.Column="0"
+                           Text="HAKUFU"
+                           FontSize="11" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="20,0,0,0"
+                           IsHitTestVisible="False"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Name="MinimizeButton" Classes="caption"
+                            ToolTip.Tip="Minimizar" Click="Minimize_Click">
+                        <Path Data="M0,5.5 L10,5.5"/>
+                    </Button>
+                    <!-- Pantalla completa y no maximizar: en niri y otros gestores
+                         en mosaico maximizar no hace nada; pantalla completa sí.
+                         Maximizar sigue con doble clic en la barra. -->
+                    <Button Name="FullScreenButton" Classes="caption"
+                            ToolTip.Tip="Pantalla completa" Click="FullScreen_Click">
+                        <Path Name="FullScreenGlyph"/>
+                    </Button>
+                    <Button Name="CloseButton" Classes="caption close"
+                            ToolTip.Tip="Cerrar" Click="Close_Click">
+                        <Path Data="M0,0 L10,10 M10,0 L0,10"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- Page content -->
-        <Border Background="{DynamicResource AppBackground}" ClipToBounds="True">
+        <Border Grid.Row="1" Background="{DynamicResource AppBackground}" ClipToBounds="True">
             <ContentControl Content="{Binding CurrentView}"/>
         </Border>
 
         <!-- Modal overlay -->
-        <Grid IsVisible="{Binding IsModalOpen}" ZIndex="100">
+        <Grid Grid.Row="1" IsVisible="{Binding IsModalOpen}" ZIndex="100">
             <Rectangle Fill="{DynamicResource OverlayBackground}"
                        PointerPressed="Overlay_PointerPressed"/>
             <Border Classes="card"
@@ -31,5 +136,20 @@
                 <ContentControl Content="{Binding ModalContent}"/>
             </Border>
         </Grid>
+
+        <!-- Bordes para redimensionar (solo Linux sin decoraciones). Tag = WindowEdge. -->
+        <Panel Name="ResizeGrips" Grid.RowSpan="2" ZIndex="200" IsVisible="False">
+            <Border Tag="North"     Height="4" VerticalAlignment="Top"    Margin="8,0" Cursor="TopSide"/>
+            <Border Tag="South"     Height="4" VerticalAlignment="Bottom" Margin="8,0" Cursor="BottomSide"/>
+            <Border Tag="West"      Width="4"  HorizontalAlignment="Left"  Margin="0,8" Cursor="LeftSide"/>
+            <Border Tag="East"      Width="4"  HorizontalAlignment="Right" Margin="0,8" Cursor="RightSide"/>
+            <Border Tag="NorthWest" Width="8" Height="8" HorizontalAlignment="Left"  VerticalAlignment="Top"    Cursor="TopLeftCorner"/>
+            <Border Tag="NorthEast" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top"    Cursor="TopRightCorner"/>
+            <Border Tag="SouthWest" Width="8" Height="8" HorizontalAlignment="Left"  VerticalAlignment="Bottom" Cursor="BottomLeftCorner"/>
+            <Border Tag="SouthEast" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="BottomRightCorner"/>
+        </Panel>
+
+        <!-- Transición de tinta al cambiar de tema: encima de todo, sin clics -->
+        <ctl:InkTransition Name="ThemeInk" Grid.RowSpan="2" ZIndex="1000"/>
     </Grid>
 </Window>

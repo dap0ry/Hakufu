@@ -2,9 +2,13 @@ name: build
 
 # Compila, pasa los tests y genera la app en los tres sistemas en cada push o PR.
 # Los paquetes quedan como "artifacts" de la ejecución (pestaña Actions).
+# Al subir un tag vX.Y.Z además publica la release en GitHub con los cuatro
+# paquetes (la landing de web/ enlaza a la última):
+#   git tag v0.10.0 && git push origin v0.10.0
 on:
   push:
     branches: [main, "feat/**"]
+    tags: ["v*"]
     paths-ignore: ["web/**", "**.md"]
   pull_request:
     paths-ignore: ["web/**", "**.md"]
@@ -53,3 +57,30 @@ jobs:
             publish/Hakufu-${{ matrix.rid }}.zip
             publish/Hakufu-${{ matrix.rid }}.tar.gz
           if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprobar que el tag coincide con la versión del csproj
+        run: |
+          VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Hakufu.csproj | head -1)"
+          if [ "v${VERSION}" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::El tag es ${GITHUB_REF_NAME} pero Hakufu.csproj dice ${VERSION}"
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Crear la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/* --title "Hakufu ${GITHUB_REF_NAME#v}" --generate-notes

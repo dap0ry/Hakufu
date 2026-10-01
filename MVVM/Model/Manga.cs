@@ -4,6 +4,10 @@ public class Manga
 {
     public Guid   Id             { get; set; } = Guid.NewGuid();
     public string Title          { get; set; } = string.Empty;
+    // Ruta dentro de la carpeta de la biblioteca ("Colección/Tomo 1.cbz", con
+    // '/'): es lo que identifica al tomo entre lecturas de la carpeta.
+    public string RelativePath   { get; set; } = string.Empty;
+    // Ruta absoluta = raíz de la biblioteca + RelativePath (la recalcula LibraryScanner).
     public string FilePath       { get; set; } = string.Empty;
     public string CoverCachePath { get; set; } = string.Empty;
     public int    TotalPages     { get; set; }

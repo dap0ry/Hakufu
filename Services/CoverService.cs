@@ -12,8 +12,9 @@ public class CoverService : ICoverService
 {
     private static string CoverDir => AppPaths.CoversDir;
 
-    // pdfium no es seguro entre hilos: una sola extracción de PDF a la vez.
-    private static readonly SemaphoreSlim PdfLock = new(1, 1);
+    // pdfium no es seguro entre hilos: un solo PDF a la vez (también al contar
+    // páginas en LibraryScanner).
+    internal static readonly SemaphoreSlim PdfLock = new(1, 1);
 
     internal static readonly HashSet<string> ImageExtensions =
         [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"];

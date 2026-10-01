@@ -89,12 +89,12 @@
                 BorderThickness="0,0,1,0">
             <Grid Margin="48,40,32,28" RowDefinitions="Auto,*,Auto">
 
-                <!-- Título (imagen distinta en cada tema, ver TitleBrush) -->
-                <Border Grid.Row="0"
-                        Width="300" Height="92"
-                        HorizontalAlignment="Left"
-                        Background="{DynamicResource TitleBrush}"
-                        RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                <!-- Título -->
+                <TextBlock Grid.Row="0"
+                           Text="Hakufu"
+                           FontSize="44" FontWeight="Black"
+                           LetterSpacing="-1.5"
+                           Foreground="{DynamicResource TextPrimary}"/>
 
                 <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2" Margin="-18,24,0,24">
                     <!-- Biblioteca -->
@@ -133,8 +133,9 @@
                 <!-- Sin enlace: la app no abre URLs de red -->
                 <TextBlock Grid.Row="2"
                            Text="por Daniel Poza Rivera"
-                           Foreground="{DynamicResource TextMuted}"
-                           FontSize="11"/>
+                           FontFamily="{DynamicResource DisplayFont}"
+                           FontSize="16"
+                           Foreground="{DynamicResource TextMuted}"/>
             </Grid>
         </Border>
 

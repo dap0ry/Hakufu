@@ -62,7 +62,7 @@ Arquitectura y convenciones: [`CLAUDE.md`](CLAUDE.md).
 Página estática de presentación y descarga (HTML, imágenes e iconos; sin backend). Lee la última versión de las releases de GitHub para enlazar las descargas.
 
 - **Despliegue:** proyecto de Vercel `hakufuweb` (equipo *Proyectos Propios*) con **Root Directory `web`**. Un push a `main` que toque `web/` publica en producción.
-- El antiguo backend de la 0.9.x (cuentas, amigos, copia en Dropbox, en Neon + Vercel Blob) se retiró el 01/10/2026: la app no se conecta a nada.
+- El antiguo backend de la 0.9.x (cuentas, amigos y copia en la nube) se retiró el 01/10/2026: la app no se conecta a nada.
 
 ## Cómo trabajamos
 

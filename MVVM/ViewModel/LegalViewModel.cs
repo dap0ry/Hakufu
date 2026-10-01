@@ -115,8 +115,8 @@ public class LegalViewModel : BaseViewModel
             "guarda únicamente en el dispositivo del Usuario, en la carpeta de datos de la Aplicación. La " +
             "Aplicación permite, de forma opcional, exportar e importar una copia de seguridad en un archivo " +
             "local; el Usuario decide dónde guardarla y es el único responsable de su custodia, así como de " +
-            "cualquier servicio de almacenamiento o sincronización de terceros (por ejemplo, Dropbox, iCloud o " +
-            "Google Drive) en el que decida depositarla por su cuenta, ajeno por completo a la Aplicación y al " +
+            "cualquier servicio de almacenamiento o sincronización de terceros en el que decida depositarla por " +
+            "su cuenta, ajeno por completo a la Aplicación y al " +
             "Desarrollador. Al no existir tratamiento de datos personales por parte del Desarrollador, este no " +
             "tiene acceso a dicha información; en lo que pudiera resultar de aplicación, rigen el Reglamento (UE) " +
             "2016/679, General de Protección de Datos (RGPD), y la Ley Orgánica 3/2018, de 5 de diciembre, de " +

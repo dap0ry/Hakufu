@@ -231,10 +231,10 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ── NOTA: VARIOS EQUIPOS ── -->
+                <!-- ── NOTA: TODO LOCAL ── -->
                 <Border Classes="notice">
                     <TextBlock Classes="body" FontSize="11" LineHeight="18"
-                               Text="¿Quieres tener la biblioteca en varios equipos? Pon la carpeta de la biblioteca dentro de Dropbox, iCloud o Google Drive: esas apps la sincronizan solas. Hakufu no se conecta a internet."/>
+                               Text="La copia es un archivo .zip que se queda en tu equipo, donde tú la guardes. Hakufu no la sube a ningún sitio ni se conecta a internet."/>
                 </Border>
 
             </StackPanel>

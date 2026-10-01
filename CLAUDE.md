@@ -48,7 +48,7 @@ Services/
   CoverService / PageLoaderService ← PDF (Docnet/pdfium) + CBR/CBZ (SharpCompress) → Avalonia Bitmap
   BackupService              ← local .zip export/import; rebases stored paths to the new data folder
   FilePickerService          ← Avalonia StorageProvider (async) + OpenFolder (explorer/open/xdg-open)
-  WallpaperService / CustomizationService ← user images, copied into the data folder
+  ProfileService             ← profile (name, photo in DataDir/profile), reading log per day (ReadingLog) for the profile charts
 Assets/
   Themes/LightTheme.axaml, DarkTheme.axaml  ← all brushes; always use DynamicResource
   Styles/GlobalStyles.axaml   ← shared styles as CLASSES (Classes="primary", "ghost", "icon", "card", "caption"…)
@@ -74,7 +74,7 @@ WPF's `CommandManager` doesn't exist in Avalonia. `CommandRequery` replaces it: 
 - Compiled bindings are on by default: every view and `DataTemplate` declares `x:DataType`.
 - Styles are classes, not keys (see the WPF→Avalonia table in the spec). No global TextBlock color:
   text inherits `Foreground` from `MainWindow`.
-- Colors: always `{DynamicResource Key}` so theme switching and the custom wallpaper work.
+- Colors: always `{DynamicResource Key}` so theme switching works.
 - Images from a stored path need `Converter={StaticResource PathToBitmap}`.
 
 ### PDF / CBR rendering

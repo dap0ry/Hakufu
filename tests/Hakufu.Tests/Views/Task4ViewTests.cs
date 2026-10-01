@@ -94,32 +94,16 @@ public class Task4ViewTests
         foreach (var dark in new[] { false, true })
         {
             using var app = ViewSmoke.Start(darkTheme: dark);
-            app.SampleCollection.IsFavorite = true;   // para pintar también "Colecciones favoritas"
             app.Root.Navigation.NavigateTo<ProfileViewModel>();
-            var view = app.AssertShows<ProfileView>();
-
-            var vm = Assert.IsType<ProfileViewModel>(app.Root.Navigation.CurrentViewModel);
-            Assert.True(vm.HasTopMangas);            // "Tomo 2" está marcado como favorito
-            Assert.True(vm.HasFavoriteCollections);
-            Assert.True(vm.HasRecentActivity);       // "Tomo 1" está en el historial
-            Assert.True(vm.HasCollectionStats);      // "Tomo 1" va por la página 2
-
-            // La barra de "Páginas por colección" tiene ancho (MultiBinding PercentageWidth)
-            var bar = view.GetVisualDescendants().OfType<Border>()
-                          .FirstOrDefault(b => b.Height == 10 && b.HorizontalAlignment == HorizontalAlignment.Left);
-            Assert.NotNull(bar);
-            Assert.True(bar!.Bounds.Width > 0, "La barra de estadísticas no tiene ancho.");
-
-            // Pantalla de historial completo
-            vm.ViewAllHistoryCommand.Execute(null);
-            app.Pump();
-            Assert.True(vm.ShowingAllHistory);
-            Assert.NotEmpty(vm.FullHistory);
             app.AssertShows<ProfileView>();
 
-            vm.BackToProfileCommand.Execute(null);
-            app.Pump();
-            Assert.False(vm.ShowingAllHistory);
+            var vm = Assert.IsType<ProfileViewModel>(app.Root.Navigation.CurrentViewModel);
+            Assert.True(vm.HasFavoriteManga);     // "Tomo 2" tiene estrella
+            Assert.True(vm.HasRecentMangas);      // "Tomo 1" tiene progreso
+            Assert.Equal(ProfileViewModel.Weeks, vm.WeekBars.Count);
+            Assert.True(vm.WeekBars[^1].IsCurrent);
+            Assert.False(vm.HasName);
+            Assert.Equal("Tu nombre", vm.DisplayName);
         }
     }
 

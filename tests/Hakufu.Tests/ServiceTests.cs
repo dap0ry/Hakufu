@@ -25,8 +25,7 @@ public class DataRepositoryTests
           "Collections": [ { "Name": "Berserk", "MangaIds": [ "{{mangaId}}" ] } ],
           "Favorites": [ { "SlotIndex": 0 } ],
           "ActiveTheme": "Dark",
-          "Customization": { "NavIcons": { "friends": { "Path": "a.png", "Opacity": 1 },
-                                           "account": { "Path": "b.png", "Opacity": 0.5 } } }
+          "Customization": { "NavIcons": { "account": { "Path": "b.png", "Opacity": 0.5 } } }
         }
         """);
 
@@ -37,8 +36,9 @@ public class DataRepositoryTests
         Assert.Equal("Tomo 1", manga.Title);
         Assert.True(manga.IsFavorite);
         Assert.Equal("Dark", repo.Current.ActiveTheme);
-        Assert.Equal(3, repo.Current.Favorites.Count);
-        Assert.Equal(0.5, repo.Current.Customization.NavIcons["account"].Opacity);
+        // Lo que ya no existe (Personalizar, huecos de favoritos) se ignora sin romper.
+        Assert.Equal("", repo.Current.Profile.Name);
+        Assert.Empty(repo.Current.ReadingLog);
     }
 
     // App carga y guarda bloqueando el hilo de UI (antes de mostrar la ventana y
@@ -181,18 +181,18 @@ public class BackupServiceTests
         var repo = new JsonDataRepository();
         await repo.LoadAsync();
 
-        // Manga copiado dentro de la biblioteca de Hakufu + portada + personalización.
+        // Manga copiado dentro de la biblioteca de Hakufu + portada + foto de perfil.
         Directory.CreateDirectory(AppPaths.LibraryDir);
         Directory.CreateDirectory(AppPaths.CoversDir);
-        Directory.CreateDirectory(AppPaths.CustomizationDir);
+        Directory.CreateDirectory(AppPaths.ProfileDir);
         var mangaPath = Path.Combine(AppPaths.LibraryDir, "Tomo 1.cbz");
         var coverPath = Path.Combine(AppPaths.CoversDir, "c.png");
-        var iconPath  = Path.Combine(AppPaths.CustomizationDir, "nav.library.icon.png");
+        var avatar    = Path.Combine(AppPaths.ProfileDir, "avatar.png");
         await File.WriteAllTextAsync(mangaPath, "manga");
         await File.WriteAllBytesAsync(coverPath, Fixtures.TinyPng);
-        await File.WriteAllBytesAsync(iconPath, Fixtures.TinyPng);
+        await File.WriteAllBytesAsync(avatar, Fixtures.TinyPng);
         repo.Current.Mangas.Add(new Manga { Title = "Tomo 1", FilePath = mangaPath, CoverCachePath = coverPath });
-        repo.Current.Customization.NavIcons["library"] = new CustomizationImage { Path = iconPath };
+        repo.Current.Profile.AvatarPath = avatar;
 
         var zip = Path.Combine(tmp.Root, "copia.zip");
         await new BackupService(repo).ExportAsync(zip, includeLibraryFiles: true);
@@ -210,7 +210,8 @@ public class BackupServiceTests
         Assert.Equal(Path.Combine(otherDir, "covers", "c.png"), m.CoverCachePath);
         Assert.True(File.Exists(m.FilePath));
         Assert.True(File.Exists(m.CoverCachePath));
-        Assert.True(File.Exists(repo2.Current.Customization.NavIcons["library"].Path));
+        Assert.Equal(Path.Combine(otherDir, "profile", "avatar.png"), repo2.Current.Profile.AvatarPath);
+        Assert.True(File.Exists(repo2.Current.Profile.AvatarPath));
         Assert.True(File.Exists(AppPaths.DataFile));
     }
 

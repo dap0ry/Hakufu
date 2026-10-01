@@ -48,14 +48,4 @@ public class Task2ViewTests
         }
     }
 
-    [AvaloniaFact]
-    public void CustomizationView_loads()
-    {
-        foreach (var dark in Themes)
-        {
-            using var app = ViewSmoke.Start(darkTheme: dark);
-            app.Root.Navigation.NavigateTo<CustomizationViewModel>();
-            app.AssertShows<Hakufu.MVVM.View.CustomizationView>();
-        }
-    }
 }

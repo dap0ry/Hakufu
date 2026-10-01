@@ -25,33 +25,6 @@ public class HomeViewModel : BaseViewModel
     /// <summary>Avance de 0 a 100.</summary>
     public double LastMangaProgress { get => _lastMangaProgress; private set => SetProperty(ref _lastMangaProgress, value); }
 
-    // ── Personalización (100% local, ver HomeCustomization) ─────────────────
-    // Se exponen los CustomizationImage completos (Path + Opacity) — HomeView
-    // se engancha a las sub-propiedades directamente (p. ej. "LibraryIcon.Path").
-    public CustomizationImage? LeftPanelBackground => _repo.Current.Customization.LeftPanelBackground;
-
-    // La tesela de Copia de seguridad ocupa el hueco de la antigua "Cuenta" y
-    // conserva su clave ("account") para no perder imágenes ya elegidas.
-    public CustomizationImage? LibraryIcon     => IconFor("library");
-    public CustomizationImage? ProfileIcon     => IconFor("profile");
-    public CustomizationImage? SettingsIcon    => IconFor("settings");
-    public CustomizationImage? HelpIcon        => IconFor("help");
-    public CustomizationImage? BackupIcon      => IconFor("account");
-    public CustomizationImage? PersonalizeIcon => IconFor("personalize");
-
-    public CustomizationImage? LibraryBackground     => BackgroundFor("library");
-    public CustomizationImage? ProfileBackground     => BackgroundFor("profile");
-    public CustomizationImage? SettingsBackground    => BackgroundFor("settings");
-    public CustomizationImage? HelpBackground        => BackgroundFor("help");
-    public CustomizationImage? BackupBackground      => BackgroundFor("account");
-    public CustomizationImage? PersonalizeBackground => BackgroundFor("personalize");
-
-    private CustomizationImage? IconFor(string key)
-        => _repo.Current.Customization.NavIcons.TryGetValue(key, out var img) ? img : null;
-
-    private CustomizationImage? BackgroundFor(string key)
-        => _repo.Current.Customization.NavBackgrounds.TryGetValue(key, out var img) ? img : null;
-
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
                          IDataRepository repo)
     {
@@ -86,7 +59,6 @@ public class HomeViewModel : BaseViewModel
     public RelayCommand NavSettingsCommand  => new(() => _nav.NavigateTo<SettingsViewModel>());
     public RelayCommand NavHelpCommand      => new(() => _nav.NavigateTo<HelpViewModel>());
     public RelayCommand NavBackupCommand    => new(() => _nav.NavigateTo<BackupViewModel>());
-    public RelayCommand NavCustomizeCommand => new(() => _nav.NavigateTo<CustomizationViewModel>());
 
     public RelayCommand ContinueReadingCommand => new(() =>
     {

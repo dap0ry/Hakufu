@@ -11,7 +11,7 @@ public class BackupService(IDataRepository repo) : IBackupService
     private const string ManifestEntry = "hakufu-backup.json";
 
     // Carpetas de AppPaths.DataDir que viajan en la copia (nombre en el zip = nombre en disco).
-    private static readonly string[] MediaFolders = ["covers", "customization"];
+    private static readonly string[] MediaFolders = ["covers", "profile"];
     private const string LibraryFolder = "biblioteca";
 
     private sealed record Manifest(int Version, string DataDir, DateTime CreatedAt);
@@ -174,9 +174,6 @@ public class BackupService(IDataRepository repo) : IBackupService
             m.CoverCachePath = Fix(m.CoverCachePath);
         }
 
-        var c = store.Customization;
-        foreach (var img in new[] { c.LeftPanelBackground, c.GeneralWallpaper }
-                     .Concat(c.NavIcons.Values).Concat(c.NavBackgrounds.Values))
-            if (img is not null) img.Path = Fix(img.Path);
+        store.Profile.AvatarPath = Fix(store.Profile.AvatarPath);
     }
 }

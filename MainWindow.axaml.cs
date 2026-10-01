@@ -28,6 +28,13 @@ public partial class MainWindow : Window
         };
     }
 
+    // Cerrar la app leyendo: apuntar el rato leído antes de que App guarde.
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        _reader?.FlushReadingTime();
+        base.OnClosing(e);
+    }
+
     private void MainVm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName != nameof(MainWindowViewModel.CurrentView) ||

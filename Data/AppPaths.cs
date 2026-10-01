@@ -14,6 +14,6 @@ public static class AppPaths
 
     public static string DataFile         => Path.Combine(DataDir, "data.json");
     public static string CoversDir        => Path.Combine(DataDir, "covers");
-    public static string CustomizationDir => Path.Combine(DataDir, "customization");
+    public static string ProfileDir       => Path.Combine(DataDir, "profile");
     public static string LibraryDir       => Path.Combine(DataDir, "biblioteca");
 }

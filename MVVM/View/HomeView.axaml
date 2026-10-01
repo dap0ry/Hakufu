@@ -12,8 +12,7 @@
              oscuro, negra en claro) crece desde la izquierda por
              detrás del texto y el texto se desplaza un poco: el mismo gesto
              que los menús de manga/Persona.
-             Background viene de la personalización (PathAndOpacityToImageBrush,
-             transparente si no hay imagen) y se pinta inclinado como la franja. -->
+-->
         <Style Selector="Button.menuItem">
             <Setter Property="Background"          Value="Transparent"/>
             <Setter Property="Foreground"          Value="{DynamicResource TextPrimary}"/>
@@ -23,9 +22,6 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <Grid>
-                        <Border Name="Custom"
-                                Background="{TemplateBinding Background}"
-                                RenderTransform="skewX(-12deg)"/>
                         <Border Name="Slab"
                                 Background="{DynamicResource TextPrimary}"
                                 RenderTransformOrigin="0%,50%"
@@ -81,18 +77,6 @@
             <Setter Property="Margin"   Value="2,0,0,4"/>
         </Style>
 
-        <!-- Icono personalizado (solo si se ha elegido uno en Personalizar) -->
-        <Style Selector="Border.menuIcon">
-            <Setter Property="Width"             Value="40"/>
-            <Setter Property="Height"            Value="40"/>
-            <Setter Property="CornerRadius"      Value="6"/>
-            <Setter Property="ClipToBounds"      Value="True"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-        <Style Selector="Button.big Border.menuIcon">
-            <Setter Property="Width"  Value="64"/>
-            <Setter Property="Height" Value="64"/>
-        </Style>
 
     </UserControl.Styles>
 
@@ -100,14 +84,9 @@
 
         <!-- ═══ IZQUIERDA — logo + menú ═══ -->
         <Border Grid.Column="0"
+                Background="{DynamicResource SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
                 BorderThickness="0,0,1,0">
-            <Border.Background>
-                <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="SidebarBackground">
-                    <Binding Path="LeftPanelBackground?.Path"/>
-                    <Binding Path="LeftPanelBackground?.Opacity"/>
-                </MultiBinding>
-            </Border.Background>
             <Grid Margin="48,40,32,28" RowDefinitions="Auto,*,Auto">
 
                 <!-- Título (imagen distinta en cada tema, ver TitleBrush) -->
@@ -120,129 +99,33 @@
                 <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2" Margin="-18,24,0,24">
                     <!-- Biblioteca -->
                     <Button Classes="menuItem big" Command="{Binding NavLibraryCommand}">
-                        <Button.Background>
-                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="NoBrush">
-                                <Binding Path="LibraryBackground?.Path"/>
-                                <Binding Path="LibraryBackground?.Opacity"/>
-                            </MultiBinding>
-                        </Button.Background>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <Border Classes="menuIcon"
-                                    IsVisible="{Binding LibraryIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
-                                <Image Source="{Binding LibraryIcon?.Path, Converter={StaticResource PathToBitmap}}"
-                                       Stretch="UniformToFill"
-                                       Opacity="{Binding LibraryIcon?.Opacity, TargetNullValue=1}"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Classes="menuLabel" Text="Biblioteca"/>
+                        <StackPanel>
+                            <TextBlock Classes="menuLabel" Text="Biblioteca"/>
                             <TextBlock Classes="menuCaption" Text="Tus colecciones y mangas"/>
-                            </StackPanel>
                         </StackPanel>
                     </Button>
                     <!-- Perfil -->
                     <Button Classes="menuItem" Command="{Binding NavProfileCommand}">
-                        <Button.Background>
-                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="NoBrush">
-                                <Binding Path="ProfileBackground?.Path"/>
-                                <Binding Path="ProfileBackground?.Opacity"/>
-                            </MultiBinding>
-                        </Button.Background>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <Border Classes="menuIcon"
-                                    IsVisible="{Binding ProfileIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
-                                <Image Source="{Binding ProfileIcon?.Path, Converter={StaticResource PathToBitmap}}"
-                                       Stretch="UniformToFill"
-                                       Opacity="{Binding ProfileIcon?.Opacity, TargetNullValue=1}"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Classes="menuLabel" Text="Perfil"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Button>
-                    <!-- Personalizar -->
-                    <Button Classes="menuItem" Command="{Binding NavCustomizeCommand}">
-                        <Button.Background>
-                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="NoBrush">
-                                <Binding Path="PersonalizeBackground?.Path"/>
-                                <Binding Path="PersonalizeBackground?.Opacity"/>
-                            </MultiBinding>
-                        </Button.Background>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <Border Classes="menuIcon"
-                                    IsVisible="{Binding PersonalizeIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
-                                <Image Source="{Binding PersonalizeIcon?.Path, Converter={StaticResource PathToBitmap}}"
-                                       Stretch="UniformToFill"
-                                       Opacity="{Binding PersonalizeIcon?.Opacity, TargetNullValue=1}"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Classes="menuLabel" Text="Personalizar"/>
-                            </StackPanel>
+                        <StackPanel>
+                            <TextBlock Classes="menuLabel" Text="Perfil"/>
                         </StackPanel>
                     </Button>
                     <!-- Copia de seguridad -->
                     <Button Classes="menuItem" Command="{Binding NavBackupCommand}">
-                        <Button.Background>
-                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="NoBrush">
-                                <Binding Path="BackupBackground?.Path"/>
-                                <Binding Path="BackupBackground?.Opacity"/>
-                            </MultiBinding>
-                        </Button.Background>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <Border Classes="menuIcon"
-                                    IsVisible="{Binding BackupIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
-                                <Image Source="{Binding BackupIcon?.Path, Converter={StaticResource PathToBitmap}}"
-                                       Stretch="UniformToFill"
-                                       Opacity="{Binding BackupIcon?.Opacity, TargetNullValue=1}"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Classes="menuLabel" Text="Copia de seguridad"/>
-                            </StackPanel>
+                        <StackPanel>
+                            <TextBlock Classes="menuLabel" Text="Copia de seguridad"/>
                         </StackPanel>
                     </Button>
                     <!-- Ajustes -->
                     <Button Classes="menuItem" Command="{Binding NavSettingsCommand}">
-                        <Button.Background>
-                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="NoBrush">
-                                <Binding Path="SettingsBackground?.Path"/>
-                                <Binding Path="SettingsBackground?.Opacity"/>
-                            </MultiBinding>
-                        </Button.Background>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <Border Classes="menuIcon"
-                                    IsVisible="{Binding SettingsIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
-                                <Image Source="{Binding SettingsIcon?.Path, Converter={StaticResource PathToBitmap}}"
-                                       Stretch="UniformToFill"
-                                       Opacity="{Binding SettingsIcon?.Opacity, TargetNullValue=1}"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Classes="menuLabel" Text="Ajustes"/>
-                            </StackPanel>
+                        <StackPanel>
+                            <TextBlock Classes="menuLabel" Text="Ajustes"/>
                         </StackPanel>
                     </Button>
                     <!-- Ayuda -->
                     <Button Classes="menuItem" Command="{Binding NavHelpCommand}">
-                        <Button.Background>
-                            <MultiBinding Converter="{StaticResource PathAndOpacityToImageBrush}" ConverterParameter="NoBrush">
-                                <Binding Path="HelpBackground?.Path"/>
-                                <Binding Path="HelpBackground?.Opacity"/>
-                            </MultiBinding>
-                        </Button.Background>
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <Border Classes="menuIcon"
-                                    IsVisible="{Binding HelpIcon?.Path, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
-                                <Image Source="{Binding HelpIcon?.Path, Converter={StaticResource PathToBitmap}}"
-                                       Stretch="UniformToFill"
-                                       Opacity="{Binding HelpIcon?.Opacity, TargetNullValue=1}"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Classes="menuLabel" Text="Ayuda"/>
-                            </StackPanel>
+                        <StackPanel>
+                            <TextBlock Classes="menuLabel" Text="Ayuda"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>

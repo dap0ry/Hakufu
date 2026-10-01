@@ -27,6 +27,11 @@ public partial class App : Application
             // alguna continuación intente volver a él.
             Task.Run(_repo.LoadAsync).GetAwaiter().GetResult();
 
+            // Restos de "Personalizar" (retirado en la 0.10.1): copias de imágenes
+            // que ya no usa nada.
+            try { Directory.Delete(Path.Combine(Data.AppPaths.DataDir, "customization"), recursive: true); }
+            catch { /* no existe o no se puede borrar: da igual */ }
+
             var mainWindow = new MainWindow();
             try
             {

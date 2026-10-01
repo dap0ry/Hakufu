@@ -40,7 +40,7 @@ internal static class BitmapHelper
         try
         {
             // Se lee a memoria para no dejar el fichero bloqueado (en Windows
-            // impediría sustituir la imagen de personalización más tarde).
+            // impediría sustituir la foto de perfil más tarde).
             using var ms = new MemoryStream(File.ReadAllBytes(path));
             return new Bitmap(ms);
         }

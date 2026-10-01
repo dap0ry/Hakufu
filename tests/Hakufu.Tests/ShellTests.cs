@@ -27,7 +27,6 @@ public class ShellTests
         nav.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
         nav.NavigateTo<ProfileViewModel>();
         nav.NavigateTo<SettingsViewModel>();
-        nav.NavigateTo<CustomizationViewModel>();
         nav.NavigateTo<HelpViewModel>();
         nav.NavigateTo<BackupViewModel>();
         app.Pump();

@@ -1,3 +1,4 @@
+using Avalonia.VisualTree;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Hakufu.Data;
@@ -57,10 +58,18 @@ public class LandingScreenshots
             store.Collections[0].IsFavorite = true;
             store.Collections[3].IsFavorite = true;
             for (var i = 0; i < 3; i++)
-            {
                 store.Mangas[i * 3].IsFavorite = true;
-                store.Favorites[i].MangaId = store.Mangas[i * 3].Id;
-            }
+            store.Profile.Name = "Dani";
+            store.Profile.FavoriteMangaId = store.Mangas[3].Id;
+            store.Profile.MemberSince = new DateTime(2026, 8, 17);
+            // Doce semanas de lectura inventadas para la gráfica.
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            for (var d = 0; d < 84; d++)
+                if (rnd.NextDouble() < 0.62)
+                    store.ReadingLog.Add(new ReadingDay
+                    {
+                        Date = today.AddDays(-d), Seconds = rnd.Next(12, 110) * 60, Pages = rnd.Next(15, 140),
+                    });
             foreach (var (m, hoursAgo) in store.Mangas.Take(5).Select((m, i) => (m, i * 19 + 2)))
                 store.History.Add(new ReadingHistoryEntry { MangaId = m.Id, CompletedAt = DateTime.Now.AddHours(-hoursAgo) });
             store.TotalUsageSeconds = 41 * 3600 + 25 * 60;
@@ -89,6 +98,15 @@ public class LandingScreenshots
             Shot("collection");
             root.Navigation.NavigateTo<ProfileViewModel>();
             Shot("profile");
+            // La tarjeta sola, como la exporta "Guardar imagen".
+            var card = window.GetVisualDescendants().OfType<Avalonia.Controls.Border>().Single(b => b.Name == "Card");
+            using (var png = new Avalonia.Media.Imaging.RenderTargetBitmap(
+                       new Avalonia.PixelSize((int)card.Bounds.Width * 2, (int)card.Bounds.Height * 2),
+                       new Avalonia.Vector(192, 192)))
+            {
+                png.Render(card);
+                png.Save(Path.Combine(outDir, $"profile-card-{theme.ToLowerInvariant()}.png"));
+            }
             root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(store.Mangas[0], 2));
             Shot("reader");
 

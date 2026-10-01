@@ -84,11 +84,12 @@ public class JsonDataRepository : IDataRepository
         }
     }
 
-    // Siempre 3 huecos de favoritos, aunque el JSON venga de una versión vieja.
+    // Un JSON viejo (o editado a mano) puede traer null donde ahora hay objetos.
     private static AppDataStore Normalize(AppDataStore store)
     {
-        while (store.Favorites.Count < 3)
-            store.Favorites.Add(new() { SlotIndex = store.Favorites.Count });
+        store.Profile    ??= new();
+        store.ReadingLog ??= [];
+        store.Reader     ??= new();
         return store;
     }
 }

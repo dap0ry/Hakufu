@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.EditProfileView"
+             x:DataType="vm:EditProfileViewModel">
+
+    <StackPanel Width="400">
+        <TextBlock Text="Editar perfil" Classes="subtitle" Margin="0,0,0,24"/>
+
+        <!-- Foto -->
+        <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,24">
+            <Border Grid.Column="0" Width="84" Height="84" CornerRadius="42"
+                    Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
+                    ClipToBounds="True">
+                <Image Source="{Binding Avatar}" Stretch="UniformToFill"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+            </Border>
+            <StackPanel Grid.Column="1" Margin="18,0,0,0" VerticalAlignment="Center" Spacing="8">
+                <Button Classes="ghost" Content="Elegir foto" HorizontalAlignment="Left"
+                        Command="{Binding ChooseAvatarCommand}"/>
+                <Button Classes="ghost" Content="Quitar foto" HorizontalAlignment="Left"
+                        IsVisible="{Binding HasAvatar}"
+                        Command="{Binding RemoveAvatarCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Text="Nombre" Classes="caption" Margin="0,0,0,6"/>
+        <TextBox Text="{Binding Name}" MaxLength="40" Watermark="Cómo quieres que aparezca"
+                 Margin="0,0,0,16"/>
+
+        <TextBlock Text="Manga favorito" Classes="caption" Margin="0,0,0,6"/>
+        <ComboBox ItemsSource="{Binding FavoriteOptions}"
+                  SelectedItem="{Binding Favorite}"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,0,0,28"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Classes="ghost" Content="Cancelar" Margin="0,0,12,0"
+                    Command="{Binding CancelCommand}"/>
+            <Button Classes="primary" Content="Guardar"
+                    Command="{Binding SaveCommand}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

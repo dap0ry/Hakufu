@@ -20,10 +20,11 @@ public partial class ReaderView : UserControl
     private CancellationTokenSource? _flipCts;
     private TaskCompletionSource? _pagesShown;
 
-    private const double FlipDepth        = 1800; // perspectiva: más bajo = más exagerado
-    private const double SingleFlipMs     = 340;
-    private const double HalfSpreadFlipMs = 200; // doble página: cada mitad del giro
-    private const double MaxShade         = 0.45; // la hoja se oscurece al ponerse de canto
+    private const double FlipDepth        = 3200; // perspectiva: más bajo = más exagerado
+    private const double SingleFlipMs     = 420;
+    private const double HalfSpreadFlipMs = 240;  // doble página: cada mitad del giro
+    private const double LeafShade        = 0.30; // la hoja se oscurece hacia el borde libre
+    private const byte   CastShadowAlpha  = 0x5C; // sombra que la hoja deja junto al lomo
 
     private enum Slot { Single, Left, Right }
     private enum Ease { In, Out, InOut }
@@ -129,14 +130,16 @@ public partial class ReaderView : UserControl
                 {
                     var leaf = AddPage(oldLeft, Slot.Single);
                     await WaitForPages(shown, ct);
-                    await Turn(leaf, pivotLeft: true, 0, -90, SingleFlipMs, Ease.InOut, ct);
+                    var shadow = AddShadowUnder(leaf, vm.PageLeft, Slot.Single, spineOnLeft: true);
+                    await Turn(leaf, shadow, pivotLeft: true, 0, -90, SingleFlipMs, Ease.InOut, ct);
                 }
                 else
                 {
                     AddPage(oldLeft, Slot.Single);
                     await WaitForPages(shown, ct);
+                    var shadow = AddShadow(oldLeft, Slot.Single, spineOnLeft: true);
                     var leaf = AddPage(vm.PageLeft, Slot.Single);
-                    await Turn(leaf, pivotLeft: true, -90, 0, SingleFlipMs, Ease.InOut, ct);
+                    await Turn(leaf, shadow, pivotLeft: true, -90, 0, SingleFlipMs, Ease.InOut, ct);
                 }
             }
             else if (direction > 0)
@@ -144,20 +147,26 @@ public partial class ReaderView : UserControl
                 AddPage(oldLeft, Slot.Left);
                 var front = AddPage(oldRight, Slot.Right);
                 await WaitForPages(shown, ct);
-                await Turn(front, pivotLeft: true, 0, -90, HalfSpreadFlipMs, Ease.In, ct);
+                var under = AddShadowUnder(front, vm.PageRight, Slot.Right, spineOnLeft: true);
+                await Turn(front, under, pivotLeft: true, 0, -90, HalfSpreadFlipMs, Ease.In, ct);
                 FlipLayer.Children.Remove(front);
+                FlipLayer.Children.Remove(under);
+                var landing = AddShadow(oldLeft, Slot.Left, spineOnLeft: false);
                 var back = AddPage(vm.PageLeft, Slot.Left);
-                await Turn(back, pivotLeft: false, 90, 0, HalfSpreadFlipMs, Ease.Out, ct);
+                await Turn(back, landing, pivotLeft: false, 90, 0, HalfSpreadFlipMs, Ease.Out, ct);
             }
             else
             {
                 AddPage(oldRight, Slot.Right);
                 var front = AddPage(oldLeft, Slot.Left);
                 await WaitForPages(shown, ct);
-                await Turn(front, pivotLeft: false, 0, 90, HalfSpreadFlipMs, Ease.In, ct);
+                var under = AddShadowUnder(front, vm.PageLeft, Slot.Left, spineOnLeft: false);
+                await Turn(front, under, pivotLeft: false, 0, 90, HalfSpreadFlipMs, Ease.In, ct);
                 FlipLayer.Children.Remove(front);
+                FlipLayer.Children.Remove(under);
+                var landing = AddShadow(oldRight, Slot.Right, spineOnLeft: true);
                 var back = AddPage(vm.PageRight, Slot.Right);
-                await Turn(back, pivotLeft: true, -90, 0, HalfSpreadFlipMs, Ease.Out, ct);
+                await Turn(back, landing, pivotLeft: true, -90, 0, HalfSpreadFlipMs, Ease.Out, ct);
             }
         }
         catch (OperationCanceledException)
@@ -186,13 +195,48 @@ public partial class ReaderView : UserControl
     /// <summary>Copia de una página colocada exactamente donde está la real.</summary>
     private Panel AddPage(Bitmap? bitmap, Slot slot)
     {
+        var page = MakePage(bitmap, slot);
+        FlipLayer.Children.Add(page);
+        return page;
+    }
+
+    /// <summary>
+    /// Sombra que proyecta la hoja sobre la página de debajo: un degradado que
+    /// nace en el lomo. Ocupa lo mismo que esa página (la imagen va invisible,
+    /// solo para tomar su tamaño).
+    /// </summary>
+    private Panel AddShadow(Bitmap? under, Slot slot, bool spineOnLeft)
+    {
+        var shadow = MakeShadow(under, slot, spineOnLeft);
+        FlipLayer.Children.Add(shadow);
+        return shadow;
+    }
+
+    private Panel AddShadowUnder(Panel leaf, Bitmap? under, Slot slot, bool spineOnLeft)
+    {
+        var shadow = MakeShadow(under, slot, spineOnLeft);
+        FlipLayer.Children.Insert(FlipLayer.Children.IndexOf(leaf), shadow);
+        return shadow;
+    }
+
+    private static Panel MakeShadow(Bitmap? under, Slot slot, bool spineOnLeft)
+    {
+        var shadow = MakePage(under, slot);
+        shadow.Children[0].Opacity = 0;
+        shadow.Children[1].Opacity = 0;
+        ((Border)shadow.Children[1]).Background = SpineGradient(spineOnLeft, CastShadowAlpha, 0, 0.45);
+        return shadow;
+    }
+
+    private static Panel MakePage(Bitmap? bitmap, Slot slot)
+    {
         var image = new Image { Source = bitmap, Stretch = Stretch.Uniform };
         RenderOptions.SetBitmapInterpolationMode(image, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
 
         var page = new Panel
         {
             VerticalAlignment = VerticalAlignment.Center,
-            Children = { image, new Border { Background = Brushes.Black, Opacity = 0 } },
+            Children = { image, new Border { Opacity = 0 } },
         };
 
         switch (slot)
@@ -213,16 +257,34 @@ public partial class ReaderView : UserControl
                 page.Margin = new Thickness(0, 8, 8, 8);
                 break;
         }
-
-        FlipLayer.Children.Add(page);
         return page;
     }
 
-    /// <summary>Gira la hoja en Y alrededor de su borde izquierdo o derecho (el lomo).</summary>
-    private async Task Turn(Panel page, bool pivotLeft, double from, double to,
+    /// <summary>Degradado horizontal de negro: alphaAtSpine en el lomo → alphaFar en <paramref name="reach"/>.</summary>
+    private static LinearGradientBrush SpineGradient(bool spineOnLeft, byte alphaAtSpine, byte alphaFar, double reach) => new()
+    {
+        StartPoint = new RelativePoint(spineOnLeft ? 0 : 1, 0, RelativeUnit.Relative),
+        EndPoint   = new RelativePoint(spineOnLeft ? 1 : 0, 0, RelativeUnit.Relative),
+        GradientStops =
+        {
+            new GradientStop(Color.FromArgb(alphaAtSpine, 0, 0, 0), 0),
+            new GradientStop(Color.FromArgb(alphaFar, 0, 0, 0), reach),
+        },
+    };
+
+    /// <summary>
+    /// Gira la hoja en Y alrededor de su borde izquierdo o derecho (el lomo).
+    /// A la vez oscurece la hoja hacia su borde libre y hace crecer la sombra
+    /// que proyecta (<paramref name="castShadow"/>), las dos según lo levantada
+    /// que esté (seno del ángulo).
+    /// </summary>
+    private async Task Turn(Panel page, Panel castShadow, bool pivotLeft, double from, double to,
                             double durationMs, Ease ease, CancellationToken ct)
     {
         var shade = (Border)page.Children[1];
+        shade.Background = SpineGradient(spineOnLeft: pivotLeft, 0, 255, 1);
+        var cast = castShadow.Children[1];
+
         var rotation = new Rotate3DTransform { AngleY = from, Depth = FlipDepth };
         page.RenderTransformOrigin = new RelativePoint(pivotLeft ? 0 : 1, 0.5, RelativeUnit.Relative);
         page.RenderTransform = rotation;
@@ -232,15 +294,21 @@ public partial class ReaderView : UserControl
         {
             ct.ThrowIfCancellationRequested();
             var t = Math.Min(1, clock.Elapsed.TotalMilliseconds / durationMs);
+            // Senos: el final de Ease.In y el principio de Ease.Out van a la
+            // misma velocidad, así las dos mitades de la doble página empalman.
             var eased = ease switch
             {
-                Ease.In  => t * t,
-                Ease.Out => 1 - (1 - t) * (1 - t),
-                _        => t < 0.5 ? 2 * t * t : 1 - Math.Pow(-2 * t + 2, 2) / 2,
+                Ease.In  => 1 - Math.Cos(t * Math.PI / 2),
+                Ease.Out => Math.Sin(t * Math.PI / 2),
+                _        => (1 - Math.Cos(t * Math.PI)) / 2,
             };
             var angle = from + (to - from) * eased;
             rotation.AngleY = angle;
-            shade.Opacity = MaxShade * Math.Abs(angle) / 90;
+
+            var lift = Math.Sin(Math.Abs(angle) * Math.PI / 180);
+            shade.Opacity = LeafShade * lift;
+            cast.Opacity  = lift;
+
             if (t >= 1) return;
             await NextFrame();
         }

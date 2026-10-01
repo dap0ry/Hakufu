@@ -14,10 +14,16 @@ public class HomeViewModel : BaseViewModel
 
     private string? _lastMangaTitle;
     private Bitmap? _lastMangaCover;
+    private string? _lastMangaPageText;
+    private double  _lastMangaProgress;
 
     public string? LastMangaTitle { get => _lastMangaTitle; private set => SetProperty(ref _lastMangaTitle, value); }
     public Bitmap? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
     public bool HasLastManga => LastMangaTitle is not null;
+    /// <summary>"Página 12 de 180" (null si no se sabe cuántas páginas tiene).</summary>
+    public string? LastMangaPageText { get => _lastMangaPageText; private set => SetProperty(ref _lastMangaPageText, value); }
+    /// <summary>Avance de 0 a 100.</summary>
+    public double LastMangaProgress { get => _lastMangaProgress; private set => SetProperty(ref _lastMangaProgress, value); }
 
     // ── Personalización (100% local, ver HomeCustomization) ─────────────────
     // Se exponen los CustomizationImage completos (Path + Opacity) — HomeView
@@ -62,6 +68,14 @@ public class HomeViewModel : BaseViewModel
         if (last is not null)
         {
             LastMangaTitle = last.Title;
+            var page  = (_library.GetProgress(last.Id)?.CurrentPage ?? 0) + 1;
+            var total = last.TotalPages;
+            if (total > 0)
+            {
+                page = Math.Min(page, total);
+                LastMangaPageText = $"Página {page} de {total}";
+                LastMangaProgress = page * 100.0 / total;
+            }
             LastMangaCover = await _cover.GetCoverAsync(last);
             OnPropertyChanged(nameof(HasLastManga));
         }

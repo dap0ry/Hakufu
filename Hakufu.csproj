@@ -27,6 +27,7 @@
     <AvaloniaResource Include="Images\**\*.png" />
     <AvaloniaResource Include="HakufuLogo.ico" />
     <AvaloniaResource Include="HakufuLogo.png" />
+    <AvaloniaResource Include="Assets\Fonts\*.ttf" />
   </ItemGroup>
 
   <ItemGroup>

@@ -109,16 +109,12 @@
             </Border.Background>
             <Grid Margin="48,40,32,28" RowDefinitions="Auto,*,Auto">
 
-                <!-- Logo sobre una pegatina roja, un pelín torcida -->
+                <!-- Título (imagen distinta en cada tema, ver TitleBrush) -->
                 <Border Grid.Row="0"
-                        Background="{DynamicResource BrandRed}"
-                        Padding="14,8,18,8"
+                        Width="300" Height="92"
                         HorizontalAlignment="Left"
-                        RenderTransform="rotate(-3deg)">
-                    <Image Source="avares://Hakufu/Images/HakufuTextInicio.png"
-                           Height="52"
-                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                </Border>
+                        Background="{DynamicResource TitleBrush}"
+                        RenderOptions.BitmapInterpolationMode="HighQuality"/>
 
                 <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2" Margin="-18,24,0,24">
                     <!-- Biblioteca -->

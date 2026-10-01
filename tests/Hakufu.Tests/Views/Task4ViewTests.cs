@@ -99,7 +99,7 @@ public class Task4ViewTests
 
             var vm = Assert.IsType<ProfileViewModel>(app.Root.Navigation.CurrentViewModel);
             Assert.True(vm.HasFavoriteManga);     // "Tomo 2" tiene estrella
-            Assert.True(vm.HasRecentMangas);      // "Tomo 1" tiene progreso
+            Assert.True(vm.HasRecentCollections); // "Tomo 1" tiene progreso
             Assert.Equal(ProfileViewModel.Weeks, vm.WeekBars.Count);
             Assert.True(vm.WeekBars[^1].IsCurrent);
             Assert.False(vm.HasName);

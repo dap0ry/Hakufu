@@ -54,6 +54,9 @@ public class ReaderViewModel : BaseViewModel, IDisposable
         _nav        = nav;
         _loader     = new PageLoaderService(manga);
         TotalPages  = _loader.TotalPages;
+        // Un tomo recién encontrado en la carpeta puede no saber aún sus páginas.
+        if (TotalPages > 0 && manga.TotalPages != TotalPages)
+            _ = _library.SetTotalPagesAsync(manga.Id, TotalPages);
         _currentPage = Math.Clamp(startPage, 0, Math.Max(0, TotalPages - 1));
 
         _isTwoPageMode       = settings.TwoPageByDefault;

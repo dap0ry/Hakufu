@@ -95,6 +95,7 @@ public class JsonDataRepository : IDataRepository
         store.Profile    ??= new();
         store.ReadingLog ??= [];
         store.Reader     ??= new();
+        store.LibraryRoot ??= "";
         return store;
     }
 }

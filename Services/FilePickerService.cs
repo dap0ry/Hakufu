@@ -35,6 +35,17 @@ public class FilePickerService : IFilePickerService
                     .ToArray();
     }
 
+    public async Task<string?> PickFolderAsync(string title)
+    {
+        if (Storage is not { } storage) return null;
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title         = title,
+            AllowMultiple = false
+        });
+        return folders.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+    }
+
     public async Task<string?> SaveFileAsync(string title, string suggestedName, FileFilter filter)
     {
         if (Storage is not { } storage) return null;
@@ -51,13 +62,19 @@ public class FilePickerService : IFilePickerService
 
     public void OpenFolder(string path)
     {
-        Directory.CreateDirectory(path);
+        // No se crea nada: puede ser la carpeta del usuario (o un disco sin conectar).
+        if (!Directory.Exists(path)) return;
         var opener = OperatingSystem.IsWindows() ? "explorer.exe"
                    : OperatingSystem.IsMacOS()   ? "open"
                    : "xdg-open";
         try
         {
             var psi = new ProcessStartInfo(opener) { UseShellExecute = false };
+            // En macOS "open" ejecuta un paquete .app aunque sea una carpeta: una
+            // colección llamada "algo.app" (p. ej. de una copia de seguridad ajena)
+            // se enseña en el Finder (-R) en vez de abrirse.
+            if (OperatingSystem.IsMacOS() && !string.IsNullOrEmpty(Path.GetExtension(path.TrimEnd('/'))))
+                psi.ArgumentList.Add("-R");
             psi.ArgumentList.Add(path);
             Process.Start(psi);
         }

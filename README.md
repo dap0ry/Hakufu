@@ -49,9 +49,11 @@ dotnet test tests/Hakufu.Tests        # tests
 | Windows | `%APPDATA%\Hakufu` (la misma que la 0.9.x: la biblioteca se conserva) |
 | macOS / Linux | `~/.config/Hakufu` |
 
-Dentro: `data.json` (biblioteca, progreso, ajustes), `covers/`, `profile/` (foto de perfil) y `biblioteca/` (mangas copiados a Hakufu). Con la variable `HAKUFU_DATA_DIR` se puede usar otra carpeta, útil para probar con una biblioteca de pruebas.
+Dentro: `data.json` (colecciones, progreso, ajustes), `covers/` y `profile/` (foto de perfil). Con la variable `HAKUFU_DATA_DIR` se puede usar otra carpeta, útil para probar con una biblioteca de pruebas.
 
-**Copia de seguridad:** Inicio → *Copia de seguridad* exporta un `.zip` que se puede importar en cualquier otro equipo, también de otro sistema (Windows → Mac, por ejemplo).
+**Los mangas no se copian a Hakufu.** La biblioteca es una carpeta tuya (Ajustes → *Carpeta de la biblioteca*): cada subcarpeta es una colección y sus `.cbz`, `.cbr` y `.pdf` son los tomos. Hakufu solo la lee; para añadir o quitar tomos, cámbialos en esa carpeta y dale a *Actualizar*. Las versiones anteriores copiaban los mangas a `biblioteca/` dentro de la carpeta de datos: si existe, se usa como carpeta de la biblioteca hasta que elijas otra, así no se pierde el progreso.
+
+**Copia de seguridad:** Inicio → *Copia de seguridad* exporta un `.zip` (datos, portadas y perfil, sin los mangas) que se puede importar en cualquier otro equipo, también de otro sistema (Windows → Mac, por ejemplo). El progreso se aplica a los tomos de la carpeta de la biblioteca de ese equipo que estén en la misma subcarpeta y con el mismo nombre.
 
 Arquitectura y convenciones: [`CLAUDE.md`](CLAUDE.md).
 

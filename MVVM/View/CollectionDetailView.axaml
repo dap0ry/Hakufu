@@ -95,19 +95,10 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <Button Classes="ghost" Content="Seleccionar" Padding="16,10"
-                                Command="{Binding ToggleSelectionModeCommand}"
-                                IsVisible="{Binding !IsSelectionMode}"/>
-                        <Button Classes="primary" Content="Añadir tomos" Padding="18,10"
-                                Command="{Binding AddMangaCommand}"
-                                IsVisible="{Binding !IsSelectionMode}"/>
-                        <Button Classes="ghost" Content="Cancelar" Padding="16,10"
-                                Command="{Binding ToggleSelectionModeCommand}"
-                                IsVisible="{Binding IsSelectionMode}"/>
-                        <Button Classes="primary" Padding="18,10"
-                                Content="{Binding SelectedCount, StringFormat='Eliminar ({0})'}"
-                                Command="{Binding DeleteSelectedCommand}"
-                                IsVisible="{Binding IsSelectionMode}"/>
+                        <!-- Los tomos se añaden o quitan en su carpeta; luego "Actualizar" en la biblioteca -->
+                        <Button Classes="primary" Content="Abrir carpeta" Padding="18,10"
+                                Command="{Binding OpenFolderCommand}"
+                                ToolTip.Tip="Añade o quita tomos en su carpeta"/>
                     </StackPanel>
                 </Grid>
 
@@ -118,8 +109,7 @@
                            Foreground="{DynamicResource TextSecondary}"/>
 
                 <!-- Ordenar + tamaño -->
-                <Grid ColumnDefinitions="Auto,*,Auto,160" Margin="0,22,0,0" Height="52"
-                      IsVisible="{Binding !IsSelectionMode}">
+                <Grid ColumnDefinitions="Auto,*,Auto,160" Margin="0,22,0,0" Height="52">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                         <TextBlock Text="Ordenar" Classes="caption" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <Button Classes="ghost chip" Content="Nombre"
@@ -171,19 +161,6 @@
                                         <Image Source="{Binding Cover}"
                                                Stretch="Uniform"
                                                RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                    </Border>
-                                    <!-- Selección -->
-                                    <Border CornerRadius="4"
-                                            Background="{DynamicResource AccentColor}" Opacity="0.25"
-                                            IsVisible="{Binding IsSelected}"/>
-                                    <Border Width="26" Height="26" CornerRadius="13"
-                                            HorizontalAlignment="Right" VerticalAlignment="Top"
-                                            Margin="0,8,8,0"
-                                            Background="{DynamicResource AccentColor}"
-                                            IsVisible="{Binding IsSelected}">
-                                        <TextBlock Text="✓" FontSize="13" FontWeight="Bold"
-                                                   Foreground="{DynamicResource AppBackground}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <!-- Favorito -->
                                     <Button Classes="star"

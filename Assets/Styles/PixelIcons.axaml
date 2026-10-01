@@ -52,7 +52,7 @@
         </Viewbox>
     </ControlTemplate>
 
-    <!-- ═══ CARPETA — usado para "Gestionar espacio" ═══ -->
+    <!-- ═══ CARPETA — usado en "Abrir carpeta" ═══ -->
     <ControlTemplate x:Key="IconPixelFolder" TargetType="ContentControl">
         <Viewbox Stretch="Uniform">
             <Canvas Width="8" Height="8" RenderOptions.EdgeMode="Aliased">

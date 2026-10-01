@@ -8,7 +8,7 @@ namespace Hakufu.MVVM.ViewModel;
 
 /// <summary>
 /// Perfil en forma de tarjeta para compartir: foto, nombre, horas de lectura,
-/// gráfica semanal (estilo Strava), manga favorito y los 3 últimos abiertos.
+/// gráfica semanal (estilo Strava), manga favorito y las 3 últimas colecciones leídas.
 /// La vista la puede exportar a PNG ("Guardar imagen").
 /// </summary>
 public class ProfileViewModel : BaseViewModel
@@ -62,8 +62,9 @@ public class ProfileViewModel : BaseViewModel
     // ── Mangas ──────────────────────────────────────────────────────────────
     public MangaCardViewModel? FavoriteManga { get; private set; }
     public bool HasFavoriteManga => FavoriteManga is not null;
-    public ObservableCollection<MangaCardViewModel> RecentMangas { get; } = [];
-    public bool HasRecentMangas => RecentMangas.Count > 0;
+    /// <summary>"Leyendo ahora": las 3 colecciones leídas más recientemente.</summary>
+    public ObservableCollection<RecentCollectionCardViewModel> RecentCollections { get; } = [];
+    public bool HasRecentCollections => RecentCollections.Count > 0;
 
     private void Load()
     {
@@ -109,11 +110,11 @@ public class ProfileViewModel : BaseViewModel
         FavoriteManga = fav is null ? null : new MangaCardViewModel(fav, _library.GetProgress(fav.Id));
         if (FavoriteManga is not null) _ = FavoriteManga.LoadCoverAsync(_cover);
 
-        RecentMangas.Clear();
-        foreach (var m in _profile.GetRecentMangas(3))
+        RecentCollections.Clear();
+        foreach (var r in _profile.GetRecentCollections(3))
         {
-            var card = new MangaCardViewModel(m, _library.GetProgress(m.Id));
-            RecentMangas.Add(card);
+            var card = new RecentCollectionCardViewModel(r);
+            RecentCollections.Add(card);
             _ = card.LoadCoverAsync(_cover);
         }
 
@@ -140,10 +141,39 @@ public class ProfileViewModel : BaseViewModel
         _nav.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(card.Model, startPage));
     });
 
+    public RelayCommand<RecentCollectionCardViewModel> OpenCollectionCommand => new(card =>
+    {
+        if (card is not null) _nav.NavigateTo<CollectionDetailViewModel>(card.CollectionId);
+    });
+
     /// <summary>Ruta donde guardar la tarjeta en PNG (la imagen la genera la vista).</summary>
     public Task<string?> PickImagePathAsync(string orientation)
         => _files.SaveFileAsync("Guardar perfil como imagen",
                                 $"hakufu-{(HasName ? DisplayName : "perfil")}-{orientation}.png", FileFilter.Png);
+}
+
+/// <summary>Una colección de "Leyendo ahora": portada del último tomo leído y progreso de toda la colección.</summary>
+public class RecentCollectionCardViewModel : BaseViewModel
+{
+    private readonly Manga _lastVolume;
+
+    public RecentCollectionCardViewModel(RecentCollection r)
+    {
+        _lastVolume  = r.LastVolume;
+        CollectionId = r.Collection.Id;
+        Title        = r.Collection.Name;
+        ProgressPct  = r.ProgressPct;
+    }
+
+    public Guid   CollectionId { get; }
+    public string Title        { get; }
+    public double ProgressPct  { get; }
+
+    private Bitmap? _cover;
+    public Bitmap? Cover { get => _cover; private set => SetProperty(ref _cover, value); }
+
+    public async Task LoadCoverAsync(ICoverService coverService)
+        => Cover = await coverService.GetCoverAsync(_lastVolume);
 }
 
 /// <summary>Una barra de la gráfica semanal.</summary>

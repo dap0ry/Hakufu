@@ -62,6 +62,23 @@
             <Setter Property="RenderTransform" Value="translateX(8px)"/>
         </Style>
 
+        <!-- Foto de perfil junto a "Perfil": círculo con un aro del color del texto
+             (blanco en oscuro, negro en claro; al pasar el ratón, el del fondo). -->
+        <Style Selector="Border.menuAvatar">
+            <Setter Property="Width"             Value="44"/>
+            <Setter Property="Height"            Value="44"/>
+            <Setter Property="CornerRadius"      Value="22"/>
+            <Setter Property="ClipToBounds"      Value="True"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin"            Value="0,2,0,0"/>
+            <Setter Property="BorderThickness"   Value="2"/>
+            <Setter Property="BorderBrush"       Value="{Binding $parent[Button].Foreground}"/>
+            <Setter Property="BoxShadow"         Value="0 4 14 0 #40000000"/>
+        </Style>
+        <Style Selector="Border.menuAvatar.initial">
+            <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        </Style>
+
         <Style Selector="TextBlock.menuLabel">
             <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}"/>
             <Setter Property="FontSize"   Value="44"/>
@@ -70,11 +87,6 @@
         <Style Selector="Button.big TextBlock.menuLabel">
             <Setter Property="FontSize"   Value="76"/>
             <Setter Property="LineHeight" Value="76"/>
-        </Style>
-        <Style Selector="TextBlock.menuCaption">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Opacity"  Value="0.65"/>
-            <Setter Property="Margin"   Value="2,0,0,4"/>
         </Style>
 
 
@@ -101,13 +113,24 @@
                     <Button Classes="menuItem big" Command="{Binding NavLibraryCommand}">
                         <StackPanel>
                             <TextBlock Classes="menuLabel" Text="Biblioteca"/>
-                            <TextBlock Classes="menuCaption" Text="Tus colecciones y mangas"/>
                         </StackPanel>
                     </Button>
                     <!-- Perfil -->
                     <Button Classes="menuItem" Command="{Binding NavProfileCommand}">
-                        <StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="16">
                             <TextBlock Classes="menuLabel" Text="Perfil"/>
+                            <!-- Tu foto, en círculo; con la inicial si no hay foto -->
+                            <Border Classes="menuAvatar"
+                                    IsVisible="{Binding HasProfileAvatar}">
+                                <Image Source="{Binding ProfileAvatar}" Stretch="UniformToFill"
+                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                            </Border>
+                            <Border Classes="menuAvatar initial"
+                                    IsVisible="{Binding ShowProfileInitial}">
+                                <TextBlock Text="{Binding ProfileInitial}"
+                                           FontFamily="{DynamicResource DisplayFont}" FontSize="22"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
                         </StackPanel>
                     </Button>
                     <!-- Copia de seguridad -->

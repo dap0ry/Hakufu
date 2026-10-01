@@ -48,6 +48,7 @@ public partial class MainWindow : Window
         {
             _reader = reader;
             reader.ZenModeChanged += Reader_ZenModeChanged;
+            if (reader.OpenInZenMode) reader.IsZenMode = true;
         }
     }
 

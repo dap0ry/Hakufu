@@ -111,6 +111,9 @@ public partial class ReaderView : UserControl
     {
         if (_vm is null) return;
         CancelFlip();
+        if (!_vm.AnimatePageTurns) return;
+        var single = SingleFlipMs * _vm.PageTurnSpeedFactor;
+        var half   = HalfSpreadFlipMs * _vm.PageTurnSpeedFactor;
 
         var cts = new CancellationTokenSource();
         _flipCts = cts;
@@ -131,7 +134,7 @@ public partial class ReaderView : UserControl
                     var leaf = AddPage(oldLeft, Slot.Single);
                     await WaitForPages(shown, ct);
                     var shadow = AddShadowUnder(leaf, vm.PageLeft, Slot.Single, spineOnLeft: true);
-                    await Turn(leaf, shadow, pivotLeft: true, 0, -90, SingleFlipMs, Ease.InOut, ct);
+                    await Turn(leaf, shadow, pivotLeft: true, 0, -90, single, Ease.InOut, ct);
                 }
                 else
                 {
@@ -139,7 +142,7 @@ public partial class ReaderView : UserControl
                     await WaitForPages(shown, ct);
                     var shadow = AddShadow(oldLeft, Slot.Single, spineOnLeft: true);
                     var leaf = AddPage(vm.PageLeft, Slot.Single);
-                    await Turn(leaf, shadow, pivotLeft: true, -90, 0, SingleFlipMs, Ease.InOut, ct);
+                    await Turn(leaf, shadow, pivotLeft: true, -90, 0, single, Ease.InOut, ct);
                 }
             }
             else if (direction > 0)
@@ -148,12 +151,12 @@ public partial class ReaderView : UserControl
                 var front = AddPage(oldRight, Slot.Right);
                 await WaitForPages(shown, ct);
                 var under = AddShadowUnder(front, vm.PageRight, Slot.Right, spineOnLeft: true);
-                await Turn(front, under, pivotLeft: true, 0, -90, HalfSpreadFlipMs, Ease.In, ct);
+                await Turn(front, under, pivotLeft: true, 0, -90, half, Ease.In, ct);
                 FlipLayer.Children.Remove(front);
                 FlipLayer.Children.Remove(under);
                 var landing = AddShadow(oldLeft, Slot.Left, spineOnLeft: false);
                 var back = AddPage(vm.PageLeft, Slot.Left);
-                await Turn(back, landing, pivotLeft: false, 90, 0, HalfSpreadFlipMs, Ease.Out, ct);
+                await Turn(back, landing, pivotLeft: false, 90, 0, half, Ease.Out, ct);
             }
             else
             {
@@ -161,12 +164,12 @@ public partial class ReaderView : UserControl
                 var front = AddPage(oldLeft, Slot.Left);
                 await WaitForPages(shown, ct);
                 var under = AddShadowUnder(front, vm.PageLeft, Slot.Left, spineOnLeft: false);
-                await Turn(front, under, pivotLeft: false, 0, 90, HalfSpreadFlipMs, Ease.In, ct);
+                await Turn(front, under, pivotLeft: false, 0, 90, half, Ease.In, ct);
                 FlipLayer.Children.Remove(front);
                 FlipLayer.Children.Remove(under);
                 var landing = AddShadow(oldRight, Slot.Right, spineOnLeft: true);
                 var back = AddPage(vm.PageRight, Slot.Right);
-                await Turn(back, landing, pivotLeft: true, -90, 0, HalfSpreadFlipMs, Ease.Out, ct);
+                await Turn(back, landing, pivotLeft: true, -90, 0, half, Ease.Out, ct);
             }
         }
         catch (OperationCanceledException)

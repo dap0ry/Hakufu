@@ -1,5 +1,6 @@
 using System.IO;
 using Hakufu.Data;
+using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -44,6 +45,51 @@ public class SettingsViewModel : BaseViewModel
             _repo.Current.ActiveTheme = value ? "Dark" : "Light";
             _ = _repo.SaveAsync();
         }
+    }
+
+    // ── Lectura ──────────────────────────────────────────────────────────────
+
+    private ReaderSettings Reader => _repo.Current.Reader;
+
+    private void SaveReader([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+    {
+        OnPropertyChanged(name);
+        _ = _repo.SaveAsync();
+    }
+
+    public bool TwoPageByDefault
+    {
+        get => Reader.TwoPageByDefault;
+        set { if (Reader.TwoPageByDefault == value) return; Reader.TwoPageByDefault = value; SaveReader(); }
+    }
+
+    public bool OpenInZenMode
+    {
+        get => Reader.OpenInZenMode;
+        set { if (Reader.OpenInZenMode == value) return; Reader.OpenInZenMode = value; SaveReader(); }
+    }
+
+    public bool PageTurnAnimation
+    {
+        get => Reader.PageTurnAnimation;
+        set { if (Reader.PageTurnAnimation == value) return; Reader.PageTurnAnimation = value; SaveReader(); }
+    }
+
+    public bool IsSpeedFast   => Reader.PageTurnSpeed == "fast";
+    public bool IsSpeedNormal => Reader.PageTurnSpeed is not ("fast" or "slow");
+    public bool IsSpeedSlow   => Reader.PageTurnSpeed == "slow";
+
+    public RelayCommand SpeedFastCommand   => new(() => SetSpeed("fast"));
+    public RelayCommand SpeedNormalCommand => new(() => SetSpeed("normal"));
+    public RelayCommand SpeedSlowCommand   => new(() => SetSpeed("slow"));
+
+    private void SetSpeed(string speed)
+    {
+        Reader.PageTurnSpeed = speed;
+        OnPropertyChanged(nameof(IsSpeedFast));
+        OnPropertyChanged(nameof(IsSpeedNormal));
+        OnPropertyChanged(nameof(IsSpeedSlow));
+        _ = _repo.SaveAsync();
     }
 
     // ── Storage ──────────────────────────────────────────────────────────────

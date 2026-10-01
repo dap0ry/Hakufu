@@ -91,6 +91,99 @@
                     </Grid>
                 </Border>
 
+                <!-- ── LECTURA ── -->
+                <Border Classes="card" Padding="0"
+                        Margin="0,0,0,20" ClipToBounds="True">
+                    <StackPanel>
+                        <TextBlock Text="Lectura"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   Margin="24,20,24,4"/>
+
+                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="Doble página"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock Text="Abrir los mangas mostrando dos páginas a la vez, como un libro abierto"
+                                               FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                                <ToggleButton Grid.Column="1"
+                                              Classes="themeToggle"
+                                              IsChecked="{Binding TwoPageByDefault}"
+                                              VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="Abrir en modo zen"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock Text="Empezar a leer a pantalla completa, sin barras. Sales con ESC"
+                                               FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                                <ToggleButton Grid.Column="1"
+                                              Classes="themeToggle"
+                                              IsChecked="{Binding OpenInZenMode}"
+                                              VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="Animación al pasar página"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock Text="La hoja gira como en un manga de papel"
+                                               FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                                <ToggleButton Grid.Column="1"
+                                              Classes="themeToggle"
+                                              IsChecked="{Binding PageTurnAnimation}"
+                                              VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Velocidad: solo cuenta si hay animación -->
+                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0"
+                                IsEnabled="{Binding PageTurnAnimation}"
+                                Opacity="{Binding PageTurnAnimation, Converter={StaticResource BoolToOpacity}}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Velocidad de la animación"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock Text="Cuánto tarda la hoja en pasar"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="ghost" Content="Rápida" Padding="12,7" FontSize="11"
+                                            Command="{Binding SpeedFastCommand}"
+                                            Opacity="{Binding IsSpeedFast, Converter={StaticResource BoolToOpacity}}"/>
+                                    <Button Classes="ghost" Content="Normal" Padding="12,7" FontSize="11"
+                                            Command="{Binding SpeedNormalCommand}"
+                                            Opacity="{Binding IsSpeedNormal, Converter={StaticResource BoolToOpacity}}"/>
+                                    <Button Classes="ghost" Content="Lenta" Padding="12,7" FontSize="11"
+                                            Command="{Binding SpeedSlowCommand}"
+                                            Opacity="{Binding IsSpeedSlow, Converter={StaticResource BoolToOpacity}}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
                 <!-- ── ESPACIO DE DISCO ── -->
                 <Border Classes="card" Padding="24"
                         Margin="0,0,0,20">

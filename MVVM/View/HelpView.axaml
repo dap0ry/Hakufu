@@ -585,18 +585,18 @@
                         <Border Classes="feature">
                             <StackPanel>
                                 <TextBlock Classes="term" Text="Exportar"/>
-                                <TextBlock Classes="p" Text="«Exportar copia…» crea un .zip con tus colecciones, el progreso de lectura, el historial, las portadas, tu perfil y el tema. Guárdalo donde quieras: un disco externo, un pendrive u otra carpeta."/>
+                                <TextBlock Classes="p" Text="«Exportar copia…» crea un .zip con tu perfil (nombre, foto, estadísticas, tema y ajustes) y, si activas «Incluir colecciones», el progreso, los favoritos y el historial de las colecciones que marques. Se queda en tu equipo, donde lo guardes: un disco externo, un pendrive u otra carpeta."/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature" BorderThickness="0,1,0,1">
                             <StackPanel>
                                 <TextBlock Classes="term" Text="Pasarlo a otro ordenador"/>
-                                <TextBlock Classes="p" Text="Instala Hakufu en el otro equipo, ve a Copia de seguridad → «Elegir copia…» y elige el .zip. Funciona entre Windows, macOS y Linux: las rutas se adaptan solas. La copia no lleva los archivos de manga: cópialos aparte y elige allí la carpeta de la biblioteca."/>
+                                <TextBlock Classes="p" Text="Instala Hakufu en el otro equipo, elige allí la carpeta de la biblioteca (con tus mangas, en las mismas subcarpetas) y ve a Copia de seguridad → «Elegir copia…». Funciona entre Windows, macOS y Linux. La copia no lleva los archivos de manga: cópialos aparte."/>
                             </StackPanel>
                         </Border>
                         <Border Classes="tip">
                             <TextBlock Classes="p"
-                                       Text="Restaurar sustituye lo que Hakufu tiene ahora (colecciones, progreso, historial y perfil). Tus archivos de manga no se borran."/>
+                                       Text="Restaurar aplica tu perfil y el progreso de los tomos que vengan en la copia; lo demás se queda como está. Tus archivos de manga no se tocan."/>
                         </Border>
                         <Button Classes="ghost" Content="Ir a Copia de seguridad" HorizontalAlignment="Left"
                                 Padding="18,10" Margin="0,28,0,0"

@@ -67,7 +67,7 @@ public class HelpViewModel : BaseViewModel
             "No. Hakufu funciona entero sin conexión: no hay cuentas, ni servidores, ni nada que se envíe a ningún sitio."),
         new("¿Dónde se guardan mis datos?",
             "En tu ordenador, en la carpeta de datos de Hakufu: el progreso de lectura, los favoritos, el orden, " +
-            "las portadas y tu perfil. Puedes abrirla desde Copia de seguridad → Abrir carpeta."),
+            "las portadas en caché y tu perfil. Puedes abrirla desde Copia de seguridad → Abrir carpeta."),
         new("¿Qué formatos lee?",
             "PDF, CBZ y CBR. Las páginas de un CBZ o CBR se ordenan por el nombre de cada imagen."),
         new("He añadido tomos y no salen",

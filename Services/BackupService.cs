@@ -11,23 +11,32 @@ public class BackupService(IDataRepository repo) : IBackupService
     private const string ManifestEntry = "hakufu-backup.json";
 
     // Carpetas de AppPaths.DataDir que viajan en la copia (nombre en el zip = nombre en disco).
-    // Los mangas no: son la carpeta del usuario, no de Hakufu.
-    private static readonly string[] MediaFolders = ["covers", "profile"];
+    // Solo la foto de perfil: los mangas son la carpeta del usuario y las
+    // portadas se regeneran solas. Al restaurar se aceptan también las de
+    // copias antiguas (covers/).
+    private static readonly string[] ExportFolders = ["profile"];
+    private static readonly string[] MediaFolders  = ["covers", "profile"];
     // Copias de versiones antiguas que sí traían los mangas copiados a Hakufu:
     // se siguen restaurando para no perderlos (quedan en AppPaths.LibraryDir).
     private const string LegacyLibraryFolder = "biblioteca";
 
+    // Versión 1: copia completa que sustituye la biblioteca (hasta la 0.10.0).
+    // Versión 2: perfil + colecciones elegidas, que se combina con lo que hay.
+    private const int CurrentVersion = 2;
     private sealed record Manifest(int Version, string DataDir, DateTime CreatedAt);
 
-    public async Task ExportAsync(string zipPath, IProgress<double>? progress = null)
+    public async Task ExportAsync(string zipPath, BackupOptions options, IProgress<double>? progress = null)
     {
         await repo.SaveAsync();
 
         var dataDir = AppPaths.DataDir;
-        var files = MediaFolders
+        var subset  = Subset(repo.Current, options);
+        var files = ExportFolders
             .Select(f => Path.Combine(dataDir, f))
             .Where(Directory.Exists)
             .SelectMany(d => Directory.EnumerateFiles(d, "*", SearchOption.AllDirectories))
+            // de la carpeta de perfil, solo la foto que se usa ahora
+            .Where(f => string.Equals(Path.GetFullPath(f), FullOrEmpty(subset.Profile.AvatarPath)))
             .ToList();
 
         await Task.Run(() =>
@@ -37,8 +46,8 @@ public class BackupService(IDataRepository repo) : IBackupService
             var tmp = zipPath + ".tmp";
             using (var zip = ZipFile.Open(tmp, ZipArchiveMode.Create))
             {
-                WriteJson(zip, ManifestEntry, new Manifest(1, dataDir, DateTime.Now));
-                WriteJson(zip, DataEntry, repo.Current);
+                WriteJson(zip, ManifestEntry, new Manifest(CurrentVersion, dataDir, DateTime.Now));
+                WriteJson(zip, DataEntry, subset);
 
                 for (var i = 0; i < files.Count; i++)
                 {
@@ -52,24 +61,48 @@ public class BackupService(IDataRepository repo) : IBackupService
         progress?.Report(1);
     }
 
-    public async Task<bool> ImportAsync(string zipPath, IProgress<double>? progress = null)
-    {
-        if (!File.Exists(zipPath)) return false;
+    private static string FullOrEmpty(string? path) => string.IsNullOrEmpty(path) ? "" : Path.GetFullPath(path);
 
-        var ok = await Task.Run(() =>
+    /// <summary>Lo que va en la copia: perfil y ajustes, y las colecciones elegidas con lo suyo.</summary>
+    internal static AppDataStore Subset(AppDataStore all, BackupOptions options)
+    {
+        var cols   = all.Collections.Where(c => options.CollectionIds.Contains(c.Id)).ToList();
+        var ids    = cols.SelectMany(c => c.MangaIds).ToHashSet();
+        return new AppDataStore
+        {
+            Profile           = all.Profile,
+            ReadingLog        = all.ReadingLog,
+            ActiveTheme       = all.ActiveTheme,
+            Reader            = all.Reader,
+            TotalUsageSeconds = all.TotalUsageSeconds,
+            LibrarySortMode   = all.LibrarySortMode,
+            Collections       = cols,
+            Mangas            = all.Mangas.Where(m => ids.Contains(m.Id)).ToList(),
+            Progress          = all.Progress.Where(p => ids.Contains(p.MangaId)).ToList(),
+            History           = all.History.Where(h => ids.Contains(h.MangaId)).ToList(),
+            // La carpeta es de cada equipo: no viaja.
+            LibraryRoot       = "",
+        };
+    }
+
+    public async Task<ImportResult> ImportAsync(string zipPath, IProgress<double>? progress = null)
+    {
+        if (!File.Exists(zipPath)) return ImportResult.Invalid;
+
+        var result = await Task.Run(() =>
         {
             ZipArchive zip;
             try { zip = ZipFile.OpenRead(zipPath); }
-            catch { return false; }
+            catch { return ImportResult.Invalid; }
 
             using (zip)
             {
                 // Sin el manifiesto no es una copia de Hakufu: cualquier otro zip
                 // con un "data.json" dentro vaciaría la biblioteca.
-                if (ReadManifest(zip) is not { } manifest) return false;
+                if (ReadManifest(zip) is not { } manifest) return ImportResult.Invalid;
 
                 var dataEntry = zip.GetEntry(DataEntry);
-                if (dataEntry is null) return false;
+                if (dataEntry is null) return ImportResult.Invalid;
 
                 AppDataStore? store;
                 try
@@ -77,8 +110,8 @@ public class BackupService(IDataRepository repo) : IBackupService
                     using var s = dataEntry.Open();
                     store = JsonSerializer.Deserialize<AppDataStore>(s, JsonDataRepository.JsonOptions);
                 }
-                catch { return false; }
-                if (store is null) return false;
+                catch { return ImportResult.Invalid; }
+                if (store is null) return ImportResult.Invalid;
 
                 var dataDir = AppPaths.DataDir;
 
@@ -113,7 +146,7 @@ public class BackupService(IDataRepository repo) : IBackupService
                 }
                 catch
                 {
-                    return false;
+                    return ImportResult.Invalid;
                 }
                 finally
                 {
@@ -121,17 +154,88 @@ public class BackupService(IDataRepository repo) : IBackupService
                 }
 
                 RebasePaths(store, manifest.DataDir, dataDir);
-                // La carpeta de la biblioteca es de este equipo, no la del de la
-                // copia: los tomos se vuelven a encontrar por su ruta relativa.
-                store.LibraryRoot = repo.Current.LibraryRoot;
-                repo.Replace(store);
-                return true;
+
+                if (manifest.Version < 2)
+                {
+                    // Copia antigua (completa): sustituye la biblioteca. La carpeta de
+                    // la biblioteca es la de este equipo; los tomos se vuelven a
+                    // encontrar por su ruta relativa al leerla.
+                    store.LibraryRoot = repo.Current.LibraryRoot;
+                    repo.Replace(store);
+                    return new ImportResult(true, store.Mangas.Count, 0, Legacy: true);
+                }
+                return Merge(repo.Current, store);
             }
         });
 
-        if (ok) await repo.SaveAsync();
+        if (result.Ok) await repo.SaveAsync();
         progress?.Report(1);
-        return ok;
+        return result;
+    }
+
+    /// <summary>
+    /// Combina una copia (versión 2) con la biblioteca actual, que ya debe estar
+    /// leída de la carpeta: perfil y ajustes de la copia; progreso, favoritos,
+    /// orden e historial para los tomos que coincidan por ruta relativa.
+    /// </summary>
+    internal static ImportResult Merge(AppDataStore current, AppDataStore backup)
+    {
+        static bool Same(string? a, string? b) =>
+            !string.IsNullOrEmpty(a) && string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
+
+        // Perfil y ajustes
+        var myFavorite      = current.Profile.FavoriteMangaId;
+        current.Profile     = backup.Profile;
+        current.ActiveTheme = backup.ActiveTheme;
+        current.Reader      = backup.Reader;
+        current.TotalUsageSeconds = Math.Max(current.TotalUsageSeconds, backup.TotalUsageSeconds);
+        foreach (var day in backup.ReadingLog)
+        {
+            var mine = current.ReadingLog.FirstOrDefault(d => d.Date == day.Date);
+            if (mine is null) current.ReadingLog.Add(day);
+            else if (day.Seconds > mine.Seconds) { mine.Seconds = day.Seconds; mine.Pages = Math.Max(mine.Pages, day.Pages); }
+        }
+
+        // Colecciones: favorita y descripción
+        foreach (var bc in backup.Collections)
+        {
+            var cc = current.Collections.FirstOrDefault(c => Same(c.RelativePath, bc.RelativePath)) ??
+                     current.Collections.FirstOrDefault(c => Same(c.Name, bc.Name));
+            if (cc is null) continue;
+            cc.IsFavorite = bc.IsFavorite;
+            if (!string.IsNullOrWhiteSpace(bc.Description)) cc.Description = bc.Description;
+        }
+
+        // Tomos: por ruta relativa dentro de la carpeta de la biblioteca
+        var applied = 0;
+        var idMap = new Dictionary<Guid, Guid>();
+        foreach (var bm in backup.Mangas)
+        {
+            var cm = current.Mangas.FirstOrDefault(m => Same(m.RelativePath, bm.RelativePath));
+            if (cm is null) continue;
+            applied++;
+            idMap[bm.Id] = cm.Id;
+            cm.IsFavorite  = bm.IsFavorite;
+            cm.FavoritedAt = bm.FavoritedAt;
+            cm.CustomOrder = bm.CustomOrder;
+
+            if (backup.Progress.FirstOrDefault(p => p.MangaId == bm.Id) is { } bp)
+            {
+                current.Progress.RemoveAll(p => p.MangaId == cm.Id);
+                current.Progress.Add(new ReadingProgress { MangaId = cm.Id, CurrentPage = bp.CurrentPage, LastRead = bp.LastRead });
+            }
+            foreach (var h in backup.History.Where(h => h.MangaId == bm.Id))
+                if (!current.History.Any(x => x.MangaId == cm.Id && x.CompletedAt == h.CompletedAt))
+                    current.History.Add(new ReadingHistoryEntry { MangaId = cm.Id, CompletedAt = h.CompletedAt });
+        }
+
+        // El manga favorito del perfil apunta al tomo de este equipo; si no vino
+        // en la copia, se queda el que ya había aquí.
+        current.Profile.FavoriteMangaId = current.Profile.FavoriteMangaId is { } fav && idMap.TryGetValue(fav, out var here)
+            ? here
+            : myFavorite;
+
+        return new ImportResult(true, applied, backup.Mangas.Count - applied);
     }
 
     private static bool IsMediaEntry(string fullName) =>

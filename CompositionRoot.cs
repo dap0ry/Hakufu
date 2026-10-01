@@ -55,7 +55,7 @@ public sealed class CompositionRoot
         nameof(SettingsViewModel) => new SettingsViewModel(
             Theme, Repo, Navigation, Dialog, Library, FilePicker),
 
-        nameof(HelpViewModel) => new HelpViewModel(Navigation),
+        nameof(HelpViewModel) => new HelpViewModel(Navigation, Repo.Current.Reader),
 
         nameof(LegalViewModel) => new LegalViewModel(Navigation),
 

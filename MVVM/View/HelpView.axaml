@@ -4,9 +4,189 @@
              x:Class="Hakufu.MVVM.View.HelpView"
              x:DataType="vm:HelpViewModel">
 
+    <!-- Guía "Cómo usar Hakufu": índice fijo a la izquierda (clic = ir a la
+         sección) y el texto con capturas a la derecha. Las capturas son de la
+         app real con mangas inventados: tests/Hakufu.Tests/HelpScreenshots.cs -->
+
+    <UserControl.Styles>
+        <!-- ── Índice ── -->
+        <Style Selector="Button.indexItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="Root" Background="{TemplateBinding Background}"
+                            CornerRadius="6" Padding="12,9">
+                        <ContentPresenter Name="ContentHost" Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.indexItem:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="Button.indexItem:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        </Style>
+        <Style Selector="Button.indexItem.active">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="Button.indexItem.active /template/ Border#Root">
+            <Setter Property="Background" Value="{DynamicResource SelectedBackground}"/>
+        </Style>
+
+        <!-- ── Texto ── -->
+        <Style Selector="TextBlock.kicker">
+            <Setter Property="FontFamily" Value="{DynamicResource DisplayFontSemi}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+        </Style>
+        <Style Selector="TextBlock.h2">
+            <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}"/>
+            <Setter Property="FontSize" Value="52"/>
+            <Setter Property="LineHeight" Value="50"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Margin" Value="0,2,0,14"/>
+        </Style>
+        <Style Selector="TextBlock.lead">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="LineHeight" Value="25"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="Margin" Value="0,0,0,24"/>
+        </Style>
+        <Style Selector="TextBlock.p">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="LineHeight" Value="23"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+        <Style Selector="TextBlock.term">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+        </Style>
+
+        <!-- Cada sección, con aire de sobra entre una y otra -->
+        <Style Selector="StackPanel.section">
+            <Setter Property="Margin" Value="0,0,0,88"/>
+        </Style>
+
+        <!-- Lista de puntos: término + explicación, separados por una línea fina -->
+        <Style Selector="Border.feature">
+            <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+            <Setter Property="BorderThickness" Value="0,1,0,0"/>
+            <Setter Property="Padding" Value="0,14,0,14"/>
+        </Style>
+
+        <!-- Captura: tarjeta redondeada con borde sutil -->
+        <Style Selector="Border.shot">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="ClipToBounds" Value="True"/>
+            <Setter Property="BoxShadow" Value="0 8 28 0 #33000000"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,4,0,28"/>
+        </Style>
+        <Style Selector="Border.shot > Image">
+            <Setter Property="Stretch" Value="Uniform"/>
+        </Style>
+
+        <!-- Consejo: raya a la izquierda -->
+        <Style Selector="Border.tip">
+            <Setter Property="BorderBrush" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="2,0,0,0"/>
+            <Setter Property="Padding" Value="16,4,0,4"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
+        </Style>
+
+        <!-- Tecla, como en Ajustes → Atajos -->
+        <Style Selector="Border.keycap">
+            <Setter Property="MinWidth" Value="34"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BoxShadow" Value="0 2 0 0 #33000000"/>
+        </Style>
+        <Style Selector="Border.keycap > TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+
+        <!-- Árbol de carpetas de ejemplo -->
+        <Style Selector="StackPanel.treeRow">
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="Spacing" Value="10"/>
+            <Setter Property="Margin" Value="0,5"/>
+        </Style>
+        <Style Selector="ContentControl.folder">
+            <Setter Property="Template" Value="{StaticResource IconPixelFolder}"/>
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="Border.branch">
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
+            <Setter Property="BorderThickness" Value="1,0,0,0"/>
+            <Setter Property="Margin" Value="7,0,0,4"/>
+            <Setter Property="Padding" Value="20,0,0,0"/>
+        </Style>
+        <Style Selector="Border.ext">
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="5,1"/>
+            <Setter Property="Width" Value="38"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.ext > TextBlock">
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+        <Style Selector="TextBlock.folderName">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+        <Style Selector="TextBlock.fileName">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+        <Style Selector="TextBlock.note">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontStyle" Value="Italic"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+        </Style>
+    </UserControl.Styles>
+
     <Grid RowDefinitions="Auto,*">
 
-        <!-- ═══ HEADER ═══ -->
+        <!-- ═══ CABECERA ═══ -->
         <Border Grid.Row="0"
                 Background="{DynamicResource SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
@@ -25,18 +205,425 @@
             </Grid>
         </Border>
 
-        <!-- ═══ BODY ═══
-             El ScrollViewer de Avalonia ya estira el contenido al alto visible,
-             así que VerticalAlignment="Center" centra sin el MinHeight de WPF. -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Margin="40,40,40,40">
+        <Grid Grid.Row="1" ColumnDefinitions="272,*">
 
-                <TextBlock Text="Los atajos de teclado del lector están en Ajustes, y puedes cambiarlos."
-                           FontSize="13" MaxWidth="820" HorizontalAlignment="Left"
-                           Foreground="{DynamicResource TextSecondary}"/>
+            <!-- ═══ ÍNDICE (fijo) ═══ -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SidebarBackground}"
+                    BorderBrush="{DynamicResource DividerBrush}"
+                    BorderThickness="0,0,1,0">
+                <StackPanel Margin="28,36,24,24">
+                    <TextBlock Text="Cómo usar Hakufu"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="34" LineHeight="34" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextPrimary}"
+                               Margin="12,0,0,6"/>
+                    <TextBlock Text="Todo lo que hace, en ocho pasos"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="12,0,0,24"/>
+                    <ItemsControl Name="Index" ItemsSource="{Binding Sections}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:HelpSection">
+                                <Button Classes="indexItem" Classes.active="{Binding IsActive}"
+                                        Click="IndexItem_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <TextBlock Text="{Binding Number}" Width="20"
+                                                   FontFamily="{DynamicResource DisplayFontSemi}" FontSize="13"
+                                                   VerticalAlignment="Center" Opacity="0.7"/>
+                                        <TextBlock Text="{Binding Title}" FontSize="13"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
 
-            </StackPanel>
-        </ScrollViewer>
+            <!-- ═══ GUÍA ═══ -->
+            <ScrollViewer Grid.Column="1" Name="ContentScroll" VerticalScrollBarVisibility="Auto">
+                <StackPanel Name="ContentPanel" MaxWidth="720" Margin="56,48,56,64"
+                            HorizontalAlignment="Center">
+
+                    <!-- ── 01 EMPEZAR ── -->
+                    <StackPanel Name="SecStart" Classes="section">
+                        <TextBlock Classes="kicker" Text="01"/>
+                        <TextBlock Classes="h2" Text="Empezar"/>
+                        <TextBlock Classes="lead"
+                                   Text="Hakufu ordena y lee los mangas que ya tienes en tu ordenador. Solo necesita saber en qué carpeta están."/>
+
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="1 · Elige la carpeta de la biblioteca"/>
+                                <TextBlock Classes="p" Text="Ve a Ajustes → Carpeta de la biblioteca y pulsa «Elegir carpeta…». Elige la carpeta donde guardas tus mangas."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="2 · Carpetas = colecciones, archivos = tomos"/>
+                                <TextBlock Classes="p" Text="Cada subcarpeta es una colección (una serie) y los archivos PDF, CBR o CBZ que hay dentro son sus tomos."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature" BorderThickness="0,1,0,1" Margin="0,0,0,28">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="3 · Abre Biblioteca"/>
+                                <TextBlock Classes="p" Text="Ahí aparecen todas tus colecciones con sus portadas. Ya puedes leer."/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Árbol de ejemplo -->
+                        <Border Classes="card" Padding="28,22" HorizontalAlignment="Left" MinWidth="440">
+                            <StackPanel>
+                                <TextBlock Classes="label" Text="EJEMPLO" Margin="0,0,0,12"/>
+
+                                <StackPanel Classes="treeRow">
+                                    <ContentControl Classes="folder"/>
+                                    <TextBlock Classes="folderName" Text="Mangas"/>
+                                    <TextBlock Classes="note" Text="← la carpeta de la biblioteca"/>
+                                </StackPanel>
+                                <Border Classes="branch">
+                                    <StackPanel>
+                                        <StackPanel Classes="treeRow">
+                                            <ContentControl Classes="folder"/>
+                                            <TextBlock Classes="folderName" Text="Kurogane"/>
+                                            <TextBlock Classes="note" Text="← una colección"/>
+                                        </StackPanel>
+                                        <Border Classes="branch">
+                                            <StackPanel>
+                                                <StackPanel Classes="treeRow">
+                                                    <Border Classes="ext"><TextBlock Text="CBZ"/></Border>
+                                                    <TextBlock Classes="fileName" Text="Kurogane 1.cbz"/>
+                                                    <TextBlock Classes="note" Text="← un tomo"/>
+                                                </StackPanel>
+                                                <StackPanel Classes="treeRow">
+                                                    <Border Classes="ext"><TextBlock Text="CBZ"/></Border>
+                                                    <TextBlock Classes="fileName" Text="Kurogane 2.cbz"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Classes="treeRow">
+                                            <ContentControl Classes="folder"/>
+                                            <TextBlock Classes="folderName" Text="Marea Roja"/>
+                                        </StackPanel>
+                                        <Border Classes="branch">
+                                            <StackPanel>
+                                                <StackPanel Classes="treeRow">
+                                                    <Border Classes="ext"><TextBlock Text="PDF"/></Border>
+                                                    <TextBlock Classes="fileName" Text="Marea Roja 1.pdf"/>
+                                                </StackPanel>
+                                                <StackPanel Classes="treeRow">
+                                                    <Border Classes="ext"><TextBlock Text="CBR"/></Border>
+                                                    <TextBlock Classes="fileName" Text="Marea Roja 2.cbr"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Classes="treeRow">
+                                            <ContentControl Classes="folder"/>
+                                            <TextBlock Classes="folderName" Text="Último Tren"/>
+                                        </StackPanel>
+                                        <Border Classes="branch" Margin="7,0,0,0">
+                                            <StackPanel Classes="treeRow">
+                                                <Border Classes="ext"><TextBlock Text="CBZ"/></Border>
+                                                <TextBlock Classes="fileName" Text="Último Tren 1.cbz"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Classes="p" Margin="0,24,0,0"
+                                   Text="Hakufu no copia ni mueve nada: lee la carpeta tal cual. Para añadir mangas, mete los archivos en esas carpetas (o crea una carpeta nueva para una serie nueva) y pulsa «Actualizar» en Biblioteca. Al abrir Biblioteca también se pone al día sola. Los archivos sueltos en la carpeta principal salen en «Sin colección»."/>
+                        <Border Classes="tip">
+                            <TextBlock Classes="p"
+                                       Text="En Ajustes → Carpeta de la biblioteca también están «Abrir carpeta», que la abre en tu explorador de archivos, y «Volver a leer», que la recorre otra vez entera."/>
+                        </Border>
+                        <Button Classes="primary" Content="Ir a Ajustes" HorizontalAlignment="Left"
+                                Padding="20,10" Margin="0,28,0,0"
+                                Command="{Binding OpenSettingsCommand}"/>
+                    </StackPanel>
+
+                    <!-- ── 02 BIBLIOTECA ── -->
+                    <StackPanel Name="SecLibrary" Classes="section">
+                        <TextBlock Classes="kicker" Text="02"/>
+                        <TextBlock Classes="h2" Text="Biblioteca y colecciones"/>
+                        <TextBlock Classes="lead"
+                                   Text="Cada colección es un montón de portadas, como los tomos apilados en la estantería. Debajo, cuántos tomos tiene y cuánto llevas leído."/>
+                        <Border Classes="shot">
+                            <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/library.png"/>
+                        </Border>
+
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Abrir una colección"/>
+                                <TextBlock Classes="p" Text="Haz clic en su montón. Dentro ves sus tomos con lo que llevas de cada uno: «Pág. 12 de 180», «Terminado»…"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Favoritos"/>
+                                <TextBlock Classes="p" Text="Pasa el ratón por una portada y pulsa la estrella. En las favoritas la estrella se queda siempre a la vista. Vale para colecciones y para tomos."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Ordenar"/>
+                                <TextBlock Classes="p" Text="Dentro de una colección: por Nombre, por Fecha o A mano (subes y bajas cada tomo con las flechas y pulsas «Guardar orden»). Hakufu recuerda el orden que elijas."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Tamaño"/>
+                                <TextBlock Classes="p" Text="El deslizador «Tamaño» hace las portadas más grandes o más pequeñas."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature" BorderThickness="0,1,0,1" Margin="0,0,0,28">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Abrir carpeta y Actualizar"/>
+                                <TextBlock Classes="p" Text="En la cabecera de Biblioteca, «Abrir carpeta» abre la carpeta de la biblioteca en tu explorador y «Actualizar» la vuelve a leer para que aparezcan los tomos nuevos. Dentro de una colección, «Abrir carpeta» abre la de esa colección."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="shot">
+                            <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/collection.png"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ── 03 LEER ── -->
+                    <StackPanel Name="SecReader" Classes="section">
+                        <TextBlock Classes="kicker" Text="03"/>
+                        <TextBlock Classes="h2" Text="Leer"/>
+                        <TextBlock Classes="lead"
+                                   Text="Haz clic en un tomo para abrirlo. Se abre por la página en la que lo dejaste."/>
+                        <Border Classes="shot">
+                            <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/reader.png"/>
+                        </Border>
+
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Pasar página"/>
+                                <TextBlock Classes="p" Text="Con las flechas de la barra de abajo o con el teclado (mira los atajos más abajo)."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Una o dos páginas"/>
+                                <TextBlock Classes="p" Text="«1 pág.» y «2 págs.» en la barra de abajo. A doble página ves dos hojas juntas, como un libro abierto."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Modo zen"/>
+                                <TextBlock Classes="p" Text="«Zen» pone el lector a pantalla completa, sin barras, solo el manga. Sales con Esc."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature" BorderThickness="0,1,0,1" Margin="0,0,0,28">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="El progreso se guarda solo"/>
+                                <TextBlock Classes="p" Text="Cada vez que pasas página Hakufu apunta por dónde vas. Cierra cuando quieras con «Cerrar»: la próxima vez sigues ahí."/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Atajos actuales -->
+                        <Border Classes="card" Padding="0" ClipToBounds="True">
+                            <StackPanel>
+                                <StackPanel Margin="24,20,24,12">
+                                    <TextBlock Classes="label" Text="Atajos de teclado"/>
+                                    <TextBlock FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               Text="Así están ahora. Puedes cambiarlos en Ajustes → Atajos de teclado."/>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding Shortcuts}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:HelpShortcut">
+                                            <Border Padding="24,10" BorderBrush="{DynamicResource DividerBrush}"
+                                                    BorderThickness="0,1,0,0">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="13"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource TextPrimary}"/>
+                                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Keys}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal" Spacing="8"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="x:String">
+                                                                <Border Classes="keycap">
+                                                                    <TextBlock Text="{Binding}"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ── 04 INICIO ── -->
+                    <StackPanel Name="SecHome" Classes="section">
+                        <TextBlock Classes="kicker" Text="04"/>
+                        <TextBlock Classes="h2" Text="Inicio"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Margin="0,0,32,0">
+                                <TextBlock Classes="lead"
+                                           Text="Inicio te espera con el último tomo que estabas leyendo."/>
+                                <TextBlock Classes="p"
+                                           Text="Pulsa «Seguir leyendo» y vuelves justo a esa página. Si aún no has empezado ninguno, verás un botón para ir a la biblioteca."/>
+                                <TextBlock Classes="p" Margin="0,14,0,0"
+                                           Text="Desde el menú de la izquierda llegas a Biblioteca, Perfil, Copia de seguridad, Ajustes y esta Ayuda."/>
+                                <Button Classes="ghost" Content="Ir a la biblioteca" HorizontalAlignment="Left"
+                                        Padding="18,10" Margin="0,24,0,0"
+                                        Command="{Binding OpenLibraryCommand}"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Classes="shot" Width="280" Margin="0,4,0,0"
+                                    VerticalAlignment="Top">
+                                <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/home.png"/>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- ── 05 PERFIL ── -->
+                    <StackPanel Name="SecProfile" Classes="section">
+                        <TextBlock Classes="kicker" Text="05"/>
+                        <TextBlock Classes="h2" Text="Tu perfil"/>
+                        <TextBlock Classes="lead"
+                                   Text="Tu tarjeta de lector: cuánto lees, qué estás leyendo y qué es lo que más te gusta."/>
+                        <Border Classes="shot">
+                            <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/profile.png"/>
+                        </Border>
+
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Editar perfil"/>
+                                <TextBlock Classes="p" Text="Pon tu foto, tu nombre y tu manga favorito."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Estadísticas y gráfica"/>
+                                <TextBlock Classes="p" Text="Tiempo leyendo, páginas, tomos terminados y los días seguidos que llevas leyendo. La gráfica enseña las horas de cada semana de las últimas doce; la barra destacada es la semana actual."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Leyendo ahora"/>
+                                <TextBlock Classes="p" Text="Las tres colecciones que has leído más recientemente, con lo que llevas de cada una. Haz clic en una para abrirla."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature" BorderThickness="0,1,0,1">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Guardar imagen"/>
+                                <TextBlock Classes="p" Text="Guarda la tarjeta como imagen PNG para compartirla: en horizontal (ordenador) o en vertical (móvil, historias)."/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ── 06 AJUSTES ── -->
+                    <StackPanel Name="SecSettings" Classes="section">
+                        <TextBlock Classes="kicker" Text="06"/>
+                        <TextBlock Classes="h2" Text="Ajustes"/>
+                        <TextBlock Classes="lead"
+                                   Text="Lo que puedes cambiar a tu gusto. Todo se guarda al momento."/>
+                        <Border Classes="shot" MaxWidth="560">
+                            <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/settings.png"/>
+                        </Border>
+
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Tema"/>
+                                <TextBlock Classes="p" Text="Claro u oscuro."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Lectura"/>
+                                <TextBlock Classes="p" Text="«Doble página» abre los tomos a dos páginas de entrada. «Abrir en modo zen» empieza a leer directamente a pantalla completa."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Atajos de teclado"/>
+                                <TextBlock Classes="p" Text="Haz clic en una tecla y pulsa la nueva; valen combinaciones como Ctrl + W. Cada acción puede tener dos teclas. La × quita una y «Restablecer» vuelve a las de fábrica."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Carpeta de la biblioteca"/>
+                                <TextBlock Classes="p" Text="«Elegir carpeta…» para cambiarla, «Abrir carpeta» para verla en tu explorador y «Volver a leer» para recorrerla otra vez."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Espacio de disco"/>
+                                <TextBlock Classes="p" Text="Cuánto ocupan la aplicación, tus mangas y la caché de Hakufu (portadas y datos)."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature" BorderThickness="0,1,0,1">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Acerca de"/>
+                                <TextBlock Classes="p" Text="La versión de Hakufu y los términos y aviso legal."/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ── 07 COPIA DE SEGURIDAD ── -->
+                    <StackPanel Name="SecBackup" Classes="section">
+                        <TextBlock Classes="kicker" Text="07"/>
+                        <TextBlock Classes="h2" Text="Copia de seguridad"/>
+                        <TextBlock Classes="lead"
+                                   Text="Guarda en un archivo .zip todo lo que Hakufu sabe de tu biblioteca, y recupéralo aquí o en otro ordenador."/>
+                        <Border Classes="shot" MaxWidth="560">
+                            <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/backup.png"/>
+                        </Border>
+
+                        <Border Classes="feature">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Exportar"/>
+                                <TextBlock Classes="p" Text="«Exportar copia…» crea un .zip con tus colecciones, el progreso de lectura, el historial, las portadas, tu perfil y el tema. Guárdalo donde quieras: un disco externo, un pendrive u otra carpeta."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="feature" BorderThickness="0,1,0,1">
+                            <StackPanel>
+                                <TextBlock Classes="term" Text="Pasarlo a otro ordenador"/>
+                                <TextBlock Classes="p" Text="Instala Hakufu en el otro equipo, ve a Copia de seguridad → «Elegir copia…» y elige el .zip. Funciona entre Windows, macOS y Linux: las rutas se adaptan solas. La copia no lleva los archivos de manga: cópialos aparte y elige allí la carpeta de la biblioteca."/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="tip">
+                            <TextBlock Classes="p"
+                                       Text="Restaurar sustituye lo que Hakufu tiene ahora (colecciones, progreso, historial y perfil). Tus archivos de manga no se borran."/>
+                        </Border>
+                        <Button Classes="ghost" Content="Ir a Copia de seguridad" HorizontalAlignment="Left"
+                                Padding="18,10" Margin="0,28,0,0"
+                                Command="{Binding OpenBackupCommand}"/>
+                    </StackPanel>
+
+                    <!-- ── 08 PREGUNTAS FRECUENTES ── -->
+                    <StackPanel Name="SecFaq" Classes="section" Margin="0">
+                        <TextBlock Classes="kicker" Text="08"/>
+                        <TextBlock Classes="h2" Text="Preguntas frecuentes"/>
+                        <ItemsControl ItemsSource="{Binding Questions}" Margin="0,10,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:HelpQuestion">
+                                    <Border Classes="feature" Padding="0,18,0,20">
+                                        <StackPanel>
+                                            <TextBlock Classes="term" FontSize="15" Text="{Binding Question}"
+                                                       Margin="0,0,0,6"/>
+                                            <TextBlock Classes="p" Text="{Binding Answer}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>

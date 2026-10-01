@@ -1,4 +1,6 @@
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using Hakufu.MVVM.ViewModel;
 
 namespace Hakufu.Tests.Views;
@@ -44,7 +46,16 @@ public class Task2ViewTests
         {
             using var app = ViewSmoke.Start(darkTheme: dark);
             app.Root.Navigation.NavigateTo<SettingsViewModel>();
-            app.AssertShows<Hakufu.MVVM.View.SettingsView>();
+            var view = app.AssertShows<Hakufu.MVVM.View.SettingsView>();
+
+            // Tarjeta "Carpeta de la biblioteca" con la ruta elegida y sus botones.
+            var texts = view.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
+            Assert.Contains("Carpeta de la biblioteca", texts);
+            Assert.Contains(app.Root.Repo.Current.LibraryRoot, texts);
+            var buttons = view.GetVisualDescendants().OfType<Button>().Select(b => b.Content as string).ToList();
+            Assert.Contains("Elegir carpeta…", buttons);
+            Assert.Contains("Volver a leer", buttons);
+            Assert.DoesNotContain("Gestionar espacio", buttons);
         }
     }
 

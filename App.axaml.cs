@@ -38,6 +38,8 @@ public partial class App : Application
                 var root = new CompositionRoot(_repo);
                 root.ApplySavedAppearance();
                 mainWindow.DataContext = root.CreateMainViewModel();
+                // La carpeta de la biblioteca puede haber cambiado con Hakufu cerrado.
+                _ = root.Scanner.ScanAsync();
             }
             catch (Exception ex)
             {

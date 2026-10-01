@@ -50,32 +50,6 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         </Style>
 
-        <!-- CheckBox de Fluent con los colores del tema -->
-        <Style Selector="CheckBox">
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-        </Style>
-        <Style Selector="CheckBox /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-        </Style>
-        <Style Selector="CheckBox /template/ Border#NormalRectangle">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
-        </Style>
-        <Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
-            <Setter Property="BorderBrush" Value="{DynamicResource TextSecondary}"/>
-        </Style>
-        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
-            <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
-        </Style>
-        <Style Selector="CheckBox:checked /template/ Path#CheckGlyph">
-            <Setter Property="Fill" Value="{DynamicResource ButtonForeground}"/>
-        </Style>
-        <Style Selector="CheckBox:disabled">
-            <Setter Property="Opacity" Value="0.4"/>
-        </Style>
-
         <!-- Barra de progreso fina, colores del tema -->
         <Style Selector="ProgressBar.thin">
             <Setter Property="Height" Value="4"/>
@@ -203,14 +177,10 @@
                 <Border Classes="card" Padding="28,24" Margin="0,0,0,32">
                     <StackPanel>
                         <TextBlock Classes="cardTitle" Text="Exportar tu biblioteca"/>
-                        <TextBlock Classes="body" Margin="0,0,0,16"
+                        <TextBlock Classes="body" Margin="0,0,0,8"
                                    Text="Crea un archivo .zip con tus colecciones, el progreso de lectura, el historial, las portadas, tu perfil y el tema. Guárdalo donde quieras: un disco externo, un pendrive u otra carpeta."/>
-
-                        <CheckBox IsChecked="{Binding IncludeLibraryFiles}"
-                                  IsEnabled="{Binding IsIdle}"
-                                  Content="Incluir los mangas de la biblioteca de Hakufu"/>
-                        <TextBlock Classes="body" FontSize="11" Margin="28,2,0,20"
-                                   Text="Los mangas que están fuera de la carpeta de Hakufu no se copian, solo su ficha. Si quieres llevarlos en la copia, pásalos antes a la biblioteca con «Limpiar espacio» en Ajustes."/>
+                        <TextBlock Classes="body" FontSize="11" Margin="0,0,0,20"
+                                   Text="Los mangas no van en la copia: son tu carpeta de la biblioteca. Para llevarlos a otro equipo, copia esa carpeta tal cual."/>
 
                         <Button Classes="primary"
                                 Content="Exportar copia…"
@@ -228,7 +198,7 @@
                     <StackPanel>
                         <TextBlock Classes="cardTitle" Text="Recuperar una copia de seguridad"/>
                         <TextBlock Classes="body" Margin="0,0,0,20"
-                                   Text="Elige un .zip creado con Hakufu. Sirve también para pasar la biblioteca a otro equipo, aunque sea Mac o Linux: las rutas se adaptan solas."/>
+                                   Text="Elige un .zip creado con Hakufu. Sirve también para pasar la biblioteca a otro equipo, aunque sea Mac o Linux: el progreso se aplica a los tomos de tu carpeta de la biblioteca que estén en la misma subcarpeta y con el mismo nombre."/>
 
                         <Button Classes="primary"
                                 Content="Elegir copia…"
@@ -244,7 +214,7 @@
                                           Fill="{DynamicResource TextPrimary}"
                                           Data="F0 M7,0 A7,7 0 1 1 6.99,0 Z M6,3 L8,3 L7.6,8.5 L6.4,8.5 Z M6,10 L8,10 L8,12 L6,12 Z"/>
                                     <TextBlock Grid.Column="1" FontSize="12" TextWrapping="Wrap"
-                                               Text="La copia sustituirá tu biblioteca actual: colecciones, progreso, historial y perfil. Lo que no esté en la copia se perderá (los archivos de manga del disco no se borran). ¿Continuar?"/>
+                                               Text="La copia sustituirá tu biblioteca actual: colecciones, progreso, historial y perfil. Lo que no esté en la copia se perderá (tus archivos de manga no se tocan). ¿Continuar?"/>
                                 </Grid>
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -264,7 +234,7 @@
                 <!-- ── NOTA: VARIOS EQUIPOS ── -->
                 <Border Classes="notice">
                     <TextBlock Classes="body" FontSize="11" LineHeight="18"
-                               Text="¿Quieres tener la biblioteca en varios equipos? Guarda tus mangas dentro de la carpeta de Dropbox, iCloud o Google Drive: esas apps los sincronizan solas. Hakufu no se conecta a internet."/>
+                               Text="¿Quieres tener la biblioteca en varios equipos? Pon la carpeta de la biblioteca dentro de Dropbox, iCloud o Google Drive: esas apps la sincronizan solas. Hakufu no se conecta a internet."/>
                 </Border>
 
             </StackPanel>

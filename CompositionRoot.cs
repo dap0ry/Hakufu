@@ -18,6 +18,7 @@ public sealed class CompositionRoot
     public FilePickerService     FilePicker    { get; } = new();
     public CoverService          Cover         { get; } = new();
     public LibraryService        Library       { get; }
+    public LibraryScanner        Scanner       { get; }
     public ProfileService        Profile       { get; }
     public BackupService         Backup        { get; }
     public NavigationService     Navigation    { get; }
@@ -26,6 +27,7 @@ public sealed class CompositionRoot
     {
         Repo    = repo;
         Library = new LibraryService(repo);
+        Scanner = new LibraryScanner(repo);
         Profile = new ProfileService(repo);
         Backup  = new BackupService(repo);
         Navigation = new NavigationService(Create);
@@ -42,7 +44,7 @@ public sealed class CompositionRoot
     {
         nameof(HomeViewModel) => new HomeViewModel(Library, Cover, Navigation, Repo),
 
-        nameof(LibraryViewModel) => new LibraryViewModel(Library, Cover, Dialog, Navigation),
+        nameof(LibraryViewModel) => new LibraryViewModel(Library, Scanner, Cover, Navigation, FilePicker),
 
         nameof(CollectionDetailViewModel) when param is Guid id => new CollectionDetailViewModel(
             id, Library, Cover, Dialog, Navigation, FilePicker),
@@ -53,12 +55,12 @@ public sealed class CompositionRoot
         nameof(ProfileViewModel) => new ProfileViewModel(Profile, Library, Cover, Dialog, Navigation, FilePicker),
 
         nameof(SettingsViewModel) => new SettingsViewModel(
-            Theme, Repo, Navigation, Dialog, Library, FilePicker),
+            Theme, Repo, Navigation, Scanner, FilePicker),
 
         nameof(HelpViewModel) => new HelpViewModel(Navigation),
 
         nameof(BackupViewModel) => new BackupViewModel(
-            Backup, FilePicker, Navigation, Repo, Theme),
+            Backup, FilePicker, Navigation, Repo, Theme, Scanner),
 
         _ => throw new InvalidOperationException($"Unknown ViewModel: {type.Name}")
     };

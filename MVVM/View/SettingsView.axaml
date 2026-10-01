@@ -153,6 +153,47 @@
                     </Grid>
                 </Border>
 
+                <!-- ── CARPETA DE LA BIBLIOTECA ──
+                     La biblioteca es una carpeta del usuario: cada subcarpeta, una colección. -->
+                <Border Classes="card" Padding="0"
+                        Margin="0,0,0,20" ClipToBounds="True">
+                    <StackPanel>
+                        <TextBlock Text="Carpeta de la biblioteca"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   Margin="24,20,24,4"/>
+
+                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0">
+                            <StackPanel>
+                                <SelectableTextBlock Text="{Binding LibraryRootText}"
+                                                     FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"
+                                                     Foreground="{DynamicResource TextPrimary}"
+                                                     Margin="0,0,0,3"/>
+                                <TextBlock Text="Cada carpeta de dentro es una colección y sus PDF, CBR y CBZ son los tomos. Hakufu solo la lee: no copia, mueve ni borra nada."
+                                           FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextMuted}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Classes="primary" Content="Elegir carpeta…" Padding="16,9"
+                                            Command="{Binding PickLibraryRootCommand}"/>
+                                    <Button Classes="ghost" Content="Abrir carpeta" Padding="16,9"
+                                            Command="{Binding OpenLibraryRootCommand}"/>
+                                    <Button Classes="ghost" Content="Volver a leer" Padding="16,9"
+                                            Command="{Binding RescanLibraryCommand}"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding LibraryStatus}"
+                                           IsVisible="{Binding LibraryStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                           FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
                 <!-- ── LECTURA ── -->
                 <Border Classes="card" Padding="0"
                         Margin="0,0,0,20" ClipToBounds="True">
@@ -345,7 +386,7 @@
                                 <TextBlock Text="Mangas"
                                            FontSize="13"
                                            Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Archivos PDF / CBR / CBZ en tu equipo"
+                                <TextBlock Text="Archivos PDF / CBR / CBZ de la carpeta de la biblioteca"
                                            FontSize="11"
                                            Foreground="{DynamicResource TextMuted}"
                                            Margin="0,2,0,0"/>
@@ -361,7 +402,7 @@
                         <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="0,0,0,10"/>
 
                         <!-- Caché local Hakufu (ya no siempre es %APPDATA%: en macOS y Linux es ~/.config) -->
-                        <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                        <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                 <TextBlock Text="Caché de Hakufu"
                                            FontSize="13"
@@ -377,13 +418,6 @@
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center"/>
                         </Grid>
-
-                        <!-- Button -->
-                        <Button Classes="ghost"
-                                Content="Gestionar espacio"
-                                HorizontalAlignment="Left"
-                                Padding="16,9"
-                                Command="{Binding OpenStorageManagerCommand}"/>
                     </StackPanel>
                 </Border>
 

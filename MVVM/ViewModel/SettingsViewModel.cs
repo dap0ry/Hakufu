@@ -12,21 +12,19 @@ public class SettingsViewModel : BaseViewModel
     private readonly IThemeService      _theme;
     private readonly IDataRepository    _repo;
     private readonly INavigationService _nav;
-    private readonly IDialogService     _dialog;
-    private readonly LibraryService     _library;
+    private readonly LibraryScanner     _scanner;
     private readonly IFilePickerService _files;
 
     private static string HakufuDataDir => Hakufu.Data.AppPaths.DataDir;
 
     public SettingsViewModel(IThemeService theme, IDataRepository repo,
-                             INavigationService nav, IDialogService dialog,
-                             LibraryService library, IFilePickerService files)
+                             INavigationService nav, LibraryScanner scanner,
+                             IFilePickerService files)
     {
         _theme   = theme;
         _repo    = repo;
         _nav     = nav;
-        _dialog  = dialog;
-        _library = library;
+        _scanner = scanner;
         _files   = files;
         _isDarkTheme = _theme.CurrentTheme == AppTheme.Dark;
 
@@ -48,6 +46,51 @@ public class SettingsViewModel : BaseViewModel
             _repo.Current.ActiveTheme = value ? "Dark" : "Light";
             _ = _repo.SaveAsync();
         }
+    }
+
+    // ── Carpeta de la biblioteca ─────────────────────────────────────────────
+
+    /// <summary>Ruta de la carpeta, o un aviso si aún no hay ninguna.</summary>
+    public string LibraryRootText => _scanner.Root ?? "Ninguna todavía";
+    public bool   HasLibraryRoot  => _scanner.Root is not null;
+
+    private string _libraryStatus = "";
+    /// <summary>Resultado de la última lectura ("12 colecciones · 80 tomos" o el error).</summary>
+    public string LibraryStatus { get => _libraryStatus; private set => SetProperty(ref _libraryStatus, value); }
+
+    private bool _isScanning;
+    public bool IsScanning { get => _isScanning; private set => SetProperty(ref _isScanning, value); }
+
+    public AsyncRelayCommand PickLibraryRootCommand => new(async () =>
+    {
+        var folder = await _files.PickFolderAsync("Carpeta de la biblioteca");
+        if (folder is not null) await ScanAsync(_scanner.SetRootAsync(folder));
+    }, () => !IsScanning);
+
+    public RelayCommand OpenLibraryRootCommand => new(() =>
+    {
+        if (_scanner.Root is { } root) _files.OpenFolder(root);
+    }, () => HasLibraryRoot);
+
+    public AsyncRelayCommand RescanLibraryCommand => new(() => ScanAsync(_scanner.ScanAsync()),
+                                                         () => HasLibraryRoot && !IsScanning);
+
+    private async Task ScanAsync(Task<ScanResult> scan)
+    {
+        IsScanning = true;
+        LibraryStatus = "Leyendo la carpeta…";
+        var result = await scan;
+        IsScanning = false;
+        if (result.Ok)
+        {
+            var cols  = _repo.Current.Collections.Count;
+            var tomos = _repo.Current.Mangas.Count;
+            LibraryStatus = $"{cols} {(cols == 1 ? "colección" : "colecciones")} · {tomos} {(tomos == 1 ? "tomo" : "tomos")}";
+        }
+        else LibraryStatus = result.Message ?? "";
+        OnPropertyChanged(nameof(LibraryRootText));
+        OnPropertyChanged(nameof(HasLibraryRoot));
+        _ = LoadStorageSizesAsync();
     }
 
     // ── Lectura ──────────────────────────────────────────────────────────────
@@ -215,7 +258,8 @@ public class SettingsViewModel : BaseViewModel
         var (appBytes, dataBytes, mangaBytes) = await Task.Run(() =>
         {
             long app   = GetDirSize(AppDomain.CurrentDomain.BaseDirectory);
-            long dat   = GetDirSize(HakufuDataDir);
+            // La antigua carpeta "biblioteca" son mangas (puede ser la de la biblioteca), no caché.
+            long dat   = GetDirSize(HakufuDataDir) - GetDirSize(AppPaths.LibraryDir);
             long manga = filePaths.Sum(p =>
             {
                 try { return File.Exists(p) ? new FileInfo(p).Length : 0L; }
@@ -224,9 +268,17 @@ public class SettingsViewModel : BaseViewModel
             return (app, dat, manga);
         });
 
-        AppSizeText    = StorageItemViewModel.FormatSize(appBytes);
-        MangasSizeText = StorageItemViewModel.FormatSize(mangaBytes);
-        CachesSizeText = StorageItemViewModel.FormatSize(dataBytes);
+        AppSizeText    = FormatSize(appBytes);
+        MangasSizeText = FormatSize(mangaBytes);
+        CachesSizeText = FormatSize(dataBytes);
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes >= 1_073_741_824) return $"{bytes / 1_073_741_824.0:F1} GB";
+        if (bytes >= 1_048_576)     return $"{bytes / 1_048_576.0:F1} MB";
+        if (bytes >= 1_024)         return $"{bytes / 1_024.0:F1} KB";
+        return $"{bytes} B";
     }
 
     private static long GetDirSize(string path)
@@ -243,9 +295,6 @@ public class SettingsViewModel : BaseViewModel
         }
         catch { return 0; }
     }
-
-    public RelayCommand OpenStorageManagerCommand => new(() =>
-        _dialog.ShowModal(new StorageManagerViewModel(_dialog, _library, _files)));
 
     public string VersionText =>
         $"Versión {System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "?"}";

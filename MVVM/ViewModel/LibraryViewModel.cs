@@ -3,12 +3,17 @@ using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
 
+/// <summary>
+/// Biblioteca: las colecciones son las subcarpetas de la carpeta que eligió el
+/// usuario (ver LibraryScanner). Se vuelve a leer la carpeta al entrar.
+/// </summary>
 public class LibraryViewModel : BaseViewModel
 {
-    private readonly LibraryService  _library;
-    private readonly ICoverService   _cover;
-    private readonly IDialogService  _dialog;
+    private readonly LibraryService     _library;
+    private readonly LibraryScanner     _scanner;
+    private readonly ICoverService      _cover;
     private readonly INavigationService _nav;
+    private readonly IFilePickerService _files;
 
     public ObservableCollection<CollectionCardViewModel> Collections { get; } = [];
 
@@ -17,101 +22,92 @@ public class LibraryViewModel : BaseViewModel
     {
         get
         {
+            if (IsScanning && Collections.Count == 0) return "Leyendo la carpeta…";
             var cols  = Collections.Count;
             var tomos = Collections.Sum(c => c.MangaCount);
             return $"{cols} {(cols == 1 ? "colección" : "colecciones")} · {tomos} {(tomos == 1 ? "tomo" : "tomos")}";
         }
     }
-    public bool IsEmpty => Collections.Count == 0;
 
-    public LibraryViewModel(LibraryService library, ICoverService cover,
-                            IDialogService dialog, INavigationService nav)
+    private bool _hasRoot;
+    private string? _errorText;
+    private bool _isScanning;
+
+    /// <summary>No hay carpeta de biblioteca: se pide elegirla.</summary>
+    public bool NeedsRoot => !_hasRoot;
+    /// <summary>La carpeta no se puede leer (disco desconectado, sin permiso…).</summary>
+    public string? ErrorText { get => _errorText; private set { SetProperty(ref _errorText, value); RaiseState(); } }
+    public bool HasError => _hasRoot && _errorText is not null;
+    /// <summary>Carpeta leída y sin colecciones.</summary>
+    public bool IsEmpty => _hasRoot && _errorText is null && !IsScanning && Collections.Count == 0;
+    public bool IsScanning { get => _isScanning; private set { SetProperty(ref _isScanning, value); RaiseState(); } }
+
+    public LibraryViewModel(LibraryService library, LibraryScanner scanner, ICoverService cover,
+                            INavigationService nav, IFilePickerService files)
     {
         _library = library;
+        _scanner = scanner;
         _cover   = cover;
-        _dialog  = dialog;
         _nav     = nav;
-        _ = InitializeAsync();
+        _files   = files;
+        _hasRoot = _scanner.Root is not null;
+        // Primero lo que ya se conoce (al instante) y luego lo que haya cambiado en disco.
+        LoadCollections();
+        _ = RefreshAsync();
     }
 
-    private Task InitializeAsync() => LoadCollectionsAsync();
+    private void RaiseState()
+    {
+        OnPropertyChanged(nameof(NeedsRoot));
+        OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(SummaryText));
+    }
 
-    public async Task LoadCollectionsAsync()
+    private void LoadCollections()
     {
         Collections.Clear();
-        foreach (var col in _library.GetCollections())
-        {
-            var card = new CollectionCardViewModel(col);
-            Collections.Add(card);
-            _ = card.LoadCoversAsync(_library, _cover);
-        }
-        OnPropertyChanged(nameof(SummaryText));
-        OnPropertyChanged(nameof(IsEmpty));
-        await Task.CompletedTask;
+        if (_hasRoot && _errorText is null)
+            foreach (var col in _library.GetCollections())
+            {
+                var card = new CollectionCardViewModel(col);
+                Collections.Add(card);
+                _ = card.LoadCoversAsync(_library, _cover);
+            }
+        RaiseState();
     }
 
-    private bool _isSelectionMode;
-    public bool IsSelectionMode
+    /// <summary>Vuelve a leer la carpeta de la biblioteca y repinta.</summary>
+    public Task RefreshAsync() => ShowAsync(_scanner.ScanAsync());
+
+    private async Task ShowAsync(Task<ScanResult> scan)
     {
-        get => _isSelectionMode;
-        private set
-        {
-            SetProperty(ref _isSelectionMode, value);
-            OnPropertyChanged(nameof(SelectedCount));
-            OnPropertyChanged(nameof(HasSelection));
-        }
+        IsScanning = true;
+        var result = await scan;
+        IsScanning = false;
+        _hasRoot  = result.Status != ScanStatus.NoRoot;
+        ErrorText = result.Status == ScanStatus.Unreadable ? result.Message : null;
+        LoadCollections();
     }
-    public int  SelectedCount => Collections.Count(c => c.IsSelected);
-    public bool HasSelection  => SelectedCount > 0;
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 
-    public RelayCommand CreateCollectionCommand => new(() =>
+    public AsyncRelayCommand RefreshCommand => new(RefreshAsync, () => !IsScanning);
+
+    public AsyncRelayCommand PickRootCommand => new(async () =>
     {
-        _dialog.ShowModal(new CreateCollectionViewModel(
-            _library, _dialog,
-            onCreated: LoadCollectionsAsync));
+        var folder = await _files.PickFolderAsync("Carpeta de la biblioteca");
+        if (folder is null) return;
+        await ShowAsync(_scanner.SetRootAsync(folder));
     });
 
-    public RelayCommand ToggleSelectionModeCommand => new(() =>
+    public RelayCommand OpenFolderCommand => new(() =>
     {
-        IsSelectionMode = !IsSelectionMode;
-        if (!IsSelectionMode)
-            foreach (var c in Collections) c.IsSelected = false;
-        OnPropertyChanged(nameof(SelectedCount));
-        OnPropertyChanged(nameof(HasSelection));
-    });
+        if (_scanner.Root is { } root) _files.OpenFolder(root);
+    }, () => _hasRoot);
 
     public RelayCommand<CollectionCardViewModel> CardClickCommand => new(card =>
     {
-        if (card is null) return;
-        if (IsSelectionMode)
-        {
-            card.IsSelected = !card.IsSelected;
-            OnPropertyChanged(nameof(SelectedCount));
-            OnPropertyChanged(nameof(HasSelection));
-        }
-        else
-        {
-            _nav.NavigateTo<CollectionDetailViewModel>(card.Model.Id);
-        }
-    });
-
-    public RelayCommand DeleteSelectedCommand => new(async () =>
-    {
-        var selected = Collections.Where(c => c.IsSelected).ToList();
-        var count    = selected.Count;
-        var title    = count == 1 ? "Eliminar colección" : "Eliminar colecciones";
-        var msg      = count == 1
-            ? $"¿Eliminar la colección \"{selected[0].Name}\"? Esta acción no se puede deshacer."
-            : $"¿Eliminar {count} colecciones? Esta acción no se puede deshacer.";
-
-        _dialog.ShowModal(new ConfirmDeleteViewModel(title, msg, async () =>
-        {
-            foreach (var card in selected)
-                await _library.DeleteCollectionAsync(card.Model.Id);
-            IsSelectionMode = false;
-            await LoadCollectionsAsync();
-        }, _dialog));
+        if (card is not null) _nav.NavigateTo<CollectionDetailViewModel>(card.Model.Id);
     });
 }

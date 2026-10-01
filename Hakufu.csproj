@@ -18,9 +18,9 @@
 
   <!-- El resto del repo (web/, tests/) no forma parte de la app. -->
   <ItemGroup>
-    <Compile Remove="web/**;tests/**;publish/**;Releases/**" />
-    <AvaloniaXaml Remove="web/**;tests/**;publish/**;Releases/**" />
-    <None Remove="web/**;tests/**;publish/**;Releases/**" />
+    <Compile Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
+    <AvaloniaXaml Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
+    <None Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
   </ItemGroup>
 
   <ItemGroup>

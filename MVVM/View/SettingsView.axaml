@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:c="using:Hakufu.MVVM.View.Controls"
              x:Class="Hakufu.MVVM.View.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
@@ -68,24 +69,13 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- ═══ HEADER ═══ -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource SidebarBackground}"
-                BorderBrush="{DynamicResource DividerBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="40,24,40,24">
-            <Grid ColumnDefinitions="Auto,*">
-                <Button Grid.Column="0"
-                        Classes="ghost"
-                        Content="← Inicio"
-                        Command="{Binding GoBackCommand}"
-                        Margin="0,0,24,0"/>
-                <TextBlock Grid.Column="1" Text="AJUSTES"
-                           FontSize="11" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMuted}"
-                           VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
+        <!-- ═══ CABECERA ═══ -->
+        <c:PageHeader Grid.Row="0"
+                      Title="Ajustes"
+                      Subtitle="Tema, lectura, atajos y la carpeta de tu biblioteca"
+                      BackText="← Inicio"
+                      BackCommand="{Binding GoBackCommand}">
+        </c:PageHeader>
 
         <!-- ═══ BODY ═══
              El ScrollViewer de Avalonia ya estira el contenido al alto visible,

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:c="using:Hakufu.MVVM.View.Controls"
              x:Class="Hakufu.MVVM.View.HelpView"
              x:DataType="vm:HelpViewModel">
 
@@ -187,23 +188,12 @@
     <Grid RowDefinitions="Auto,*">
 
         <!-- ═══ CABECERA ═══ -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource SidebarBackground}"
-                BorderBrush="{DynamicResource DividerBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="40,24,40,24">
-            <Grid ColumnDefinitions="Auto,*">
-                <Button Grid.Column="0"
-                        Classes="ghost"
-                        Content="← Inicio"
-                        Command="{Binding GoBackCommand}"
-                        Margin="0,0,24,0"/>
-                <TextBlock Grid.Column="1" Text="AYUDA"
-                           FontSize="11" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMuted}"
-                           VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
+        <c:PageHeader Grid.Row="0"
+                      Title="Ayuda"
+                      Subtitle="Cómo usar Hakufu, en ocho pasos"
+                      BackText="← Inicio"
+                      BackCommand="{Binding GoBackCommand}">
+        </c:PageHeader>
 
         <Grid Grid.Row="1" ColumnDefinitions="272,*">
 
@@ -212,16 +202,8 @@
                     Background="{DynamicResource SidebarBackground}"
                     BorderBrush="{DynamicResource DividerBrush}"
                     BorderThickness="0,0,1,0">
-                <StackPanel Margin="28,36,24,24">
-                    <TextBlock Text="Cómo usar Hakufu"
-                               FontFamily="{DynamicResource DisplayFont}"
-                               FontSize="34" LineHeight="34" TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextPrimary}"
-                               Margin="12,0,0,6"/>
-                    <TextBlock Text="Todo lo que hace, en ocho pasos"
-                               FontSize="12"
-                               Foreground="{DynamicResource TextMuted}"
-                               Margin="12,0,0,24"/>
+                <StackPanel Margin="28,28,24,24">
+
                     <ItemsControl Name="Index" ItemsSource="{Binding Sections}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:HelpSection">

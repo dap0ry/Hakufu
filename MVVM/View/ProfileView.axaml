@@ -1,22 +1,21 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:c="using:Hakufu.MVVM.View.Controls"
              xmlns:v="using:Hakufu.MVVM.View"
              x:Class="Hakufu.MVVM.View.ProfileView"
              x:DataType="vm:ProfileViewModel">
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- ═══ BARRA ═══ -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource SidebarBackground}"
-                BorderBrush="{DynamicResource DividerBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="40,20">
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <Button Grid.Column="0" Classes="ghost" Content="← Inicio"
-                        Command="{Binding GoBackCommand}"/>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+        <!-- ═══ CABECERA ═══ -->
+        <c:PageHeader Grid.Row="0"
+                      Title="Perfil"
+                      Subtitle="Tu tarjeta de lector"
+                      BackText="← Inicio"
+                      BackCommand="{Binding GoBackCommand}">
+            <c:PageHeader.Actions>
+                <StackPanel Orientation="Horizontal" Spacing="10">
                     <Button Classes="ghost" Content="Editar perfil" Padding="18,10"
                             Command="{Binding EditProfileCommand}"/>
                     <Button Classes="primary" Content="Guardar imagen" Padding="18,10"
@@ -29,8 +28,8 @@
                         </Button.Flyout>
                     </Button>
                 </StackPanel>
-            </Grid>
-        </Border>
+            </c:PageHeader.Actions>
+        </c:PageHeader>
 
         <!-- ═══ TARJETA ═══
              Se encoge si la ventana es pequeña (Viewbox solo hacia abajo). -->

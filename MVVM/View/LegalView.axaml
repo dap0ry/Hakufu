@@ -1,42 +1,28 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:c="using:Hakufu.MVVM.View.Controls"
              x:Class="Hakufu.MVVM.View.LegalView"
              x:DataType="vm:LegalViewModel">
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- ═══ CABECERA ═══ -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource SidebarBackground}"
-                BorderBrush="{DynamicResource DividerBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="40,24,40,24">
-            <Grid ColumnDefinitions="Auto,*">
-                <Button Grid.Column="0"
-                        Classes="ghost"
-                        Content="← Ajustes"
-                        Command="{Binding GoBackCommand}"
-                        Margin="0,0,24,0"/>
-                <TextBlock Grid.Column="1" Text="AVISO LEGAL"
-                           FontSize="11" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMuted}"
-                           VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
+        <c:PageHeader Grid.Row="0"
+                      Title="Aviso legal"
+                      Subtitle="Términos, condiciones y privacidad"
+                      BackText="← Ajustes"
+                      BackCommand="{Binding GoBackCommand}">
+        </c:PageHeader>
 
         <!-- ═══ TEXTO ═══ Una columna estrecha, para leer con calma -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel MaxWidth="720" Margin="40,48,40,64" HorizontalAlignment="Center">
 
-                <TextBlock Text="Términos y aviso legal"
-                           FontFamily="{DynamicResource DisplayFont}"
-                           FontSize="56" LineHeight="54" TextWrapping="Wrap"
-                           Foreground="{DynamicResource TextPrimary}"/>
-                <TextBlock Text="Términos, condiciones, aviso legal y privacidad de Hakufu. Léelos con calma — el uso de Hakufu implica su aceptación."
+                <TextBlock Text="Usar Hakufu implica aceptar estos términos. Léelos con calma."
                            FontSize="14" LineHeight="22" TextWrapping="Wrap"
                            Foreground="{DynamicResource TextSecondary}"
-                           Margin="0,18,0,36"/>
+                           Margin="0,0,0,28"/>
 
                 <ItemsControl ItemsSource="{Binding LegalSections}">
                     <ItemsControl.ItemTemplate>

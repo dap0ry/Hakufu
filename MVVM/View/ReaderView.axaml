@@ -89,6 +89,14 @@
                    Source="{Binding PageLeft}"
                    Margin="8"/>
 
+            <!-- Animación de pasar la hoja: el code-behind pone aquí copias de
+                 las páginas (mismas columnas y márgenes que las de arriba) y
+                 las gira en 3D alrededor del lomo. Vacía el resto del tiempo. -->
+            <Grid Name="FlipLayer"
+                  ColumnDefinitions="*,1,*"
+                  ClipToBounds="True"
+                  IsHitTestVisible="False"/>
+
             <!-- Aviso del modo zen -->
             <Border HorizontalAlignment="Center"
                     VerticalAlignment="Bottom"

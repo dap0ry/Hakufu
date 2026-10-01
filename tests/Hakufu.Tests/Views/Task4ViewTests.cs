@@ -122,4 +122,36 @@ public class Task4ViewTests
             Assert.False(vm.ShowingAllHistory);
         }
     }
+
+    [AvaloniaFact]
+    public void Turning_a_page_plays_the_flip_and_leaves_nothing_behind()
+    {
+        using var app = ViewSmoke.Start();
+        var vm = OpenReader(app);
+        var flipLayer = app.Window.GetVisualDescendants().OfType<Grid>().Single(g => g.Name == "FlipLayer");
+
+        foreach (var twoPages in new[] { false, true })
+        {
+            vm.IsTwoPageMode = twoPages;
+            app.Pump();
+
+            vm.NextPageCommand.Execute(null);
+            Assert.NotEmpty(flipLayer.Children); // la hoja vieja tapa el cambio mientras gira
+
+            // La animación avanza con los fotogramas del render.
+            PumpUntil(app, () =>
+            {
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                return flipLayer.Children.Count == 0;
+            });
+
+            vm.PrevPageCommand.Execute(null);
+            PumpUntil(app, () =>
+            {
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                return flipLayer.Children.Count == 0;
+            });
+            Assert.Equal(0, vm.CurrentPage);
+        }
+    }
 }

@@ -23,6 +23,13 @@ Data folder: `AppPaths.DataDir` = `Environment.SpecialFolder.ApplicationData/Hak
 (`%APPDATA%\Hakufu` on Windows, `~/.config/Hakufu` on macOS/Linux), overridable with the
 `HAKUFU_DATA_DIR` env var (tests rely on this). Never hardcode paths — use `Data/AppPaths.cs`.
 
+Library folder: the manga files are **not** in the data folder. The user picks a folder
+(`AppDataStore.LibraryRoot`, Ajustes → "Carpeta de la biblioteca"): each direct subfolder is a
+collection and its `.cbz/.cbr/.pdf` files are the volumes (files in the root go to "Sin colección").
+Hakufu only **reads** it — never copy, move or delete user files. `<datos>/biblioteca/` is where old
+versions copied mangas; it is only used as the default root when `LibraryRoot` is empty, so old
+installs keep their progress.
+
 ## Architecture
 
 Strict **MVVM** with manual dependency injection in `CompositionRoot.cs` (used by `App.axaml.cs`
@@ -45,9 +52,10 @@ Services/
   ThemeService               ← swaps Application.Resources.MergedDictionaries[0] + ThemeVariant
   DialogService              ← modal overlay callbacks wired into MainWindowViewModel
   LibraryService / ProfileService  ← collections, mangas, favorites, history
+  LibraryScanner             ← syncs data.json with the library folder (async; keeps Ids/progress by RelativePath)
   CoverService / PageLoaderService ← PDF (Docnet/pdfium) + CBR/CBZ (SharpCompress) → Avalonia Bitmap
-  BackupService              ← local .zip export/import; rebases stored paths to the new data folder
-  FilePickerService          ← Avalonia StorageProvider (async) + OpenFolder (explorer/open/xdg-open)
+  BackupService              ← local .zip export/import (data.json + covers + profile, no mangas); rebases paths, keeps the local LibraryRoot
+  FilePickerService          ← Avalonia StorageProvider (files, folder, save) + OpenFolder (explorer/open/xdg-open)
   ProfileService             ← profile (name, photo in DataDir/profile), reading log per day (ReadingLog) for the profile charts
 Assets/
   Themes/LightTheme.axaml, DarkTheme.axaml  ← all brushes; always use DynamicResource

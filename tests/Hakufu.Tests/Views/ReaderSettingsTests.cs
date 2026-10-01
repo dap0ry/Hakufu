@@ -105,7 +105,10 @@ public class ReaderSettingsTests
 
         // Combinación con modificador: Ctrl+W cierra el lector (de fábrica).
         app.Window.KeyPressQwerty(PhysicalKey.W, RawInputModifiers.Control);
-        app.Pump();
+        // El lector se cierra después de guardar el progreso en disco (en otro
+        // hilo): esperar a que llegue a Inicio, no un tiempo fijo.
+        var sw = Stopwatch.StartNew();
+        while (app.Root.Navigation.CurrentViewModel is not HomeViewModel && sw.ElapsedMilliseconds < 5000) app.Pump();
         Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
 
         // Restablecer vuelve a las de fábrica.

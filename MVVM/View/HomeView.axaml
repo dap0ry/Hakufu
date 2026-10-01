@@ -8,7 +8,8 @@
 
         <!-- ── Entrada del menú ──────────────────────────────────────────
              Rótulo grande en condensada. Al pasar el ratón (o con el foco del
-             teclado) una franja roja inclinada crece desde la izquierda por
+             teclado) una franja inclinada del color del texto (blanca en tema
+             oscuro, negra en claro) crece desde la izquierda por
              detrás del texto y el texto se desplaza un poco: el mismo gesto
              que los menús de manga/Persona.
              Background viene de la personalización (PathAndOpacityToImageBrush,
@@ -26,7 +27,7 @@
                                 Background="{TemplateBinding Background}"
                                 RenderTransform="skewX(-12deg)"/>
                         <Border Name="Slab"
-                                Background="{DynamicResource BrandRed}"
+                                Background="{DynamicResource TextPrimary}"
                                 RenderTransformOrigin="0%,50%"
                                 RenderTransform="skewX(-12deg) scaleX(0)">
                             <Border.Transitions>
@@ -53,7 +54,7 @@
             </Setter>
         </Style>
         <Style Selector="Button.menuItem:pointerover, Button.menuItem:focus-visible">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppBackground}"/>
         </Style>
         <Style Selector="Button.menuItem:pointerover /template/ Border#Slab, Button.menuItem:focus-visible /template/ Border#Slab">
             <Setter Property="RenderTransform" Value="skewX(-12deg) scaleX(1)"/>

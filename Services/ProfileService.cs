@@ -3,6 +3,12 @@ using Hakufu.MVVM.Model;
 
 namespace Hakufu.Services;
 
+/// <summary>Una colección en "Leyendo ahora": su último tomo leído y cuánto va leído en total.</summary>
+public sealed record RecentCollection(Collection Collection, Manga LastVolume, int PagesRead, int TotalPages, DateTime LastRead)
+{
+    public double ProgressPct => TotalPages > 0 ? Math.Min(100, (double)PagesRead / TotalPages * 100) : 0;
+}
+
 public class ProfileService
 {
     private readonly IDataRepository _repo;
@@ -76,14 +82,31 @@ public class ProfileService
                                       .FirstOrDefault();
     }
 
-    /// <summary>Los últimos mangas abiertos (por la fecha de su progreso).</summary>
-    public IReadOnlyList<Manga> GetRecentMangas(int count)
-        => _repo.Current.Progress
-            .OrderByDescending(p => p.LastRead)
-            .Select(p => _repo.Current.Mangas.FirstOrDefault(m => m.Id == p.MangaId))
-            .OfType<Manga>()
-            .Take(count)
-            .ToList();
+    /// <summary>
+    /// Las últimas colecciones leídas (por el tomo leído más recientemente),
+    /// con ese tomo (su portada) y las páginas leídas / totales de la colección.
+    /// </summary>
+    public IReadOnlyList<RecentCollection> GetRecentCollections(int count)
+    {
+        var store    = _repo.Current;
+        var mangas   = store.Mangas.ToDictionary(m => m.Id);
+        var progress = store.Progress.GroupBy(p => p.MangaId)
+                                     .ToDictionary(g => g.Key, g => g.MaxBy(p => p.LastRead)!);
+        var result = new List<RecentCollection>();
+        foreach (var col in store.Collections)
+        {
+            var volumes = col.MangaIds.Select(id => mangas.GetValueOrDefault(id)).OfType<Manga>().ToList();
+            var last = volumes.Where(m => progress.ContainsKey(m.Id))
+                              .MaxBy(m => progress[m.Id].LastRead);
+            if (last is null) continue;
+            // CurrentPage empieza en 0: estar en la página n es haber leído n + 1.
+            var read = volumes.Sum(m => progress.TryGetValue(m.Id, out var p)
+                ? Math.Min(p.CurrentPage + 1, Math.Max(m.TotalPages, 0)) : 0);
+            result.Add(new RecentCollection(col, last, read, volumes.Sum(m => Math.Max(m.TotalPages, 0)),
+                                            progress[last.Id].LastRead));
+        }
+        return result.OrderByDescending(r => r.LastRead).Take(count).ToList();
+    }
 
     public int GetFinishedCount() => _repo.Current.History.Select(h => h.MangaId).Distinct().Count();
 

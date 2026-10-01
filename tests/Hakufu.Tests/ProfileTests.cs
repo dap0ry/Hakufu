@@ -163,4 +163,56 @@ public class ProfileTests
             Assert.True(ms.Length > 1000);
         }
     }
+    [Fact]
+    public async Task Reading_now_groups_volumes_by_collection()
+    {
+        var (tmp, repo, profile) = await NewProfile();
+        using var _ = tmp;
+        var now = DateTime.Now;
+        var a1 = new Manga { Title = "A 1", TotalPages = 10 };
+        var a2 = new Manga { Title = "A 2", TotalPages = 30 };
+        var b1 = new Manga { Title = "B 1", TotalPages = 0 };
+        var c1 = new Manga { Title = "C 1", TotalPages = 5 };
+        var d1 = new Manga { Title = "D 1", TotalPages = 5 };
+        repo.Current.Mangas.AddRange([a1, a2, b1, c1, d1]);
+        var a = new Collection { Name = "Serie A", MangaIds = [a1.Id, a2.Id] };
+        var b = new Collection { Name = "Serie B", MangaIds = [b1.Id] };
+        var c = new Collection { Name = "Serie C", MangaIds = [c1.Id] };
+        var d = new Collection { Name = "Serie D", MangaIds = [d1.Id] };
+        repo.Current.Collections.AddRange([a, b, c, d]);
+        repo.Current.Progress.AddRange([
+            new ReadingProgress { MangaId = a1.Id, CurrentPage = 9,  LastRead = now.AddHours(-5) },
+            new ReadingProgress { MangaId = a2.Id, CurrentPage = 9,  LastRead = now.AddHours(-1) },
+            new ReadingProgress { MangaId = b1.Id, CurrentPage = 3,  LastRead = now.AddHours(-2) },
+            new ReadingProgress { MangaId = c1.Id, CurrentPage = 0,  LastRead = now.AddHours(-3) },
+            new ReadingProgress { MangaId = d1.Id, CurrentPage = 0,  LastRead = now.AddHours(-9) },
+        ]);
+
+        var recent = profile.GetRecentCollections(3);
+
+        // Dos tomos de la misma colección → una sola entrada; D se queda fuera (la más antigua).
+        Assert.Equal(["Serie A", "Serie B", "Serie C"], recent.Select(r => r.Collection.Name));
+        Assert.Equal(a2.Id, recent[0].LastVolume.Id);          // portada del último tomo leído
+        Assert.Equal(20, recent[0].PagesRead);                 // 10 + 10
+        Assert.Equal(40, recent[0].TotalPages);
+        Assert.Equal(50, recent[0].ProgressPct, 3);
+        Assert.Equal(0, recent[1].ProgressPct);                // sin páginas totales: no divide entre 0
+    }
+
+    [AvaloniaFact]
+    public void Clicking_a_reading_now_collection_opens_it()
+    {
+        using var app = ViewSmoke.Start();
+        app.Root.Navigation.NavigateTo<ProfileViewModel>();
+        app.AssertShows<ProfileView>();
+        var vm = Assert.IsType<ProfileViewModel>(app.Root.Navigation.CurrentViewModel);
+
+        var card = Assert.Single(vm.RecentCollections);
+        Assert.Equal(app.SampleCollection.Name, card.Title);
+        vm.OpenCollectionCommand.Execute(card);
+        app.Pump();
+
+        Assert.IsType<CollectionDetailViewModel>(app.Root.Navigation.CurrentViewModel);
+        app.AssertShows<CollectionDetailView>();
+    }
 }

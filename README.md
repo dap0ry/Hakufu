@@ -15,7 +15,7 @@ Este es el **único repositorio de Hakufu**. Los antiguos `HakufuWeb`, `HakufuAP
 | raíz (`Hakufu.csproj`, `MVVM/`, `Services/`, `Data/`…) | La app de escritorio (Avalonia) | **En uso** |
 | `tests/Hakufu.Tests` | Tests (xUnit + Avalonia headless) | **En uso** |
 | `scripts/` | Publicar e instalar en cada sistema | **En uso** |
-| `web/` | Landing + API en Vercel (antes repo `HakufuWeb`) | **Solo para la 0.9.7**: la app nueva no la usa |
+| `web/` | Landing estática en Vercel (antes repo `HakufuWeb`) | **En uso** |
 | `docs/superpowers/` | Specs y planes de diseño de cada cambio | Referencia |
 
 ## La app de escritorio
@@ -57,13 +57,12 @@ Dentro: `data.json` (colecciones, progreso, ajustes), `covers/` y `profile/` (fo
 
 Arquitectura y convenciones: [`CLAUDE.md`](CLAUDE.md).
 
-## `web/`: landing y API (hakufuweb.vercel.app)
+## `web/`: la landing (hakufuweb.vercel.app)
 
-Es la landing y el backend (cuentas, amigos, Dropbox) **que solo usa la versión 0.9.7 de Windows**. La app nueva no se conecta a nada.
+Página estática de presentación y descarga (HTML, imágenes e iconos; sin backend). Lee la última versión de las releases de GitHub para enlazar las descargas.
 
 - **Despliegue:** proyecto de Vercel `hakufuweb` (equipo *Proyectos Propios*) con **Root Directory `web`**. Un push a `main` que toque `web/` publica en producción.
-- **Datos:** Postgres en **Neon** y ficheros en **Vercel Blob**. Las variables de entorno están solo en Vercel.
-- Se podrá retirar cuando nadie use ya la 0.9.7. Hasta entonces **no se borra**: la 0.9.7 instalada llama a `/api/*`.
+- El antiguo backend de la 0.9.x (cuentas, amigos y copia en la nube) se retiró el 01/10/2026: la app no se conecta a nada.
 
 ## Cómo trabajamos
 

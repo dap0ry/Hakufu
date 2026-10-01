@@ -21,7 +21,7 @@ public class DataRepositoryTests
           "Mangas": [ { "Id": "{{mangaId}}", "Title": "Tomo 1", "FilePath": "C:\\m\\t1.cbz",
                         "CoverCachePath": "", "TotalPages": 20,
                         "CloudinaryCoverUrl": "https://res.cloudinary.com/x.png",
-                        "DropboxPath": "/Hakufu/t1.cbz", "IsFavorite": true } ],
+                        "CloudPath": "/Hakufu/t1.cbz", "IsFavorite": true } ],
           "Collections": [ { "Name": "Berserk", "MangaIds": [ "{{mangaId}}" ] } ],
           "Favorites": [ { "SlotIndex": 0 } ],
           "ActiveTheme": "Dark",

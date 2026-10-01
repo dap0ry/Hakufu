@@ -25,6 +25,12 @@ public class HomeViewModel : BaseViewModel
     /// <summary>Avance de 0 a 100.</summary>
     public double LastMangaProgress { get => _lastMangaProgress; private set => SetProperty(ref _lastMangaProgress, value); }
 
+    // Foto de perfil junto a "Perfil" en el menú (o la inicial si no hay foto).
+    public Bitmap? ProfileAvatar  { get; }
+    public bool    HasProfileAvatar => ProfileAvatar is not null;
+    public string  ProfileInitial { get; } = "";
+    public bool    ShowProfileInitial => !HasProfileAvatar && ProfileInitial.Length > 0;
+
     public HomeViewModel(LibraryService library, ICoverService cover, INavigationService nav,
                          IDataRepository repo)
     {
@@ -32,6 +38,9 @@ public class HomeViewModel : BaseViewModel
         _cover   = cover;
         _nav     = nav;
         _repo    = repo;
+        var profile   = repo.Current.Profile;
+        ProfileAvatar = BitmapHelper.TryLoad(profile.AvatarPath);
+        ProfileInitial = string.IsNullOrWhiteSpace(profile.Name) ? "" : profile.Name.Trim()[..1].ToUpperInvariant();
         _ = LoadAsync();
     }
 

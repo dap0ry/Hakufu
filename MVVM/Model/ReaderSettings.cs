@@ -14,4 +14,10 @@ public class ReaderSettings
 
     /// <summary>"fast" | "normal" | "slow"</summary>
     public string PageTurnSpeed { get; set; } = "normal";
+
+    /// <summary>
+    /// Atajos cambiados por el usuario: acción → teclas ("Right", "Ctrl+W"…).
+    /// Las acciones que no están aquí usan las de fábrica (ShortcutService).
+    /// </summary>
+    public Dictionary<string, List<string>> Shortcuts { get; set; } = [];
 }

@@ -21,6 +21,8 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     private Bitmap? _pageLeft;
     private Bitmap? _pageRight;
 
+    private readonly ReaderSettings _settings;
+
     // Registro de lectura: el tiempo entre una acción y la siguiente cuenta
     // como leído, pero un rato muerto (lector abierto y nadie delante) no.
     private static readonly TimeSpan MaxIdle = TimeSpan.FromMinutes(5);
@@ -44,6 +46,7 @@ public class ReaderViewModel : BaseViewModel, IDisposable
         INavigationService nav, ReaderSettings? settings = null)
     {
         settings ??= new ReaderSettings();
+        _settings = settings;
         _mangaId    = manga.Id;
         MangaTitle  = manga.Title;
         _library    = library;
@@ -137,6 +140,22 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     }
 
     public RelayCommand ToggleTwoPageCommand => new(() => IsTwoPageMode = !IsTwoPageMode);
+    public RelayCommand SinglePageCommand    => new(() => IsTwoPageMode = false);
+    public RelayCommand TwoPagesCommand      => new(() => IsTwoPageMode = true);
+
+    /// <summary>El comando que lanza esta tecla según los atajos de Ajustes, o null.</summary>
+    public System.Windows.Input.ICommand? CommandForKey(Avalonia.Input.KeyEventArgs e)
+        => ShortcutService.Match(_settings, e) switch
+        {
+            "next"        => NextPageCommand,
+            "prev"        => PrevPageCommand,
+            "toggleZen"   => ToggleZenModeCommand,
+            "exitZen"     => ExitZenModeCommand,
+            "singlePage"  => SinglePageCommand,
+            "twoPages"    => TwoPagesCommand,
+            "closeReader" => CloseReaderCommand,
+            _             => null,
+        };
     public RelayCommand ToggleZenModeCommand => new(() => IsZenMode = !IsZenMode);
     public RelayCommand ExitZenModeCommand   => new(() => { if (IsZenMode) IsZenMode = false; });
 

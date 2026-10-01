@@ -19,6 +19,19 @@ public class CollectionDetailViewModel : BaseViewModel
 
     public string CollectionName { get => _collectionName; private set => SetProperty(ref _collectionName, value); }
     public int    ItemsPerRow    { get => _itemsPerRow;    set => SetProperty(ref _itemsPerRow, value); }
+    public string Description    { get; }
+    public bool   HasDescription => !string.IsNullOrWhiteSpace(Description);
+    /// <summary>"3 tomos · 1 terminado"</summary>
+    public string SummaryText
+    {
+        get
+        {
+            var n = Mangas.Count;
+            var done = Mangas.Count(m => m.IsFinished);
+            var text = n == 1 ? "1 tomo" : $"{n} tomos";
+            return done > 0 ? $"{text} · {done} {(done == 1 ? "terminado" : "terminados")}" : text;
+        }
+    }
 
     public string SortMode
     {
@@ -65,6 +78,7 @@ public class CollectionDetailViewModel : BaseViewModel
 
         var col = _library.GetCollection(_collectionId);
         CollectionName = col?.Name ?? string.Empty;
+        Description    = col?.Description ?? string.Empty;
         _sortMode = _library.SortMode;
         _ = LoadMangasAsync();
     }
@@ -78,6 +92,7 @@ public class CollectionDetailViewModel : BaseViewModel
             Mangas.Add(vm);
             _ = vm.LoadCoverAsync(_cover);
         }
+        OnPropertyChanged(nameof(SummaryText));
         await Task.CompletedTask;
     }
 

@@ -5,7 +5,7 @@
              x:DataType="vm:LibraryViewModel">
 
     <UserControl.Styles>
-        <!-- Tarjeta de colección: botón sin cromo que se aclara al pasar el ratón -->
+        <!-- Tarjeta de colección: sin cromo; al pasar el ratón el montón sube un poco -->
         <Style Selector="Button.collectionCard">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -21,16 +21,30 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-        <Style Selector="Button.collectionCard:pointerover /template/ Border#Root">
-            <Setter Property="Opacity" Value="0.82"/>
+        <Style Selector="Button.collectionCard Grid#Stack">
+            <Setter Property="RenderTransform" Value="translateY(0px)"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.collectionCard:pointerover Grid#Stack">
+            <Setter Property="RenderTransform" Value="translateY(-6px)"/>
         </Style>
 
-        <!-- Botón de favorito (estrella sobre la portada) -->
+        <!-- Estrella: solo al pasar el ratón, o siempre si ya es favorita -->
         <Style Selector="Button.star">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
             <Setter Property="Template">
                 <ControlTemplate>
                     <ContentPresenter Name="ContentHost"
@@ -39,158 +53,85 @@
                 </ControlTemplate>
             </Setter>
         </Style>
+        <Style Selector="Button.collectionCard:pointerover Button.star, Button.star.isFavorite">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
         <Style Selector="ContentControl.starIcon">
-            <Setter Property="Foreground" Value="#CCFFFFFF"/>
+            <Setter Property="Foreground" Value="#99FFFFFF"/>
         </Style>
         <Style Selector="ContentControl.starIcon.favorite">
-            <Setter Property="Foreground" Value="#FFD84A"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Cantos de los tomos de detrás -->
+        <Style Selector="Border.edge">
+            <Setter Property="Background"      Value="{DynamicResource CardBackground}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius"    Value="4"/>
         </Style>
     </UserControl.Styles>
 
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,*">
 
-        <!-- ═══ HEADER ═══ -->
-        <Border Grid.Row="0"
-                Background="{DynamicResource SidebarBackground}"
-                BorderBrush="{DynamicResource DividerBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="40,24,40,24">
+        <!-- ═══ CABECERA ═══ -->
+        <Border Grid.Row="0" Padding="40,26,40,22"
+                BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0" Classes="ghost" Content="← Inicio"
+                        VerticalAlignment="Center"
+                        Command="{Binding GoBackCommand}"/>
 
-                <!-- Back -->
-                <Button Grid.Column="0"
-                        Classes="ghost"
-                        Content="← Inicio"
-                        Command="{Binding GoBackCommand}"
-                        Margin="0,0,24,0"/>
-
-                <!-- Title -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="BIBLIOTECA"
-                               FontSize="11" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextMuted}"
-                               Margin="0,0,0,2"/>
-                    <TextBlock Classes="caption"
-                               Text="{Binding Collections.Count, StringFormat='{}{0} colecciones'}"/>
+                <StackPanel Grid.Column="1" Margin="28,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Biblioteca"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="52" LineHeight="50"
+                               Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{Binding SummaryText}"
+                               FontSize="12" Margin="1,4,0,0"
+                               Foreground="{DynamicResource TextMuted}"/>
                 </StackPanel>
 
-                <!-- Actions -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <!-- Normal mode -->
-                    <Button Classes="ghost"
-                            Content="Seleccionar"
-                            Padding="16,10"
-                            Margin="0,0,12,0"
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <!-- Normal -->
+                    <Button Classes="ghost" Content="Seleccionar" Padding="16,10"
                             Command="{Binding ToggleSelectionModeCommand}"
                             IsVisible="{Binding !IsSelectionMode}"/>
-                    <Button Classes="primary"
-                            Padding="18,10"
+                    <Button Classes="primary" Content="Nueva colección" Padding="18,10"
                             Command="{Binding CreateCollectionCommand}"
-                            IsVisible="{Binding !IsSelectionMode}">
-                        <StackPanel Orientation="Horizontal">
-                            <ContentControl Template="{StaticResource IconPixelFolder}"
-                                            Width="14" Height="14" Margin="0,0,8,0"/>
-                            <TextBlock Text="Nueva colección"/>
-                        </StackPanel>
-                    </Button>
-                    <!-- Selection mode -->
-                    <Button Classes="ghost"
-                            Content="Cancelar"
-                            Padding="16,10"
-                            Margin="0,0,12,0"
+                            IsVisible="{Binding !IsSelectionMode}"/>
+                    <!-- Selección -->
+                    <Button Classes="ghost" Content="Cancelar" Padding="16,10"
                             Command="{Binding ToggleSelectionModeCommand}"
                             IsVisible="{Binding IsSelectionMode}"/>
-                    <Button Classes="primary"
-                            Padding="18,10"
+                    <Button Classes="primary" Padding="18,10"
+                            Content="{Binding SelectedCount, StringFormat='Eliminar ({0})'}"
                             Command="{Binding DeleteSelectedCommand}"
-                            IsVisible="{Binding IsSelectionMode}">
-                        <StackPanel Orientation="Horizontal">
-                            <ContentControl Template="{StaticResource IconPixelTrash}"
-                                            Width="14" Height="14" Margin="0,0,8,0"/>
-                            <TextBlock Text="{Binding SelectedCount, StringFormat='Eliminar ({0})'}"/>
-                        </StackPanel>
-                    </Button>
+                            IsVisible="{Binding IsSelectionMode}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- ═══ CONTINUAR LEYENDO ═══ -->
-        <Border Grid.Row="1"
-                Padding="40,20,40,0"
-                IsVisible="{Binding HasLastManga}">
-            <Border Classes="card" Padding="0" ClipToBounds="True">
-                <Button Classes="icon"
-                        Padding="0"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch"
-                        Command="{Binding ContinueReadingCommand}">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-
-                        <!-- Cover -->
-                        <Border Grid.Column="0" Width="72" Height="100"
-                                CornerRadius="6,0,0,6" ClipToBounds="True"
-                                Background="{DynamicResource SidebarBackground}">
-                            <Image Source="{Binding LastMangaCover}"
-                                   Stretch="UniformToFill"
-                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                        </Border>
-
-                        <!-- Info -->
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
-                            <TextBlock Text="CONTINUAR LEYENDO"
-                                       FontSize="9" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextMuted}"
-                                       Margin="0,0,0,5"/>
-                            <TextBlock Text="{Binding LastMangaTitle}"
-                                       FontSize="15" FontWeight="Medium"
-                                       Foreground="{DynamicResource TextPrimary}"
-                                       TextTrimming="CharacterEllipsis"/>
-                        </StackPanel>
-
-                        <!-- Arrow -->
-                        <TextBlock Grid.Column="2"
-                                   Text="→"
-                                   FontSize="18"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,24,0"/>
-                    </Grid>
-                </Button>
-            </Border>
-        </Border>
-
         <!-- ═══ COLECCIONES ═══ -->
-        <ScrollViewer Grid.Row="2"
-                      Padding="40,28,40,40"
-                      VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-
-                <!-- Section label -->
-                <TextBlock Text="MIS COLECCIONES"
-                           FontSize="10" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMuted}"
-                           Margin="0,0,0,20"/>
-
-                <!-- Empty state -->
-                <StackPanel HorizontalAlignment="Center"
-                            Margin="0,40,0,0"
-                            IsVisible="{Binding !Collections.Count}">
-                    <TextBlock Text="—" FontSize="28"
-                               Foreground="{DynamicResource TextMuted}"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,12"/>
-                    <TextBlock Text="Sin colecciones todavía"
-                               Classes="subtitle"
-                               Foreground="{DynamicResource TextMuted}"
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="Pulsa &quot;+ Nueva colección&quot; para empezar"
-                               Classes="caption"
-                               HorizontalAlignment="Center"
-                               Margin="0,6,0,0"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Panel>
+                <!-- Vacía -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MaxWidth="360" Spacing="12" Margin="40,80"
+                            IsVisible="{Binding IsEmpty}">
+                    <TextBlock Text="Tu estantería está vacía"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="48" LineHeight="46" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Crea una colección por serie y añade tus tomos en PDF, CBR o CBZ."
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <Button Classes="primary" Content="Nueva colección" HorizontalAlignment="Left"
+                            Padding="22,11" Margin="0,12,0,0"
+                            Command="{Binding CreateCollectionCommand}"/>
                 </StackPanel>
 
-                <!-- Cards wrap -->
-                <ItemsControl ItemsSource="{Binding Collections}">
+                <ItemsControl ItemsSource="{Binding Collections}" Margin="34,36,34,40">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"/>
@@ -199,78 +140,55 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:CollectionCardViewModel">
                             <Button Classes="collectionCard"
-                                    Margin="0,0,24,28"
+                                    Margin="6,0,30,40"
                                     Command="{Binding $parent[UserControl].((vm:LibraryViewModel)DataContext).CardClickCommand}"
                                     CommandParameter="{Binding}">
-                                <StackPanel Width="172">
-                                    <!-- Stacked cover effect -->
-                                    <Grid Width="172" Height="232" Margin="0,0,0,10">
-                                        <!-- Back -->
-                                        <Border Width="154" Height="218" CornerRadius="6"
+                                <StackPanel Width="176">
+
+                                    <!-- Portada con los cantos de los tomos de detrás -->
+                                    <Grid Name="Stack" Width="176" Height="262">
+                                        <Border Classes="edge" Width="160" Height="240"
+                                                HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                Margin="14,0,0,0"
+                                                IsVisible="{Binding BackCover, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                        <Border Classes="edge" Width="160" Height="240"
+                                                HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                Margin="7,7,0,0"
+                                                IsVisible="{Binding MiddleCover, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                        <Border Width="160" Height="240" CornerRadius="4"
+                                                HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                ClipToBounds="True"
                                                 Background="{DynamicResource CardBackground}"
                                                 BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
-                                                ZIndex="0" RenderTransformOrigin="50%,100%">
-                                            <Border.RenderTransform>
-                                                <TransformGroup>
-                                                    <RotateTransform Angle="-4"/>
-                                                    <TranslateTransform X="9" Y="-7"/>
-                                                </TransformGroup>
-                                            </Border.RenderTransform>
-                                            <Image Source="{Binding BackCover}"
-                                                   Stretch="UniformToFill"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                        </Border>
-                                        <!-- Middle -->
-                                        <Border Width="160" Height="224" CornerRadius="6"
-                                                Background="{DynamicResource CardBackground}"
-                                                BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
-                                                ZIndex="1" RenderTransformOrigin="50%,100%">
-                                            <Border.RenderTransform>
-                                                <TransformGroup>
-                                                    <RotateTransform Angle="-2"/>
-                                                    <TranslateTransform X="4" Y="-3"/>
-                                                </TransformGroup>
-                                            </Border.RenderTransform>
-                                            <Image Source="{Binding MiddleCover}"
-                                                   Stretch="UniformToFill"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                        </Border>
-                                        <!-- Front -->
-                                        <Border Width="166" Height="228" CornerRadius="6"
-                                                Background="{DynamicResource CardBackground}"
-                                                BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
-                                                BoxShadow="0 0 18 0 #33000000"
-                                                ZIndex="2">
+                                                BoxShadow="0 6 18 0 #33000000">
                                             <Image Source="{Binding FrontCover}"
                                                    Stretch="UniformToFill"
-                                                   IsVisible="{Binding FrontCover, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                    RenderOptions.BitmapInterpolationMode="HighQuality"/>
                                         </Border>
-                                        <!-- Selection overlay -->
-                                        <Border CornerRadius="6"
-                                                Background="{DynamicResource AccentColor}"
-                                                Opacity="0.22"
-                                                ZIndex="3"
+
+                                        <!-- Selección -->
+                                        <Border Width="160" Height="240" CornerRadius="4"
+                                                HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                Background="{DynamicResource AccentColor}" Opacity="0.25"
                                                 IsVisible="{Binding IsSelected}"/>
                                         <Border Width="26" Height="26" CornerRadius="13"
-                                                HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                Margin="0,8,8,0"
-                                                Background="{DynamicResource AccentColor}"
-                                                ZIndex="4"
-                                                IsVisible="{Binding IsSelected}">
-                                            <TextBlock Text="✓" Foreground="White"
-                                                       FontSize="13" FontWeight="Bold"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
-                                        </Border>
-                                        <!-- Favorito -->
-                                        <Button Classes="star"
-                                                ZIndex="5"
                                                 HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                Margin="6,6,0,0"
+                                                Margin="126,30,0,0"
+                                                Background="{DynamicResource AccentColor}"
+                                                IsVisible="{Binding IsSelected}">
+                                            <TextBlock Text="✓" FontSize="13" FontWeight="Bold"
+                                                       Foreground="{DynamicResource AppBackground}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- Favorita -->
+                                        <Button Classes="star"
+                                                Classes.isFavorite="{Binding IsFavorite}"
+                                                HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                Margin="8,30,0,0"
                                                 Command="{Binding ToggleFavoriteCommand}"
                                                 ToolTip.Tip="Colección favorita">
-                                            <Border Width="24" Height="24" CornerRadius="12" Background="#66000000">
+                                            <Border Width="26" Height="26" CornerRadius="13" Background="#80000000">
                                                 <ContentControl Classes="starIcon"
                                                                 Classes.favorite="{Binding IsFavorite}"
                                                                 Template="{StaticResource IconPixelStar}"
@@ -280,24 +198,29 @@
                                         </Button>
                                     </Grid>
 
-                                    <!-- Name -->
+                                    <!-- Nombre + datos -->
                                     <TextBlock Text="{Binding Name}"
+                                               FontFamily="{DynamicResource DisplayFontSemi}"
+                                               FontSize="21" LineHeight="22"
+                                               MaxLines="2" TextWrapping="Wrap"
                                                TextTrimming="CharacterEllipsis"
-                                               FontWeight="Medium" FontSize="13"
                                                Foreground="{DynamicResource TextPrimary}"
-                                               HorizontalAlignment="Left"/>
-                                    <!-- Count -->
-                                    <TextBlock FontSize="11"
-                                               Foreground="{DynamicResource TextMuted}"
-                                               HorizontalAlignment="Left"
-                                               Margin="0,3,0,0"
-                                               Text="{Binding MangaCount, StringFormat='{}{0} manga(s)'}"/>
+                                               Margin="0,14,0,0"/>
+                                    <TextBlock Text="{Binding CountText}"
+                                               FontSize="12" Margin="0,3,0,0"
+                                               Foreground="{DynamicResource TextMuted}"/>
+                                    <ProgressBar Value="{Binding ProgressPct}" Maximum="100"
+                                                 Width="160" MinWidth="0" HorizontalAlignment="Left"
+                                                 Height="3" MinHeight="3" CornerRadius="0" Margin="0,10,0,0"
+                                                 Background="{DynamicResource ProgressTrack}"
+                                                 Foreground="{DynamicResource ProgressFill}"
+                                                 IsVisible="{Binding HasProgress}"/>
                                 </StackPanel>
                             </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </StackPanel>
+            </Panel>
         </ScrollViewer>
     </Grid>
 </UserControl>

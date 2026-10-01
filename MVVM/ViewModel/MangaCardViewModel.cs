@@ -18,6 +18,12 @@ public class MangaCardViewModel : BaseViewModel
 
     public int CurrentPage   => _progress?.CurrentPage ?? 0;
     public double ProgressPct => TotalPages > 0 ? (double)CurrentPage / TotalPages * 100 : 0;
+    public bool   IsStarted   => _progress is not null;
+    public bool   IsFinished  => TotalPages > 0 && CurrentPage >= TotalPages - 1;
+    /// <summary>"Pág. 12 de 180", "Terminado" o "Sin empezar".</summary>
+    public string PageText => IsFinished ? "Terminado"
+                            : !IsStarted ? (TotalPages > 0 ? $"{TotalPages} págs." : "Sin empezar")
+                            : $"Pág. {CurrentPage + 1} de {TotalPages}";
 
     private bool _isSelected;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }

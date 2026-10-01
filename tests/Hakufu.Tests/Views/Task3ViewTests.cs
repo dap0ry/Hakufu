@@ -24,10 +24,12 @@ public class Task3ViewTests
 
             var names = view.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
             Assert.Contains("Ataque a los Titanes", names);
-            Assert.Contains("CONTINUAR LEYENDO", names);
+            Assert.Contains("1 colección · 2 tomos", names);
+            // "Continuar leyendo" vive en Inicio, no aquí.
+            Assert.DoesNotContain(names, n => n?.Contains("ontinuar", StringComparison.OrdinalIgnoreCase) == true);
 
             // Hay una colección: el estado vacío no se ve.
-            var empty = view.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Sin colecciones todavía");
+            var empty = view.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Tu estantería está vacía");
             Assert.False(empty.IsEffectivelyVisible);
 
             // Las portadas del montón de la tarjeta se cargan (Bitmap directo).

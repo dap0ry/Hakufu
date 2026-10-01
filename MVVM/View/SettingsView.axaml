@@ -198,7 +198,8 @@
                             </Grid>
                         </Border>
 
-                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0">
+                        <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0"
+                                IsVisible="{Binding ShowPageTurnSettings}">
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
                                     <TextBlock Text="Animación al pasar página"
@@ -218,6 +219,7 @@
 
                         <!-- Velocidad: solo cuenta si hay animación -->
                         <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0"
+                                IsVisible="{Binding ShowPageTurnSettings}"
                                 IsEnabled="{Binding PageTurnAnimation}"
                                 Opacity="{Binding PageTurnAnimation, Converter={StaticResource BoolToOpacity}}">
                             <Grid ColumnDefinitions="*,Auto">

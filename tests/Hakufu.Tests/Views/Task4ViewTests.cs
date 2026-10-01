@@ -110,6 +110,9 @@ public class Task4ViewTests
     [AvaloniaFact]
     public void Turning_a_page_plays_the_flip_and_leaves_nothing_behind()
     {
+        ReaderViewModel.PageTurnAnimationAvailable = true; // apagada en la app de momento; aquí se prueba igual
+        try
+        {
         using var app = ViewSmoke.Start();
         var vm = OpenReader(app);
         var flipLayer = app.Window.GetVisualDescendants().OfType<Grid>().Single(g => g.Name == "FlipLayer");
@@ -137,5 +140,7 @@ public class Task4ViewTests
                 return vm.CurrentPage == 0 && flipLayer.Children.Count == 0;
             });
         }
+        }
+        finally { ReaderViewModel.PageTurnAnimationAvailable = false; }
     }
 }

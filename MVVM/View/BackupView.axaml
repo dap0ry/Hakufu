@@ -67,20 +67,13 @@
                 Background="{DynamicResource SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="40,22">
+                Padding="40,24,40,24">
             <Grid ColumnDefinitions="Auto,*">
                 <Button Grid.Column="0"
                         Classes="ghost"
+                        Content="← Inicio"
                         Command="{Binding GoBackCommand}"
-                        Margin="0,0,24,0">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ContentControl Template="{StaticResource IconPixelArrowLeft}"
-                                        Width="12" Height="12"
-                                        VerticalAlignment="Center"
-                                        Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Inicio" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+                        Margin="0,0,24,0"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="COPIA DE SEGURIDAD"

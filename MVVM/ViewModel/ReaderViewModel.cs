@@ -95,7 +95,12 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     public bool IsTwoPageMode
     {
         get => _isTwoPageMode;
-        set { if (SetProperty(ref _isTwoPageMode, value)) _ = LoadCurrentPageAsync(); }
+        set
+        {
+            if (!SetProperty(ref _isTwoPageMode, value)) return;
+            _backStack.Clear(); // cambian los pliegos
+            _ = LoadCurrentPageAsync();
+        }
     }
 
     public bool IsZenMode
@@ -124,19 +129,68 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     public Bitmap? PageLeft  { get => _pageLeft;  private set => SetProperty(ref _pageLeft, value); }
     public Bitmap? PageRight { get => _pageRight; private set => SetProperty(ref _pageRight, value); }
 
-    public RelayCommand NextPageCommand => new(() => TurnPage(+1), () => CurrentPage < TotalPages - 1);
+    private bool _showsTwoPages;
+    /// <summary>
+    /// Se ven dos páginas juntas. En modo doble página no siempre: una doble
+    /// página apaisada (o la que va justo antes de una) se ve sola, a lo ancho,
+    /// como en un libro abierto.
+    /// </summary>
+    public bool ShowsTwoPages { get => _showsTwoPages; private set => SetProperty(ref _showsTwoPages, value); }
 
-    public RelayCommand PrevPageCommand => new(() => TurnPage(-1), () => CurrentPage > 0);
+    /// <summary>Página apaisada: una doble página escaneada como una sola imagen.</summary>
+    public static bool IsWide(Bitmap? page) => page is not null && page.PixelSize.Width > page.PixelSize.Height;
 
-    private void TurnPage(int direction)
+    public RelayCommand NextPageCommand => new(async () => await TurnPageAsync(+1), () => CurrentPage < TotalPages - 1);
+
+    public RelayCommand PrevPageCommand => new(async () => await TurnPageAsync(-1), () => CurrentPage > 0);
+
+    private bool _turning;
+
+    // Vistas por las que se ha pasado hacia delante: volver atrás regresa
+    // exactamente a la anterior (con dobles páginas apaisadas no siempre es -2).
+    private readonly Stack<int> _backStack = new();
+
+    private async Task TurnPageAsync(int direction)
     {
-        var step   = IsTwoPageMode ? 2 : 1;
-        var target = Math.Clamp(CurrentPage + direction * step, 0, Math.Max(0, TotalPages - 1));
-        if (target == CurrentPage) return;
+        if (_turning) return; // una vuelta cada vez (decidir cuánto retroceder puede tener que cargar páginas)
+        _turning = true;
+        try
+        {
+            var target = await TargetPageAsync(direction);
+            if (target == CurrentPage) return;
 
-        PageTurning?.Invoke(this, direction);
-        LogActivity(pages: Math.Max(0, target - CurrentPage));
-        CurrentPage = target; // guarda el progreso, y con él el registro de lectura
+            if (direction > 0) _backStack.Push(CurrentPage);
+            else if (_backStack.Count > 0 && _backStack.Peek() == target) _backStack.Pop();
+
+            PageTurning?.Invoke(this, direction);
+            LogActivity(pages: Math.Max(0, target - CurrentPage));
+            CurrentPage = target; // guarda el progreso, y con él el registro de lectura
+        }
+        finally { _turning = false; }
+    }
+
+    /// <summary>
+    /// A qué página se va. En doble página se avanza lo que se ve (2, o 1 si se
+    /// ve una sola); hacia atrás se retroceden 2 solo si esas dos irían juntas.
+    /// </summary>
+    private async Task<int> TargetPageAsync(int direction)
+    {
+        var last = Math.Max(0, TotalPages - 1);
+        if (!IsTwoPageMode)
+            return Math.Clamp(CurrentPage + direction, 0, last);
+
+        if (direction > 0)
+            return Math.Clamp(CurrentPage + (ShowsTwoPages ? 2 : 1), 0, last);
+
+        if (_backStack.Count > 0 && _backStack.Peek() < CurrentPage)
+            return _backStack.Peek();
+
+        // Sin historial (se abrió a mitad del tomo): 2 atrás si esas dos irían juntas.
+        var back2 = CurrentPage - 2;
+        if (back2 < 0) return Math.Max(0, CurrentPage - 1);
+        var a = await _loader.LoadPageAsync(back2);
+        var b = await _loader.LoadPageAsync(back2 + 1);
+        return IsWide(a) || IsWide(b) ? CurrentPage - 1 : back2;
     }
 
     public RelayCommand ToggleTwoPageCommand => new(() => IsTwoPageMode = !IsTwoPageMode);
@@ -169,9 +223,15 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     {
         var page  = _currentPage;
         var left  = await _loader.LoadPageAsync(page);
-        var right = IsTwoPageMode ? await _loader.LoadPageAsync(page + 1) : null;
+        Bitmap? right = null;
+        if (IsTwoPageMode && !IsWide(left) && page + 1 < TotalPages)
+        {
+            var next = await _loader.LoadPageAsync(page + 1);
+            if (!IsWide(next)) right = next; // una doble página apaisada no se empareja
+        }
         if (page != _currentPage) return; // ya se pidió otra página mientras cargaba
 
+        ShowsTwoPages = right is not null;
         PageLeft  = left;
         PageRight = right;
         PagesLoaded?.Invoke(this, page);

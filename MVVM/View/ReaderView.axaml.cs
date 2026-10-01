@@ -25,6 +25,8 @@ public partial class ReaderView : UserControl
     private const double HalfSpreadFlipMs = 240;  // doble página: cada mitad del giro
     private const double LeafShade        = 0.30; // la hoja se oscurece hacia el borde libre
     private const byte   CastShadowAlpha  = 0x5C; // sombra que la hoja deja junto al lomo
+    private const double LiftScale        = 0.035; // cuánto se acerca la hoja al levantarse
+    private const double BendDegrees      = 2.2;   // cuánto se comba
 
     private enum Slot { Single, Left, Right }
     private enum Ease { In, Out, InOut }
@@ -114,48 +116,59 @@ public partial class ReaderView : UserControl
         var shown = _pagesShown.Task;
 
         var vm = _vm;
+        var oldTwo   = vm.ShowsTwoPages;
         var oldLeft  = vm.PageLeft;
         var oldRight = vm.PageRight;
 
         try
         {
-            if (!vm.IsTwoPageMode)
+            // Tapar el cambio con una copia exacta de lo que se ve ahora.
+            List<Panel> cover = oldTwo
+                ? [AddPage(oldLeft, Slot.Left), AddPage(oldRight, Slot.Right)]
+                : [AddPage(oldLeft, Slot.Single)];
+            await WaitForPages(shown, ct);
+
+            var newTwo  = vm.ShowsTwoPages;
+            var newLeft = vm.PageLeft;
+            // La hoja solo gira sobre el lomo si lo de antes y lo de después tienen la
+            // misma forma; si no (vertical ↔ apaisada, dos ↔ una), un fundido limpio.
+            var sameShape = oldTwo == newTwo &&
+                            (oldTwo || ReaderViewModel.IsWide(oldLeft) == ReaderViewModel.IsWide(newLeft));
+
+            if (!sameShape)
+            {
+                await FadeAway(cover, direction, single * 0.75, ct);
+            }
+            else if (!oldTwo)
             {
                 if (direction > 0)
                 {
-                    var leaf = AddPage(oldLeft, Slot.Single);
-                    await WaitForPages(shown, ct);
-                    var shadow = AddShadowUnder(leaf, vm.PageLeft, Slot.Single, spineOnLeft: true);
+                    var leaf = cover[0];
+                    var shadow = AddShadowUnder(leaf, newLeft, Slot.Single, spineOnLeft: true);
                     await Turn(leaf, shadow, pivotLeft: true, 0, -90, single, Ease.InOut, ct);
                 }
                 else
                 {
-                    AddPage(oldLeft, Slot.Single);
-                    await WaitForPages(shown, ct);
                     var shadow = AddShadow(oldLeft, Slot.Single, spineOnLeft: true);
-                    var leaf = AddPage(vm.PageLeft, Slot.Single);
+                    var leaf = AddPage(newLeft, Slot.Single);
                     await Turn(leaf, shadow, pivotLeft: true, -90, 0, single, Ease.InOut, ct);
                 }
             }
             else if (direction > 0)
             {
-                AddPage(oldLeft, Slot.Left);
-                var front = AddPage(oldRight, Slot.Right);
-                await WaitForPages(shown, ct);
+                var front = cover[1];
                 var under = AddShadowUnder(front, vm.PageRight, Slot.Right, spineOnLeft: true);
                 await Turn(front, under, pivotLeft: true, 0, -90, half, Ease.In, ct);
                 FlipLayer.Children.Remove(front);
                 FlipLayer.Children.Remove(under);
                 var landing = AddShadow(oldLeft, Slot.Left, spineOnLeft: false);
-                var back = AddPage(vm.PageLeft, Slot.Left);
+                var back = AddPage(newLeft, Slot.Left);
                 await Turn(back, landing, pivotLeft: false, 90, 0, half, Ease.Out, ct);
             }
             else
             {
-                AddPage(oldRight, Slot.Right);
-                var front = AddPage(oldLeft, Slot.Left);
-                await WaitForPages(shown, ct);
-                var under = AddShadowUnder(front, vm.PageLeft, Slot.Left, spineOnLeft: false);
+                var front = cover[0];
+                var under = AddShadowUnder(front, newLeft, Slot.Left, spineOnLeft: false);
                 await Turn(front, under, pivotLeft: false, 0, 90, half, Ease.In, ct);
                 FlipLayer.Children.Remove(front);
                 FlipLayer.Children.Remove(under);
@@ -170,6 +183,38 @@ public partial class ReaderView : UserControl
         }
 
         if (_flipCts == cts) CancelFlip();
+    }
+
+    /// <summary>
+    /// Cuando lo de antes y lo de después no tienen la misma forma: lo viejo se
+    /// aparta un poco hacia donde se pasa, encoge y se desvanece sobre lo nuevo.
+    /// </summary>
+    private async Task FadeAway(List<Panel> pages, int direction, double durationMs, CancellationToken ct)
+    {
+        var moves = pages.Select(p =>
+        {
+            var scale = new ScaleTransform(1, 1);
+            var move = new TranslateTransform();
+            p.RenderTransformOrigin = RelativePoint.Center;
+            p.RenderTransform = new TransformGroup { Children = { scale, move } };
+            return (p, scale, move);
+        }).ToList();
+
+        var clock = Stopwatch.StartNew();
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+            var t = Math.Min(1, clock.Elapsed.TotalMilliseconds / durationMs);
+            var e = 1 - Math.Pow(1 - t, 3);
+            foreach (var (p, scale, move) in moves)
+            {
+                p.Opacity = 1 - e;
+                scale.ScaleX = scale.ScaleY = 1 - 0.04 * e;
+                move.X = -direction * 36 * e;
+            }
+            if (t >= 1) return;
+            await NextFrame();
+        }
     }
 
     private void CancelFlip()
@@ -231,7 +276,8 @@ public partial class ReaderView : UserControl
         var page = new Panel
         {
             VerticalAlignment = VerticalAlignment.Center,
-            Children = { image, new Border { Opacity = 0 } },
+            // image · sombreado hacia el borde libre · brillo que la recorre al girar
+            Children = { image, new Border { Opacity = 0 }, new Border { Opacity = 0 } },
         };
 
         switch (slot)
@@ -267,6 +313,25 @@ public partial class ReaderView : UserControl
         },
     };
 
+    /// <summary>Banda de brillo diagonal en la posición <paramref name="at"/> (0 lomo, 1 borde libre).</summary>
+    private static LinearGradientBrush Gloss(bool spineOnLeft, double at)
+    {
+        var p = Math.Clamp(at, 0, 1);
+        var a = Math.Max(0, p - 0.18);
+        var b = Math.Min(1, p + 0.18);
+        return new LinearGradientBrush
+        {
+            StartPoint = new RelativePoint(spineOnLeft ? 0 : 1, 0.15, RelativeUnit.Relative),
+            EndPoint   = new RelativePoint(spineOnLeft ? 1 : 0, 0.85, RelativeUnit.Relative),
+            GradientStops =
+            {
+                new GradientStop(Color.FromArgb(0, 255, 255, 255), a),
+                new GradientStop(Color.FromArgb(60, 255, 255, 255), p),
+                new GradientStop(Color.FromArgb(0, 255, 255, 255), b),
+            },
+        };
+    }
+
     /// <summary>
     /// Gira la hoja en Y alrededor de su borde izquierdo o derecho (el lomo).
     /// A la vez oscurece la hoja hacia su borde libre y hace crecer la sombra
@@ -278,11 +343,17 @@ public partial class ReaderView : UserControl
     {
         var shade = (Border)page.Children[1];
         shade.Background = SpineGradient(spineOnLeft: pivotLeft, 0, 255, 1);
+        var gloss = (Border)page.Children[2];
         var cast = castShadow.Children[1];
 
+        // Papel, no tabla: al levantarse la hoja se acerca un poco (escala), se
+        // comba (inclinación vertical leve hacia el borde libre) y la recorre un
+        // brillo; todo en el plano de la hoja, antes del giro 3D.
+        var bend = new SkewTransform();
+        var liftScale = new ScaleTransform(1, 1);
         var rotation = new Rotate3DTransform { AngleY = from, Depth = FlipDepth };
         page.RenderTransformOrigin = new RelativePoint(pivotLeft ? 0 : 1, 0.5, RelativeUnit.Relative);
-        page.RenderTransform = rotation;
+        page.RenderTransform = new TransformGroup { Children = { bend, liftScale, rotation } };
 
         var clock = Stopwatch.StartNew();
         while (true)
@@ -303,6 +374,12 @@ public partial class ReaderView : UserControl
             var lift = Math.Sin(Math.Abs(angle) * Math.PI / 180);
             shade.Opacity = LeafShade * lift;
             cast.Opacity  = lift;
+            liftScale.ScaleX = liftScale.ScaleY = 1 + LiftScale * lift;
+            bend.AngleY = (pivotLeft ? -1 : 1) * BendDegrees * lift;
+            // El brillo cruza la hoja del lomo al borde libre según se levanta.
+            var band = Math.Abs(angle) / 90;
+            gloss.Background = Gloss(pivotLeft, band);
+            gloss.Opacity = 0.9 * lift;
 
             if (t >= 1) return;
             await NextFrame();

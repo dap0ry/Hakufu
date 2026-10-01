@@ -48,6 +48,9 @@ public sealed class TempDataDir : IDisposable
 
 public static class Fixtures
 {
+    // PNG de 2x3 píxeles: una página vertical (las de 1x1 no son ni verticales ni apaisadas).
+    public static readonly byte[] TallPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAIAAAADCAIAAAA2iEnWAAAAFElEQVR4nGNkYDjBwMDAxAAGUAoADmQAzvryGdcAAAAASUVORK5CYII=");
+
     // PNG de 1x1 píxel rojo.
     public static readonly byte[] TinyPng = Convert.FromBase64String(
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==");

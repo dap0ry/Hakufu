@@ -130,14 +130,16 @@ public partial class ReaderView : UserControl
 
             var newTwo  = vm.ShowsTwoPages;
             var newLeft = vm.PageLeft;
-            // La hoja solo gira sobre el lomo si lo de antes y lo de después tienen la
-            // misma forma; si no (vertical ↔ apaisada, dos ↔ una), un fundido limpio.
-            var sameShape = oldTwo == newTwo &&
-                            (oldTwo || ReaderViewModel.IsWide(oldLeft) == ReaderViewModel.IsWide(newLeft));
+            // La hoja solo gira si todo encaja: mismas hojas a la vista y ninguna
+            // apaisada mezclada con verticales. Si no, la página cambia sin animación.
+            var wide = ReaderViewModel.IsWide;
+            var sameShape = oldTwo == newTwo && (oldTwo
+                ? !wide(oldLeft) && !wide(oldRight) && !wide(newLeft) && !wide(vm.PageRight)
+                : wide(oldLeft) == wide(newLeft));
 
             if (!sameShape)
             {
-                await FadeAway(cover, direction, single * 0.75, ct);
+                // nada: al salir se quita la copia y queda la página nueva
             }
             else if (!oldTwo)
             {
@@ -183,38 +185,6 @@ public partial class ReaderView : UserControl
         }
 
         if (_flipCts == cts) CancelFlip();
-    }
-
-    /// <summary>
-    /// Cuando lo de antes y lo de después no tienen la misma forma: lo viejo se
-    /// aparta un poco hacia donde se pasa, encoge y se desvanece sobre lo nuevo.
-    /// </summary>
-    private async Task FadeAway(List<Panel> pages, int direction, double durationMs, CancellationToken ct)
-    {
-        var moves = pages.Select(p =>
-        {
-            var scale = new ScaleTransform(1, 1);
-            var move = new TranslateTransform();
-            p.RenderTransformOrigin = RelativePoint.Center;
-            p.RenderTransform = new TransformGroup { Children = { scale, move } };
-            return (p, scale, move);
-        }).ToList();
-
-        var clock = Stopwatch.StartNew();
-        while (true)
-        {
-            ct.ThrowIfCancellationRequested();
-            var t = Math.Min(1, clock.Elapsed.TotalMilliseconds / durationMs);
-            var e = 1 - Math.Pow(1 - t, 3);
-            foreach (var (p, scale, move) in moves)
-            {
-                p.Opacity = 1 - e;
-                scale.ScaleX = scale.ScaleY = 1 - 0.04 * e;
-                move.X = -direction * 36 * e;
-            }
-            if (t >= 1) return;
-            await NextFrame();
-        }
     }
 
     private void CancelFlip()

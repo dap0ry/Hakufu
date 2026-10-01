@@ -82,7 +82,7 @@
                        Margin="0,8,8,8"/>
             </Grid>
 
-            <!-- Página simple (o doble página apaisada, a lo ancho) -->
+            <!-- Página simple -->
             <Image Classes="page"
                    RenderOptions.BitmapInterpolationMode="HighQuality"
                    IsVisible="{Binding !ShowsTwoPages}"

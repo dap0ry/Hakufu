@@ -4,9 +4,14 @@ namespace Hakufu.Data;
 
 public class JsonDataRepository : IDataRepository
 {
-    private static string DataDir  => AppPaths.DataDir;
-    private static string DataFile => AppPaths.DataFile;
-    private static string TmpFile  => DataFile + ".tmp"; // solo para limpieza en LoadAsync
+    // La carpeta se fija al crear el repositorio y no cambia: un guardado que
+    // termine tarde (en segundo plano) escribe donde se cargó, aunque
+    // HAKUFU_DATA_DIR haya cambiado entre medias. Antes se leía en cada
+    // guardado y un test que acababa podía escribir en la biblioteca real.
+    private readonly string _dataDir = AppPaths.DataDir;
+    private string DataDir  => _dataDir;
+    private string DataFile => Path.Combine(_dataDir, "data.json");
+    private string TmpFile  => DataFile + ".tmp"; // solo para limpieza en LoadAsync
 
     // Hasta la 0.9.x los datos vivían en %LOCALAPPDATA%\Hakufu (solo Windows).
     private static readonly string OldDataDir = Path.Combine(

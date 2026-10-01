@@ -143,24 +143,37 @@
                                     Margin="6,0,30,40"
                                     Command="{Binding $parent[UserControl].((vm:LibraryViewModel)DataContext).CardClickCommand}"
                                     CommandParameter="{Binding}">
-                                <StackPanel Width="176">
+                                <StackPanel Width="190">
 
-                                    <!-- Portada con los cantos de los tomos de detrás -->
-                                    <Grid Name="Stack" Width="176" Height="262">
-                                        <Border Classes="edge" Width="160" Height="240"
+                                    <!-- Montón: la portada de cada tomo asoma por detrás, más oscura cuanto más al fondo -->
+                                    <Grid Name="Stack" Width="190" Height="256">
+                                        <Border Classes="edge" Width="148" Height="222"
                                                 HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                Margin="14,0,0,0"
-                                                IsVisible="{Binding BackCover, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                                        <Border Classes="edge" Width="160" Height="240"
+                                                Margin="42,0,0,0" ClipToBounds="True"
+                                                IsVisible="{Binding BackCover, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <Panel>
+                                                <Image Source="{Binding BackCover}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                                <Border Background="Black" Opacity="0.45"/>
+                                            </Panel>
+                                        </Border>
+                                        <Border Classes="edge" Width="154" Height="230"
                                                 HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                Margin="7,7,0,0"
-                                                IsVisible="{Binding MiddleCover, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                Margin="21,8,0,0" ClipToBounds="True"
+                                                BoxShadow="0 4 12 0 #33000000"
+                                                IsVisible="{Binding MiddleCover, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <Panel>
+                                                <Image Source="{Binding MiddleCover}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                                <Border Background="Black" Opacity="0.25"/>
+                                            </Panel>
+                                        </Border>
                                         <Border Width="160" Height="240" CornerRadius="4"
                                                 HorizontalAlignment="Left" VerticalAlignment="Bottom"
                                                 ClipToBounds="True"
                                                 Background="{DynamicResource CardBackground}"
                                                 BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
-                                                BoxShadow="0 6 18 0 #33000000">
+                                                BoxShadow="0 6 18 0 #40000000">
                                             <Image Source="{Binding FrontCover}"
                                                    Stretch="UniformToFill"
                                                    RenderOptions.BitmapInterpolationMode="HighQuality"/>

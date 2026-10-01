@@ -24,8 +24,9 @@ public class CollectionCardViewModel : BaseViewModel
     // elegían con DataTriggers sobre CoverPreviews.Count; Avalonia no tiene
     // DataTrigger, así que se calculan aquí.
     public Bitmap? FrontCover  => CoverPreviews.Count > 0 ? CoverPreviews[0] : null;
-    public Bitmap? MiddleCover => CoverPreviews.Count switch { >= 2 => CoverPreviews[1], 1 => CoverPreviews[0], _ => null };
-    public Bitmap? BackCover   => CoverPreviews.Count switch { >= 3 => CoverPreviews[2], 2 => CoverPreviews[1], _ => null };
+    // Una capa por tomo (sin repetir portadas): con 1 tomo, solo la de delante.
+    public Bitmap? MiddleCover => CoverPreviews.Count >= 2 ? CoverPreviews[1] : null;
+    public Bitmap? BackCover   => CoverPreviews.Count >= 3 ? CoverPreviews[2] : null;
 
     private bool _isSelected;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }

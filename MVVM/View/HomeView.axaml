@@ -71,11 +71,6 @@
             <Setter Property="FontSize"   Value="76"/>
             <Setter Property="LineHeight" Value="76"/>
         </Style>
-        <Style Selector="TextBlock.menuCaption">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Opacity"  Value="0.65"/>
-            <Setter Property="Margin"   Value="2,0,0,4"/>
-        </Style>
 
 
     </UserControl.Styles>
@@ -101,7 +96,6 @@
                     <Button Classes="menuItem big" Command="{Binding NavLibraryCommand}">
                         <StackPanel>
                             <TextBlock Classes="menuLabel" Text="Biblioteca"/>
-                            <TextBlock Classes="menuCaption" Text="Tus colecciones y mangas"/>
                         </StackPanel>
                     </Button>
                     <!-- Perfil -->

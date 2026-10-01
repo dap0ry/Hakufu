@@ -122,7 +122,7 @@ public class HelpViewModel : BaseViewModel
             "La Aplicación funciona de forma totalmente local y sin conexión: no dispone de cuentas de usuario, " +
             "no se conecta a servidores del Desarrollador ni de terceros y no recopila, transmite ni comparte " +
             "datos personales, estadísticas de uso ni información alguna sobre la biblioteca del Usuario. " +
-            "Toda la información (biblioteca, progreso de lectura, historial, portadas y personalización) se " +
+            "Toda la información (biblioteca, progreso de lectura, historial, portadas y perfil) se " +
             "guarda únicamente en el dispositivo del Usuario, en la carpeta de datos de la Aplicación. La " +
             "Aplicación permite, de forma opcional, exportar e importar una copia de seguridad en un archivo " +
             "local; el Usuario decide dónde guardarla y es el único responsable de su custodia, así como de " +

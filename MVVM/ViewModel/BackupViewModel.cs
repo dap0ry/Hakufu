@@ -5,7 +5,7 @@ namespace Hakufu.MVVM.ViewModel;
 
 /// <summary>
 /// Copia de seguridad 100% local: exporta/importa un .zip con la biblioteca
-/// (datos, portadas y personalización, y opcionalmente los mangas de la
+/// (datos, portadas y perfil, y opcionalmente los mangas de la
 /// carpeta de Hakufu). Sustituye a la antigua copia en Dropbox.
 /// </summary>
 public class BackupViewModel : BaseViewModel
@@ -15,7 +15,6 @@ public class BackupViewModel : BaseViewModel
     private readonly INavigationService _nav;
     private readonly IDataRepository    _repo;
     private readonly IThemeService      _theme;
-    private readonly IWallpaperService  _wallpaper;
 
     private bool    _includeLibraryFiles = true;
     private bool    _isConfirmingRestore;
@@ -26,14 +25,13 @@ public class BackupViewModel : BaseViewModel
     private string? _pendingRestorePath;
 
     public BackupViewModel(IBackupService backup, IFilePickerService files, INavigationService nav,
-                           IDataRepository repo, IThemeService theme, IWallpaperService wallpaper)
+                           IDataRepository repo, IThemeService theme)
     {
         _backup    = backup;
         _files     = files;
         _nav       = nav;
         _repo      = repo;
         _theme     = theme;
-        _wallpaper = wallpaper;
     }
 
     public string DataFolder => AppPaths.DataDir;
@@ -117,10 +115,8 @@ public class BackupViewModel : BaseViewModel
             var ok = await _backup.ImportAsync(path, p);
             if (!ok) return (false, "Ese archivo no es una copia de seguridad de Hakufu. No se ha cambiado nada.");
 
-            // Tema y fondo vienen con la copia: aplicarlos ya.
+            // El tema viene con la copia: aplicarlo ya.
             _theme.SetTheme(_repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
-            var wp = _repo.Current.Customization.GeneralWallpaper;
-            _wallpaper.Apply(wp?.Path, wp?.Opacity ?? 0.3);
             OnPropertyChanged(nameof(MangaCount));
             OnPropertyChanged(nameof(CollectionCount));
             OnPropertyChanged(nameof(SummaryText));

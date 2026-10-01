@@ -17,8 +17,6 @@ public sealed class CompositionRoot
     public DialogService         Dialog        { get; } = new();
     public FilePickerService     FilePicker    { get; } = new();
     public CoverService          Cover         { get; } = new();
-    public CustomizationService  Customization { get; } = new();
-    public WallpaperService      Wallpaper     { get; } = new();
     public LibraryService        Library       { get; }
     public ProfileService        Profile       { get; }
     public BackupService         Backup        { get; }
@@ -33,15 +31,9 @@ public sealed class CompositionRoot
         Navigation = new NavigationService(Create);
     }
 
-    /// <summary>Aplica el tema y el fondo guardados. Llamar antes de crear ninguna vista.</summary>
+    /// <summary>Aplica el tema guardado. Llamar antes de crear ninguna vista.</summary>
     public void ApplySavedAppearance()
-    {
-        Theme.SetTheme(Repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
-
-        // Wallpaper general (si hay uno guardado): sustituye el recurso AppBackground.
-        var wallpaper = Repo.Current.Customization.GeneralWallpaper;
-        Wallpaper.Apply(wallpaper?.Path, wallpaper?.Opacity ?? 0.3);
-    }
+        => Theme.SetTheme(Repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
 
     /// <summary>ViewModel de la ventana principal; navega a Inicio al crearse.</summary>
     public MainWindowViewModel CreateMainViewModel() => new(Navigation, Dialog);
@@ -58,18 +50,15 @@ public sealed class CompositionRoot
         nameof(ReaderViewModel) when param is ReaderNavigationParam p => new ReaderViewModel(
             p.Manga, p.StartPage, Library, Profile, Navigation, Repo.Current.Reader),
 
-        nameof(ProfileViewModel) => new ProfileViewModel(Profile, Library, Cover, Dialog, Navigation),
+        nameof(ProfileViewModel) => new ProfileViewModel(Profile, Library, Cover, Dialog, Navigation, FilePicker),
 
         nameof(SettingsViewModel) => new SettingsViewModel(
             Theme, Repo, Navigation, Dialog, Library, FilePicker),
 
-        nameof(CustomizationViewModel) => new CustomizationViewModel(
-            Repo, Navigation, Customization, FilePicker, Wallpaper),
-
         nameof(HelpViewModel) => new HelpViewModel(Navigation),
 
         nameof(BackupViewModel) => new BackupViewModel(
-            Backup, FilePicker, Navigation, Repo, Theme, Wallpaper),
+            Backup, FilePicker, Navigation, Repo, Theme),
 
         _ => throw new InvalidOperationException($"Unknown ViewModel: {type.Name}")
     };

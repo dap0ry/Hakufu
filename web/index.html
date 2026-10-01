@@ -216,6 +216,15 @@
 
     .feature-media .shot { --shadow: var(--red); border-color: #2A2A2A; }
 
+    /* La tarjeta de perfil es vertical y con esquinas redondeadas: la sombra
+       sigue su forma (drop-shadow) en vez de la caja. */
+    .card-shot {
+      width: min(400px, 100%);
+      margin-inline: auto;
+      filter: drop-shadow(14px 14px 0 var(--red));
+      transform: rotate(2deg);
+    }
+
     .feature h3 { font-size: clamp(36px, 4vw, 56px); }
 
     .feature p { margin-top: 16px; color: #CFCFCF; max-width: 40ch; }
@@ -443,8 +452,8 @@
             </div>
           </div>
           <div>
-            <h3 class="display">Claro u oscuro, y tus fondos</h3>
-            <p>Cambia el tema con un clic y pon tus propias imágenes de fondo en la app y en el menú de inicio.</p>
+            <h3 class="display">Claro u oscuro</h3>
+            <p>Cambia el tema con un clic, y elige en Ajustes cómo quieres leer: a una o dos páginas, en modo zen y con o sin animación al pasar la hoja.</p>
             <div class="theme-switch" role="group" aria-label="Ver la captura en tema oscuro o claro">
               <button class="tab small" type="button" data-theme="dark" aria-pressed="true"><span>Oscuro</span></button>
               <button class="tab small" type="button" data-theme="light" aria-pressed="false"><span>Claro</span></button>
@@ -454,16 +463,16 @@
 
         <article class="feature">
           <div class="feature-media">
-            <img class="shot" src="/img/app-profile-dark.webp" width="1280" height="800" loading="lazy"
-                 alt="El perfil de Hakufu con tus tres mangas favoritos y tus colecciones favoritas.">
+            <img class="card-shot" src="/img/app-profile-card.webp" width="1240" height="1884" loading="lazy"
+                 alt="Tarjeta de perfil de Hakufu: foto, nombre, horas leyendo, gráfica de las últimas 12 semanas, manga favorito y los tres que estás leyendo.">
           </div>
           <div>
-            <h3 class="display">Tu perfil de lector</h3>
-            <p>Tus tres mangas favoritos, lo último que terminaste y cuánto llevas leído.</p>
+            <h3 class="display">Tu perfil, listo para compartir</h3>
+            <p>Tu foto y tu nombre, cuántas horas llevas leyendo y una gráfica de tus semanas, como en una app de deporte. Guárdalo como imagen y súbelo donde quieras.</p>
             <ul>
-              <li>Páginas leídas y tiempo de uso</li>
-              <li>Páginas por colección</li>
-              <li>Historial completo</li>
+              <li>Horas, páginas y tomos terminados</li>
+              <li>Tus últimas 12 semanas y tu racha</li>
+              <li>Tu manga favorito y lo que estás leyendo</li>
             </ul>
           </div>
         </article>

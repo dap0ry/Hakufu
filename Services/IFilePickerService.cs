@@ -6,6 +6,7 @@ public sealed record FileFilter(string Name, params string[] Extensions)
     public static readonly FileFilter Mangas   = new("Archivos de manga", "pdf", "cbr", "cbz");
     public static readonly FileFilter Images   = new("Imágenes", "png", "jpg", "jpeg", "bmp", "gif", "webp");
     public static readonly FileFilter Backup   = new("Copia de Hakufu", "zip");
+    public static readonly FileFilter Png      = new("Imagen PNG", "png");
 }
 
 public interface IFilePickerService

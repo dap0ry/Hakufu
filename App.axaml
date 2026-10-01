@@ -27,7 +27,6 @@
                  los rótulos (Archivo, OFL — ver Assets/Fonts/OFL-Archivo.txt).
                  Igual en los dos temas. -->
             <SolidColorBrush x:Key="BrandRed" Color="#E5001A"/>
-            <SolidColorBrush x:Key="NoBrush"  Color="Transparent"/>
             <FontFamily x:Key="DisplayFont">avares://Hakufu/Assets/Fonts/HakufuDisplay-Black.ttf#Hakufu Display</FontFamily>
             <FontFamily x:Key="DisplayFontSemi">avares://Hakufu/Assets/Fonts/HakufuDisplaySemi-Bold.ttf#Hakufu Display Semi</FontFamily>
 
@@ -36,7 +35,6 @@
             <conv:PercentageWidthConverter x:Key="PercentageWidth"/>
             <conv:BoolToOpacityConverter x:Key="BoolToOpacity"/>
             <conv:PathToBitmapConverter x:Key="PathToBitmap"/>
-            <conv:PathAndOpacityToImageBrushConverter x:Key="PathAndOpacityToImageBrush"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

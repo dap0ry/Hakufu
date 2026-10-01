@@ -68,6 +68,8 @@ public class LibraryService
         await _repo.SaveAsync();
     }
 
+    public IReadOnlyList<Manga> GetAllMangas() => _repo.Current.Mangas.ToList();
+
     public IReadOnlyList<Manga> GetFavoriteMangas()
         => _repo.Current.Mangas
             .Where(m => m.IsFavorite)

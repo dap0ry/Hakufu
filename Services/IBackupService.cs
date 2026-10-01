@@ -3,7 +3,7 @@ namespace Hakufu.Services;
 public interface IBackupService
 {
     /// <summary>
-    /// Crea un .zip con data.json, portadas y personalización. Con
+    /// Crea un .zip con data.json, portadas y foto de perfil. Con
     /// includeLibraryFiles también mete los mangas copiados a la carpeta
     /// "biblioteca" de Hakufu (los que están fuera de ella nunca se incluyen).
     /// </summary>

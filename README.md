@@ -49,7 +49,7 @@ dotnet test tests/Hakufu.Tests        # tests
 | Windows | `%APPDATA%\Hakufu` (la misma que la 0.9.x: la biblioteca se conserva) |
 | macOS / Linux | `~/.config/Hakufu` |
 
-Dentro: `data.json` (biblioteca, progreso, ajustes), `covers/`, `customization/` y `biblioteca/` (mangas copiados a Hakufu). Con la variable `HAKUFU_DATA_DIR` se puede usar otra carpeta, útil para probar con una biblioteca de pruebas.
+Dentro: `data.json` (biblioteca, progreso, ajustes), `covers/`, `profile/` (foto de perfil) y `biblioteca/` (mangas copiados a Hakufu). Con la variable `HAKUFU_DATA_DIR` se puede usar otra carpeta, útil para probar con una biblioteca de pruebas.
 
 **Copia de seguridad:** Inicio → *Copia de seguridad* exporta un `.zip` que se puede importar en cualquier otro equipo, también de otro sistema (Windows → Mac, por ejemplo).
 

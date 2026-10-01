@@ -204,7 +204,7 @@
                     <StackPanel>
                         <TextBlock Classes="cardTitle" Text="Exportar tu biblioteca"/>
                         <TextBlock Classes="body" Margin="0,0,0,16"
-                                   Text="Crea un archivo .zip con tus colecciones, el progreso de lectura, el historial, las portadas y la personalización (tema y fondos). Guárdalo donde quieras: un disco externo, un pendrive u otra carpeta."/>
+                                   Text="Crea un archivo .zip con tus colecciones, el progreso de lectura, el historial, las portadas, tu perfil y el tema. Guárdalo donde quieras: un disco externo, un pendrive u otra carpeta."/>
 
                         <CheckBox IsChecked="{Binding IncludeLibraryFiles}"
                                   IsEnabled="{Binding IsIdle}"
@@ -244,7 +244,7 @@
                                           Fill="{DynamicResource TextPrimary}"
                                           Data="F0 M7,0 A7,7 0 1 1 6.99,0 Z M6,3 L8,3 L7.6,8.5 L6.4,8.5 Z M6,10 L8,10 L8,12 L6,12 Z"/>
                                     <TextBlock Grid.Column="1" FontSize="12" TextWrapping="Wrap"
-                                               Text="La copia sustituirá tu biblioteca actual: colecciones, progreso, historial y personalización. Lo que no esté en la copia se perderá (los archivos de manga del disco no se borran). ¿Continuar?"/>
+                                               Text="La copia sustituirá tu biblioteca actual: colecciones, progreso, historial y perfil. Lo que no esté en la copia se perderá (los archivos de manga del disco no se borran). ¿Continuar?"/>
                                 </Grid>
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="10">

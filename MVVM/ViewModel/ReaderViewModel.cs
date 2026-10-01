@@ -21,6 +21,11 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     private Bitmap? _pageLeft;
     private Bitmap? _pageRight;
 
+    // Registro de lectura: el tiempo entre una acción y la siguiente cuenta
+    // como leído, pero un rato muerto (lector abierto y nadie delante) no.
+    private static readonly TimeSpan MaxIdle = TimeSpan.FromMinutes(5);
+    private DateTime _lastActivity = DateTime.Now;
+
     /// <summary>Raised when zen mode changes; arg is true=entering, false=exiting.</summary>
     public event EventHandler<bool>? ZenModeChanged;
 
@@ -127,7 +132,8 @@ public class ReaderViewModel : BaseViewModel, IDisposable
         if (target == CurrentPage) return;
 
         PageTurning?.Invoke(this, direction);
-        CurrentPage = target;
+        LogActivity(pages: Math.Max(0, target - CurrentPage));
+        CurrentPage = target; // guarda el progreso, y con él el registro de lectura
     }
 
     public RelayCommand ToggleTwoPageCommand => new(() => IsTwoPageMode = !IsTwoPageMode);
@@ -153,5 +159,24 @@ public class ReaderViewModel : BaseViewModel, IDisposable
         _loader.Preload(page);
     }
 
-    public void Dispose() => _loader.Dispose();
+    private void LogActivity(int pages)
+    {
+        var now   = DateTime.Now;
+        var spent = now - _lastActivity;
+        _lastActivity = now;
+        _profile.LogReading(spent > MaxIdle ? MaxIdle : spent, pages);
+    }
+
+    /// <summary>Apunta el tiempo desde la última página (al salir del lector o cerrar la app).</summary>
+    public void FlushReadingTime()
+    {
+        LogActivity(pages: 0);
+        _ = _profile.SaveAsync();
+    }
+
+    public void Dispose()
+    {
+        FlushReadingTime();
+        _loader.Dispose();
+    }
 }

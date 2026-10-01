@@ -63,7 +63,7 @@
               PointerPressed="PageArea_PointerPressed">
 
             <!-- Doble página: unidas con una línea fina -->
-            <Grid ColumnDefinitions="*,1,*" IsVisible="{Binding IsTwoPageMode}">
+            <Grid ColumnDefinitions="*,1,*" IsVisible="{Binding ShowsTwoPages}">
                 <Image Grid.Column="0"
                        Classes="page"
                        RenderOptions.BitmapInterpolationMode="HighQuality"
@@ -82,10 +82,10 @@
                        Margin="0,8,8,8"/>
             </Grid>
 
-            <!-- Página simple -->
+            <!-- Página simple (o doble página apaisada, a lo ancho) -->
             <Image Classes="page"
                    RenderOptions.BitmapInterpolationMode="HighQuality"
-                   IsVisible="{Binding !IsTwoPageMode}"
+                   IsVisible="{Binding !ShowsTwoPages}"
                    Source="{Binding PageLeft}"
                    Margin="8"/>
 

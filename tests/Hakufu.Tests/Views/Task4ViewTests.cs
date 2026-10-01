@@ -120,7 +120,7 @@ public class Task4ViewTests
             app.Pump();
 
             vm.NextPageCommand.Execute(null);
-            Assert.NotEmpty(flipLayer.Children); // la hoja vieja tapa el cambio mientras gira
+            PumpUntil(app, () => flipLayer.Children.Count > 0); // la hoja vieja tapa el cambio mientras gira
 
             // La animación avanza con los fotogramas del render.
             PumpUntil(app, () =>
@@ -130,12 +130,12 @@ public class Task4ViewTests
             });
 
             vm.PrevPageCommand.Execute(null);
+            // Pasar página es asíncrono (puede cargar páginas antes de decidir cuánto retroceder).
             PumpUntil(app, () =>
             {
                 AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-                return flipLayer.Children.Count == 0;
+                return vm.CurrentPage == 0 && flipLayer.Children.Count == 0;
             });
-            Assert.Equal(0, vm.CurrentPage);
         }
     }
 }

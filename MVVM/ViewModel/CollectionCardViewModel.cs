@@ -11,6 +11,12 @@ public class CollectionCardViewModel : BaseViewModel
 
     public string Name       => Model.Name;
     public int    MangaCount => Model.MangaIds.Count;
+    public string CountText  => MangaCount == 1 ? "1 tomo" : $"{MangaCount} tomos";
+
+    private double _progressPct;
+    /// <summary>Páginas leídas sobre el total de la colección (0–100).</summary>
+    public double ProgressPct { get => _progressPct; private set => SetProperty(ref _progressPct, value); }
+    public bool   HasProgress => ProgressPct > 0;
 
     public ObservableCollection<Bitmap> CoverPreviews { get; } = [];
 
@@ -48,9 +54,13 @@ public class CollectionCardViewModel : BaseViewModel
 
         // Ordenadas igual que al abrir la colección, para que la portada
         // mostrada aquí sea siempre el primer manga "por orden" del usuario.
-        var mangas = library.GetMangasInCollectionSorted(Model.Id)
-            .Take(3)
-            .ToList();
+        var all = library.GetMangasInCollectionSorted(Model.Id);
+        var totalPages = all.Sum(m => m.TotalPages);
+        var readPages  = all.Sum(m => Math.Min(m.TotalPages, library.GetProgress(m.Id)?.CurrentPage + 1 ?? 0));
+        ProgressPct = totalPages > 0 ? readPages * 100.0 / totalPages : 0;
+        OnPropertyChanged(nameof(HasProgress));
+
+        var mangas = all.Take(3).ToList();
 
         foreach (var manga in mangas)
         {

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using Avalonia.Media.Imaging;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -13,13 +12,17 @@ public class LibraryViewModel : BaseViewModel
 
     public ObservableCollection<CollectionCardViewModel> Collections { get; } = [];
 
-    // "Continuar leyendo" section
-    private string?       _lastMangaTitle;
-    private Bitmap? _lastMangaCover;
-
-    public string?       LastMangaTitle { get => _lastMangaTitle; private set => SetProperty(ref _lastMangaTitle, value); }
-    public Bitmap? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
-    public bool HasLastManga => LastMangaTitle is not null;
+    /// <summary>"6 colecciones · 14 tomos"</summary>
+    public string SummaryText
+    {
+        get
+        {
+            var cols  = Collections.Count;
+            var tomos = Collections.Sum(c => c.MangaCount);
+            return $"{cols} {(cols == 1 ? "colección" : "colecciones")} · {tomos} {(tomos == 1 ? "tomo" : "tomos")}";
+        }
+    }
+    public bool IsEmpty => Collections.Count == 0;
 
     public LibraryViewModel(LibraryService library, ICoverService cover,
                             IDialogService dialog, INavigationService nav)
@@ -31,11 +34,7 @@ public class LibraryViewModel : BaseViewModel
         _ = InitializeAsync();
     }
 
-    private async Task InitializeAsync()
-    {
-        await LoadCollectionsAsync();
-        await LoadLastMangaAsync();
-    }
+    private Task InitializeAsync() => LoadCollectionsAsync();
 
     public async Task LoadCollectionsAsync()
     {
@@ -46,16 +45,9 @@ public class LibraryViewModel : BaseViewModel
             Collections.Add(card);
             _ = card.LoadCoversAsync(_library, _cover);
         }
-        OnPropertyChanged(nameof(HasLastManga));
-    }
-
-    private async Task LoadLastMangaAsync()
-    {
-        var last = _library.GetLastReadManga();
-        if (last is null) { LastMangaTitle = null; LastMangaCover = null; return; }
-        LastMangaTitle = last.Title;
-        LastMangaCover = await _cover.GetCoverAsync(last);
-        OnPropertyChanged(nameof(HasLastManga));
+        OnPropertyChanged(nameof(SummaryText));
+        OnPropertyChanged(nameof(IsEmpty));
+        await Task.CompletedTask;
     }
 
     private bool _isSelectionMode;
@@ -122,13 +114,4 @@ public class LibraryViewModel : BaseViewModel
             await LoadCollectionsAsync();
         }, _dialog));
     });
-
-    public RelayCommand ContinueReadingCommand => new(async () =>
-    {
-        var last = _library.GetLastReadManga();
-        if (last is null) return;
-        var progress = _library.GetProgress(last.Id);
-        int startPage = Math.Max(0, (progress?.CurrentPage ?? 1) - 1);
-        _nav.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(last, startPage));
-    }, () => HasLastManga);
 }

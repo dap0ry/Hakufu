@@ -6,7 +6,6 @@ namespace Hakufu.MVVM.ViewModel;
 /// <summary>
 /// Copia de seguridad 100% local: exporta/importa un .zip con la biblioteca
 /// (datos, portadas y perfil; los mangas no, son la carpeta del usuario).
-/// Sustituye a la antigua copia en Dropbox.
 /// </summary>
 public class BackupViewModel : BaseViewModel
 {

@@ -57,6 +57,8 @@ public sealed class CompositionRoot
 
         nameof(HelpViewModel) => new HelpViewModel(Navigation),
 
+        nameof(LegalViewModel) => new LegalViewModel(Navigation),
+
         nameof(BackupViewModel) => new BackupViewModel(
             Backup, FilePicker, Navigation, Repo, Theme),
 

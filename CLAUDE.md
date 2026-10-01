@@ -39,7 +39,11 @@ and by the view smoke tests).
 Program.cs / App.axaml(.cs)  ← Avalonia bootstrap; loads data.json, builds CompositionRoot, shows MainWindow
 CompositionRoot.cs           ← creates all services + the ViewModel factory for NavigationService
 ViewLocator.cs               ← XxxViewModel → XxxView by naming convention (no registration needed)
-MainWindow.axaml(.cs)        ← shell: ContentControl + modal overlay; zen mode = WindowState.FullScreen
+MainWindow.axaml(.cs)        ← shell: ContentControl + modal overlay; zen mode = WindowState.FullScreen;
+                               on Linux its own title bar (OwnTitleBar: minimize / full screen / close);
+                               theme changes play the ink transition (ThemeService.Transition → PlayThemeTransition)
+Controls/InkTransition       ← InkShadow-style ink wipe between themes: SkSL shader on OpenGL, Skia paths
+                               elsewhere (SkiaSharp 2.88 aborts with SIGILL drawing SkSL on the CPU)
 MVVM/
   Model/                     ← plain data classes (Manga, Collection, ReadingProgress, …)
   ViewModel/                 ← BaseViewModel, RelayCommand, AsyncRelayCommand, CommandRequery + all VMs
@@ -49,7 +53,7 @@ Data/
   IDataRepository / JsonDataRepository  ← load/save AppDataStore to data.json
 Services/
   NavigationService          ← ContentControl dispatch via Func<Type, object?, BaseViewModel>
-  ThemeService               ← swaps Application.Resources.MergedDictionaries[0] + ThemeVariant
+  ThemeService               ← swaps Application.Resources.MergedDictionaries[0] + ThemeVariant (via Transition if set)
   DialogService              ← modal overlay callbacks wired into MainWindowViewModel
   LibraryService / ProfileService  ← collections, mangas, favorites, history
   LibraryScanner             ← syncs data.json with the library folder (async; keeps Ids/progress by RelativePath)

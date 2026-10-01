@@ -12,9 +12,26 @@ public class ThemeService : IThemeService
 
     public AppTheme CurrentTheme { get; private set; } = AppTheme.Light;
 
+    /// <summary>
+    /// Si está puesto, un cambio de tema de verdad (claro ↔ oscuro) se hace a
+    /// través de él: recibe el tema nuevo y el cambio, y decide cuándo aplicarlo.
+    /// MainWindow lo usa para la transición de tinta (foto del tema viejo →
+    /// cambio → animación). Sin él (arranque, tests) el tema se aplica al momento.
+    /// </summary>
+    public Action<AppTheme, Action>? Transition { get; set; }
+
     public void SetTheme(AppTheme theme)
     {
+        var changed = theme != CurrentTheme;
         CurrentTheme = theme;
+        if (changed && Transition is { } transition)
+            transition(theme, () => Apply(theme));
+        else
+            Apply(theme);
+    }
+
+    private static void Apply(AppTheme theme)
+    {
         var app = Application.Current!;
 
         // Los controles de Fluent (TextBox, ScrollBar, CheckBox…) siguen al

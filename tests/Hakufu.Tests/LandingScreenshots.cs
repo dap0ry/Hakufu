@@ -98,14 +98,15 @@ public class LandingScreenshots
             Shot("collection");
             root.Navigation.NavigateTo<ProfileViewModel>();
             Shot("profile");
-            // La tarjeta sola, como la exporta "Guardar imagen".
-            var card = window.GetVisualDescendants().OfType<Avalonia.Controls.Border>().Single(b => b.Name == "Card");
-            using (var png = new Avalonia.Media.Imaging.RenderTargetBitmap(
-                       new Avalonia.PixelSize((int)card.Bounds.Width * 2, (int)card.Bounds.Height * 2),
-                       new Avalonia.Vector(192, 192)))
+            // Las tarjetas solas, como las exporta "Guardar imagen".
+            foreach (var (card, kind) in new (Avalonia.Controls.Control, string)[]
+                     {
+                         (window.GetVisualDescendants().OfType<Avalonia.Controls.LayoutTransformControl>().Single(c => c.Name == "ExportHorizontal"), "horizontal"),
+                         (window.GetVisualDescendants().OfType<Avalonia.Controls.LayoutTransformControl>().Single(c => c.Name == "ExportVertical"), "vertical"),
+                     })
             {
-                png.Render(card);
-                png.Save(Path.Combine(outDir, $"profile-card-{theme.ToLowerInvariant()}.png"));
+                using var png = Hakufu.MVVM.View.ProfileView.RenderCard(card);
+                png.Save(Path.Combine(outDir, $"profile-card-{kind}-{theme.ToLowerInvariant()}.png"));
             }
             root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(store.Mangas[0], 2));
             Shot("reader");

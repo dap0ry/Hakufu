@@ -1,0 +1,168 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.ProfileCardHorizontal"
+             x:DataType="vm:ProfileViewModel">
+
+    <!-- Tarjeta de perfil en horizontal: la que se ve en la app (y se puede exportar). -->
+    <UserControl.Styles>
+        <StyleInclude Source="avares://Hakufu/MVVM/View/ProfileCardStyles.axaml"/>
+    </UserControl.Styles>
+
+    <Border Name="Card" Classes="card" Width="1140" Padding="44,40,44,34">
+        <Grid ColumnDefinitions="330,Auto,*">
+
+            <!-- Izquierda: quién eres y tus números -->
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto">
+                <Border Width="112" Height="112" CornerRadius="56"
+                        Background="#2A2A2A"
+                        BorderBrush="{StaticResource CardText}" BorderThickness="3"
+                        ClipToBounds="True" HorizontalAlignment="Left">
+                    <Panel>
+                        <TextBlock Text="{Binding Initial}"
+                                   IsVisible="{Binding !HasAvatar}"
+                                   FontFamily="{DynamicResource DisplayFont}" FontSize="56"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Image Source="{Binding Avatar}" Stretch="UniformToFill"
+                               IsVisible="{Binding HasAvatar}"
+                               RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                    </Panel>
+                </Border>
+                <Panel Grid.Row="1">
+                <StackPanel Margin="0,20,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DisplayName}"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="52" LineHeight="50"
+                               TextWrapping="Wrap" MaxLines="2"
+                               TextTrimming="CharacterEllipsis"
+                               Opacity="{Binding HasName, Converter={StaticResource BoolToOpacity}}"/>
+                    <TextBlock Classes="label" Text="{Binding MemberSinceText}" Margin="2,8,0,0"/>
+                </StackPanel>
+                </Panel>
+                <StackPanel Grid.Row="2" Spacing="18" Margin="0,30,0,24">
+                    <StackPanel>
+                        <TextBlock Classes="label" Text="Tiempo leyendo"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Classes="statValue" Text="{Binding ReadingTimeValue}"/>
+                            <TextBlock Classes="statUnit" Text="{Binding ReadingTimeUnit}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Classes="label" Text="Páginas"/>
+                        <TextBlock Classes="statValue" Text="{Binding PagesText}"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Classes="label" Text="Tomos terminados"/>
+                        <TextBlock Classes="statValue" Text="{Binding FinishedText}"/>
+                    </StackPanel>
+                </StackPanel>
+                <Panel Grid.Row="3">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Classes="label" Text="{Binding StreakText}"
+                               IsVisible="{Binding HasStreak}" VerticalAlignment="Center"/>
+                    <Image Grid.Column="1" Source="avares://Hakufu/Images/HakufuTitleDark.png"
+                           Height="30" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                </Grid>
+                </Panel>
+            </Grid>
+
+            <Border Grid.Column="1" Width="1" Margin="40,0" Background="{StaticResource CardLine}"/>
+
+            <!-- Derecha: semanas y mangas -->
+            <StackPanel Grid.Column="2">
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+                    <TextBlock Grid.Column="0" Classes="sectionTitle" Text="Últimas 12 semanas"/>
+                    <TextBlock Grid.Column="1" Classes="label" Text="{Binding ThisWeekText}"
+                               VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding WeekBars}" Height="150">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WeekBarViewModel">
+                            <Panel Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
+                                <Border Classes="bar" Height="{Binding Height}" Background="{StaticResource BarEmpty}"/>
+                                <Border Classes="bar" Height="{Binding Height}" Background="{StaticResource BarIdle}"
+                                        IsVisible="{Binding HasReading}"/>
+                                <Border Classes="bar" Height="{Binding Height}" Background="{StaticResource CardText}"
+                                        IsVisible="{Binding IsCurrent}"/>
+                            </Panel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Border Height="1" Background="{StaticResource CardLine}"/>
+                <Grid ColumnDefinitions="*,Auto" Margin="4,8,4,0">
+                    <TextBlock Grid.Column="0" Classes="label" Text="{Binding FirstWeekLabel}"/>
+                    <TextBlock Grid.Column="1" Classes="label" Text="esta semana"/>
+                </Grid>
+                <TextBlock Classes="label" Margin="0,10,0,0"
+                           Text="Lee un rato y aquí irán apareciendo tus semanas."
+                           IsVisible="{Binding !HasReadingLog}"/>
+                <Border Height="1" Background="{StaticResource CardLine}" Margin="0,30"/>
+                <Grid ColumnDefinitions="Auto,*">
+                    <StackPanel Grid.Column="0" Width="150" Margin="0,0,32,0">
+                        <TextBlock Classes="sectionTitle" Text="Manga favorito" Margin="0,0,0,14"/>
+                        <Button Classes="cover"
+                                IsVisible="{Binding HasFavoriteManga}"
+                                Command="{Binding OpenMangaCommand}"
+                                CommandParameter="{Binding FavoriteManga}">
+                            <StackPanel>
+                                <Border Width="150" Height="212" CornerRadius="6" ClipToBounds="True" Background="#222222">
+                                    <Image Source="{Binding FavoriteManga.Cover}" Stretch="UniformToFill"
+                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                </Border>
+                                <TextBlock Text="{Binding FavoriteManga.Title}"
+                                           FontSize="13" FontWeight="SemiBold" Margin="0,10,0,0"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Button>
+                        <Border Width="150" Height="212" CornerRadius="6"
+                                BorderBrush="{StaticResource CardLine}" BorderThickness="1"
+                                IsVisible="{Binding !HasFavoriteManga}">
+                            <TextBlock Classes="label" Margin="16" TextWrapping="Wrap"
+                                       TextAlignment="Center" VerticalAlignment="Center"
+                                       Text="Elige tu favorito en Editar perfil"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Classes="sectionTitle" Text="Leyendo ahora" Margin="0,0,0,14"/>
+                        <ItemsControl ItemsSource="{Binding RecentMangas}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1" Columns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:MangaCardViewModel">
+                                    <Button Classes="cover" Margin="0,0,12,0"
+                                            Command="{Binding $parent[ItemsControl].((vm:ProfileViewModel)DataContext).OpenMangaCommand}"
+                                            CommandParameter="{Binding}">
+                                        <StackPanel>
+                                            <Border Height="212" CornerRadius="6" ClipToBounds="True" Background="#222222">
+                                                <Image Source="{Binding Cover}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                            </Border>
+                                            <ProgressBar Value="{Binding ProgressPct}" Maximum="100"
+                                                         MinWidth="0" Height="3" MinHeight="3" CornerRadius="0" Margin="0,8,0,0"
+                                                         Background="{StaticResource CardLine}"
+                                                         Foreground="{StaticResource CardText}"/>
+                                            <TextBlock Text="{Binding Title}" FontSize="12" Margin="0,7,0,0"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="label" TextWrapping="Wrap"
+                                   Text="Aún no has empezado ningún manga."
+                                   IsVisible="{Binding !HasRecentMangas}"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

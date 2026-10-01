@@ -141,19 +141,26 @@ public class ProfileTests
     }
 
     [AvaloniaFact]
-    public void The_profile_card_renders_to_an_image()
+    public void The_profile_card_exports_horizontal_and_vertical()
     {
         using var app = ViewSmoke.Start(darkTheme: false);
         app.Root.Navigation.NavigateTo<ProfileViewModel>();
         var view = app.AssertShows<ProfileView>();
-        var card = view.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "Card");
-        Assert.True(card.Bounds.Width > 0 && card.Bounds.Height > 0);
 
-        using var bitmap = new RenderTargetBitmap(
-            new PixelSize((int)card.Bounds.Width * 2, (int)card.Bounds.Height * 2), new Vector(192, 192));
-        bitmap.Render(card);
-        using var ms = new MemoryStream();
-        bitmap.Save(ms);
-        Assert.True(ms.Length > 1000);
+        var horizontal = view.GetVisualDescendants().OfType<LayoutTransformControl>().Single(c => c.Name == "ExportHorizontal");
+        var vertical   = view.GetVisualDescendants().OfType<LayoutTransformControl>().Single(c => c.Name == "ExportVertical");
+        // En la app se ve una horizontal (dentro del Viewbox) y además está la copia de exportar.
+        Assert.Equal(2, view.GetVisualDescendants().OfType<ProfileCardHorizontal>().Count());
+
+        using var h = ProfileView.RenderCard(horizontal);
+        using var v = ProfileView.RenderCard(vertical);
+        Assert.True(h.PixelSize.Width > h.PixelSize.Height, "La horizontal tiene que ser apaisada.");
+        Assert.True(v.PixelSize.Height > v.PixelSize.Width, "La vertical tiene que ser alargada.");
+        foreach (var bmp in new[] { h, v })
+        {
+            using var ms = new MemoryStream();
+            bmp.Save(ms);
+            Assert.True(ms.Length > 1000);
+        }
     }
 }

@@ -1,67 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:v="using:Hakufu.MVVM.View"
              x:Class="Hakufu.MVVM.View.ProfileView"
              x:DataType="vm:ProfileViewModel">
-
-    <!-- La tarjeta tiene colores propios (no los del tema): se comparte como
-         imagen y tiene que verse igual la saque quien la saque. -->
-    <UserControl.Resources>
-        <SolidColorBrush x:Key="CardBg"    Color="#111111"/>
-        <SolidColorBrush x:Key="CardLine"  Color="#262626"/>
-        <SolidColorBrush x:Key="CardText"  Color="#F2F2F2"/>
-        <SolidColorBrush x:Key="CardMuted" Color="#8C8C8C"/>
-        <SolidColorBrush x:Key="BarIdle"   Color="#3D3D3D"/>
-        <SolidColorBrush x:Key="BarEmpty"  Color="#242424"/>
-    </UserControl.Resources>
-
-    <UserControl.Styles>
-        <Style Selector="Border#Card TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource CardText}"/>
-        </Style>
-        <Style Selector="TextBlock.label">
-            <Setter Property="FontSize"   Value="12"/>
-            <Setter Property="Foreground" Value="{StaticResource CardMuted}"/>
-        </Style>
-        <Style Selector="TextBlock.statValue">
-            <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}"/>
-            <Setter Property="FontSize"   Value="48"/>
-            <Setter Property="LineHeight" Value="48"/>
-        </Style>
-        <Style Selector="TextBlock.statUnit">
-            <Setter Property="FontFamily" Value="{DynamicResource DisplayFontSemi}"/>
-            <Setter Property="FontSize"   Value="20"/>
-            <Setter Property="Margin"     Value="4,0,0,5"/>
-            <Setter Property="VerticalAlignment" Value="Bottom"/>
-        </Style>
-        <Style Selector="TextBlock.sectionTitle">
-            <Setter Property="FontFamily" Value="{DynamicResource DisplayFontSemi}"/>
-            <Setter Property="FontSize"   Value="19"/>
-        </Style>
-
-        <!-- Portada clicable: abre el manga -->
-        <Style Selector="Button.cover">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Padding"    Value="0"/>
-            <Setter Property="Cursor"     Value="Hand"/>
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <ContentPresenter Name="CoverContent" Content="{TemplateBinding Content}"
-                                      RenderTransform="translateY(0px)">
-                        <ContentPresenter.Transitions>
-                            <Transitions>
-                                <TransformOperationsTransition Property="RenderTransform"
-                                                               Duration="0:0:0.16" Easing="CubicEaseOut"/>
-                            </Transitions>
-                        </ContentPresenter.Transitions>
-                    </ContentPresenter>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-        <Style Selector="Button.cover:pointerover /template/ ContentPresenter#CoverContent">
-            <Setter Property="RenderTransform" Value="translateY(-4px)"/>
-        </Style>
-    </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,*">
 
@@ -78,191 +20,37 @@
                     <Button Classes="ghost" Content="Editar perfil" Padding="18,10"
                             Command="{Binding EditProfileCommand}"/>
                     <Button Classes="primary" Content="Guardar imagen" Padding="18,10"
-                            Click="SaveImage_Click"
-                            ToolTip.Tip="Guarda la tarjeta como PNG para compartirla"/>
+                            ToolTip.Tip="Guarda la tarjeta como PNG para compartirla">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuItem Header="Horizontal (ordenador, Twitter…)" Click="SaveHorizontal_Click"/>
+                                <MenuItem Header="Vertical (móvil, historias…)" Click="SaveVertical_Click"/>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- ═══ TARJETA ═══ -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Border Name="Card"
-                    Width="620"
-                    Margin="0,36,0,48"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Top"
-                    Background="{StaticResource CardBg}"
-                    BorderBrush="{StaticResource CardLine}"
-                    BorderThickness="1"
-                    CornerRadius="24"
-                    Padding="40,40,40,32">
-                <StackPanel>
+        <!-- ═══ TARJETA ═══
+             Se encoge si la ventana es pequeña (Viewbox solo hacia abajo). -->
+        <Panel Grid.Row="1">
+            <Viewbox Stretch="Uniform" StretchDirection="DownOnly" Margin="36,32">
+                <v:ProfileCardHorizontal/>
+            </Viewbox>
 
-                    <!-- Foto + nombre -->
-                    <Grid ColumnDefinitions="Auto,*">
-                        <Border Grid.Column="0"
-                                Width="116" Height="116" CornerRadius="58"
-                                Background="#2A2A2A"
-                                BorderBrush="{StaticResource CardText}" BorderThickness="3"
-                                ClipToBounds="True"
-                                VerticalAlignment="Center">
-                            <Panel>
-                                <TextBlock Text="{Binding Initial}"
-                                           IsVisible="{Binding !HasAvatar}"
-                                           FontFamily="{DynamicResource DisplayFont}" FontSize="56"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <Image Source="{Binding Avatar}" Stretch="UniformToFill"
-                                       IsVisible="{Binding HasAvatar}"
-                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                            </Panel>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="26,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding DisplayName}"
-                                       FontFamily="{DynamicResource DisplayFont}"
-                                       FontSize="56" LineHeight="54"
-                                       TextWrapping="Wrap" MaxLines="2"
-                                       TextTrimming="CharacterEllipsis"
-                                       Opacity="{Binding HasName, Converter={StaticResource BoolToOpacity}}"/>
-                            <TextBlock Classes="label" Text="{Binding MemberSinceText}" Margin="2,8,0,0"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Números -->
-                    <Grid ColumnDefinitions="*,*,*" Margin="0,36,0,0">
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Classes="label" Text="Tiempo leyendo"/>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Classes="statValue" Text="{Binding ReadingTimeValue}"/>
-                                <TextBlock Classes="statUnit" Text="{Binding ReadingTimeUnit}"/>
-                            </StackPanel>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Classes="label" Text="Páginas"/>
-                            <TextBlock Classes="statValue" Text="{Binding PagesText}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Classes="label" Text="Tomos terminados"/>
-                            <TextBlock Classes="statValue" Text="{Binding FinishedText}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Border Height="1" Background="{StaticResource CardLine}" Margin="0,30"/>
-
-                    <!-- Gráfica semanal -->
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,18">
-                        <TextBlock Grid.Column="0" Classes="sectionTitle" Text="Últimas 12 semanas"/>
-                        <TextBlock Grid.Column="1" Classes="label" Text="{Binding ThisWeekText}"
-                                   VerticalAlignment="Bottom" Margin="0,0,0,2"/>
-                    </Grid>
-                    <ItemsControl ItemsSource="{Binding WeekBars}" Height="120">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Rows="1"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:WeekBarViewModel">
-                                <Panel Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
-                                    <Border Height="{Binding Height}" Margin="4,0" CornerRadius="3,3,0,0"
-                                            VerticalAlignment="Bottom"
-                                            Background="{StaticResource BarEmpty}"/>
-                                    <Border Height="{Binding Height}" Margin="4,0" CornerRadius="3,3,0,0"
-                                            VerticalAlignment="Bottom"
-                                            Background="{StaticResource BarIdle}"
-                                            IsVisible="{Binding HasReading}"/>
-                                    <Border Height="{Binding Height}" Margin="4,0" CornerRadius="3,3,0,0"
-                                            VerticalAlignment="Bottom"
-                                            Background="{StaticResource CardText}"
-                                            IsVisible="{Binding IsCurrent}"/>
-                                </Panel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <Border Height="1" Background="{StaticResource CardLine}"/>
-                    <Grid ColumnDefinitions="*,Auto" Margin="4,8,4,0">
-                        <TextBlock Grid.Column="0" Classes="label" Text="{Binding FirstWeekLabel}"/>
-                        <TextBlock Grid.Column="1" Classes="label" Text="esta semana"/>
-                    </Grid>
-                    <TextBlock Classes="label" Margin="0,10,0,0"
-                               Text="Lee un rato y aquí irán apareciendo tus semanas."
-                               IsVisible="{Binding !HasReadingLog}"/>
-
-                    <Border Height="1" Background="{StaticResource CardLine}" Margin="0,30"/>
-
-                    <!-- Favorito + recientes -->
-                    <Grid ColumnDefinitions="Auto,*">
-                        <StackPanel Grid.Column="0" Width="164" Margin="0,0,32,0">
-                            <TextBlock Classes="sectionTitle" Text="Manga favorito" Margin="0,0,0,14"/>
-                            <Button Classes="cover"
-                                    IsVisible="{Binding HasFavoriteManga}"
-                                    Command="{Binding OpenMangaCommand}"
-                                    CommandParameter="{Binding FavoriteManga}">
-                                <StackPanel>
-                                    <Border Width="164" Height="232" CornerRadius="6" ClipToBounds="True"
-                                            Background="#222222">
-                                        <Image Source="{Binding FavoriteManga.Cover}" Stretch="UniformToFill"
-                                               RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                    </Border>
-                                    <TextBlock Text="{Binding FavoriteManga.Title}"
-                                               FontSize="13" FontWeight="SemiBold" Margin="0,10,0,0"
-                                               TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                            </Button>
-                            <Border Width="164" Height="232" CornerRadius="6"
-                                    BorderBrush="{StaticResource CardLine}" BorderThickness="1"
-                                    IsVisible="{Binding !HasFavoriteManga}">
-                                <TextBlock Classes="label" Margin="18" TextWrapping="Wrap"
-                                           TextAlignment="Center" VerticalAlignment="Center"
-                                           Text="Elige tu favorito en Editar perfil"/>
-                            </Border>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Classes="sectionTitle" Text="Leyendo ahora" Margin="0,0,0,14"/>
-                            <ItemsControl ItemsSource="{Binding RecentMangas}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Rows="1" Columns="3"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:MangaCardViewModel">
-                                        <Button Classes="cover" Margin="0,0,12,0"
-                                                Command="{Binding $parent[ItemsControl].((vm:ProfileViewModel)DataContext).OpenMangaCommand}"
-                                                CommandParameter="{Binding}">
-                                            <StackPanel>
-                                                <Border Height="160" CornerRadius="6" ClipToBounds="True"
-                                                        Background="#222222">
-                                                    <Image Source="{Binding Cover}" Stretch="UniformToFill"
-                                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                                </Border>
-                                                <ProgressBar Value="{Binding ProgressPct}" Maximum="100"
-                                                             Height="3" MinHeight="3" CornerRadius="0" Margin="0,8,0,0"
-                                                             Background="{StaticResource CardLine}"
-                                                             Foreground="{StaticResource CardText}"/>
-                                                <TextBlock Text="{Binding Title}"
-                                                           FontSize="12" Margin="0,7,0,0"
-                                                           TextTrimming="CharacterEllipsis"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <TextBlock Classes="label" TextWrapping="Wrap"
-                                       Text="Aún no has empezado ningún manga."
-                                       IsVisible="{Binding !HasRecentMangas}"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Pie: racha + marca (para cuando se comparte la imagen) -->
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,34,0,0">
-                        <TextBlock Grid.Column="0" Classes="label" Text="{Binding StreakText}"
-                                   IsVisible="{Binding HasStreak}" VerticalAlignment="Center"/>
-                        <Image Grid.Column="1" Source="avares://Hakufu/Images/HakufuTitleDark.png"
-                               Height="30" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </ScrollViewer>
+            <!-- Las que se exportan: fuera de la vista y maquetadas ya al doble de
+                 tamaño (LayoutTransform), para pintarlas a escala 1 y que el PNG salga
+                 nítido. Pedir 192 ppp al pintar escalaba dos veces. -->
+            <Canvas Width="0" Height="0" ClipToBounds="True" IsHitTestVisible="False"
+                    HorizontalAlignment="Left" VerticalAlignment="Top">
+                <LayoutTransformControl Name="ExportHorizontal" LayoutTransform="scale(2)">
+                    <v:ProfileCardHorizontal/>
+                </LayoutTransformControl>
+                <LayoutTransformControl Name="ExportVertical" LayoutTransform="scale(2)">
+                    <v:ProfileCardVertical/>
+                </LayoutTransformControl>
+            </Canvas>
+        </Panel>
     </Grid>
 </UserControl>

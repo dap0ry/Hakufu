@@ -10,6 +10,20 @@ using Hakufu.Tests;
 
 namespace Hakufu.Tests;
 
+/// <summary>
+/// Antes de nada, todo el proceso de tests apunta a una carpeta de datos
+/// aislada: aunque algo guarde fuera de un TempDataDir (o tarde, en segundo
+/// plano), nunca puede tocar la biblioteca real de quien ejecuta los tests.
+/// </summary>
+internal static class TestSandbox
+{
+    public static readonly string DataDir =
+        Path.Combine(Path.GetTempPath(), $"Hakufu tests sandbox {Guid.NewGuid():N}");
+
+    [System.Runtime.CompilerServices.ModuleInitializer]
+    internal static void Init() => Environment.SetEnvironmentVariable("HAKUFU_DATA_DIR", DataDir);
+}
+
 public static class TestAppBuilder
 {
     // La App real (estilos, temas, converters de App.axaml) sin ventana: en

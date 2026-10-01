@@ -280,4 +280,30 @@ public class BackupServiceTests
         Assert.True(await new BackupService(repo).ImportAsync(zip));
         Assert.False(File.Exists(Path.Combine(tmp.Root, "fuera.txt")));
     }
+
+    // Regresión (01/10/2026): un guardado en segundo plano que terminaba después
+    // de que el test devolviera HAKUFU_DATA_DIR a su valor escribía los datos de
+    // prueba en la biblioteca real. El repositorio guarda siempre donde cargó.
+    [Fact]
+    public async Task Repository_saves_where_it_loaded_even_if_the_data_dir_changes()
+    {
+        using var tmp = new TempDataDir();
+        var repo = new JsonDataRepository();
+        await repo.LoadAsync();
+        repo.Current.Profile.Name = "prueba";
+
+        var elsewhere = Path.Combine(tmp.Root, "otra carpeta");
+        Environment.SetEnvironmentVariable("HAKUFU_DATA_DIR", elsewhere);
+        await repo.SaveAsync();
+
+        Assert.True(File.Exists(Path.Combine(tmp.DataDir, "data.json")));
+        Assert.False(File.Exists(Path.Combine(elsewhere, "data.json")));
+    }
+
+    [Fact]
+    public void Tests_never_point_at_the_real_data_folder()
+    {
+        var real = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
+        Assert.NotEqual(real, AppPaths.DataDir);
+    }
 }

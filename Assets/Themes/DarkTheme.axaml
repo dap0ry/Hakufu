@@ -46,9 +46,6 @@
     <SolidColorBrush x:Key="ReaderBarBackground" Color="#0D0D0D"/>
     <SolidColorBrush x:Key="ReaderForeground"   Color="#F0F0F0"/>
 
-    <!-- Título de Hakufu en Inicio: tinta blanca para este tema -->
-    <ImageBrush x:Key="TitleBrush" Source="avares://Hakufu/Images/HakufuTitleDark.png" Stretch="Uniform"/>
-
     <!-- Acento del tema Fluent (sliders, checkboxes, barras de progreso,
          selección de texto): el mismo blanco que AccentColor en vez del azul
          del sistema. -->

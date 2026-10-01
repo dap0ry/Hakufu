@@ -141,9 +141,9 @@ public class ProfileViewModel : BaseViewModel
     });
 
     /// <summary>Ruta donde guardar la tarjeta en PNG (la imagen la genera la vista).</summary>
-    public Task<string?> PickImagePathAsync()
+    public Task<string?> PickImagePathAsync(string orientation)
         => _files.SaveFileAsync("Guardar perfil como imagen",
-                                $"hakufu-{(HasName ? DisplayName : "perfil")}.png", FileFilter.Png);
+                                $"hakufu-{(HasName ? DisplayName : "perfil")}-{orientation}.png", FileFilter.Png);
 }
 
 /// <summary>Una barra de la gráfica semanal.</summary>

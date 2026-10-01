@@ -13,20 +13,28 @@ public partial class ProfileView : UserControl
         InitializeComponent();
     }
 
-    // "Guardar imagen": la tarjeta tal cual, al doble de resolución para que
-    // se vea nítida al subirla a redes.
-    private async void SaveImage_Click(object? sender, RoutedEventArgs e)
+    private void SaveHorizontal_Click(object? sender, RoutedEventArgs e) => _ = SaveAsync(ExportHorizontal, "horizontal");
+    private void SaveVertical_Click(object? sender, RoutedEventArgs e)   => _ = SaveAsync(ExportVertical, "vertical");
+
+    private async Task SaveAsync(Control card, string orientation)
     {
         if (DataContext is not ProfileViewModel vm) return;
-        var path = await vm.PickImagePathAsync();
+        var path = await vm.PickImagePathAsync(orientation);
         if (path is null) return;
-
-        const double scale = 2;
-        var size = Card.Bounds.Size;
-        using var bitmap = new RenderTargetBitmap(
-            new PixelSize((int)(size.Width * scale), (int)(size.Height * scale)),
-            new Vector(96 * scale, 96 * scale));
-        bitmap.Render(Card);
+        using var bitmap = RenderCard(card);
         bitmap.Save(path);
+    }
+
+    /// <summary>
+    /// Pinta una de las tarjetas de exportar (ya maquetadas al doble de tamaño)
+    /// en un PNG del mismo tamaño en píxeles.
+    /// </summary>
+    public static RenderTargetBitmap RenderCard(Control exportHost)
+    {
+        var size = exportHost.Bounds.Size;
+        var bitmap = new RenderTargetBitmap(
+            new PixelSize((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height)));
+        bitmap.Render(exportHost);
+        return bitmap;
     }
 }

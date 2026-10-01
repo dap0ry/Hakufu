@@ -1,0 +1,70 @@
+<!-- Estilos de las tarjetas de perfil (horizontal y vertical). Colores propios,
+     no los del tema: se comparten como imagen y tienen que verse igual siempre. -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Styles.Resources>
+        <SolidColorBrush x:Key="CardBg"    Color="#111111"/>
+        <SolidColorBrush x:Key="CardLine"  Color="#262626"/>
+        <SolidColorBrush x:Key="CardText"  Color="#F2F2F2"/>
+        <SolidColorBrush x:Key="CardMuted" Color="#8C8C8C"/>
+        <SolidColorBrush x:Key="BarIdle"   Color="#3D3D3D"/>
+        <SolidColorBrush x:Key="BarEmpty"  Color="#242424"/>
+    </Styles.Resources>
+
+    <Style Selector="Border.card">
+        <Setter Property="Background"      Value="{StaticResource CardBg}"/>
+        <Setter Property="BorderBrush"     Value="{StaticResource CardLine}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius"    Value="24"/>
+    </Style>
+    <Style Selector="Border.card TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource CardText}"/>
+    </Style>
+    <Style Selector="Border.card TextBlock.label">
+        <Setter Property="FontSize"   Value="12"/>
+        <Setter Property="Foreground" Value="{StaticResource CardMuted}"/>
+    </Style>
+    <Style Selector="TextBlock.statValue">
+        <Setter Property="FontFamily" Value="{DynamicResource DisplayFont}"/>
+        <Setter Property="FontSize"   Value="48"/>
+        <Setter Property="LineHeight" Value="48"/>
+    </Style>
+    <Style Selector="TextBlock.statUnit">
+        <Setter Property="FontFamily" Value="{DynamicResource DisplayFontSemi}"/>
+        <Setter Property="FontSize"   Value="20"/>
+        <Setter Property="Margin"     Value="4,0,0,5"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+    </Style>
+    <Style Selector="TextBlock.sectionTitle">
+        <Setter Property="FontFamily" Value="{DynamicResource DisplayFontSemi}"/>
+        <Setter Property="FontSize"   Value="19"/>
+    </Style>
+    <Style Selector="Border.bar">
+        <Setter Property="Margin"            Value="4,0"/>
+        <Setter Property="CornerRadius"      Value="3,3,0,0"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+    </Style>
+
+    <!-- Portada clicable: abre el manga; sube un poco al pasar el ratón -->
+    <Style Selector="Button.cover">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding"    Value="0"/>
+        <Setter Property="Cursor"     Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="CoverContent" Content="{TemplateBinding Content}"
+                                  RenderTransform="translateY(0px)">
+                    <ContentPresenter.Transitions>
+                        <Transitions>
+                            <TransformOperationsTransition Property="RenderTransform"
+                                                           Duration="0:0:0.16" Easing="CubicEaseOut"/>
+                        </Transitions>
+                    </ContentPresenter.Transitions>
+                </ContentPresenter>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.cover:pointerover /template/ ContentPresenter#CoverContent">
+        <Setter Property="RenderTransform" Value="translateY(-4px)"/>
+    </Style>
+</Styles>

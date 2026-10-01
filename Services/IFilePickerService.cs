@@ -14,6 +14,9 @@ public interface IFilePickerService
     /// <summary>Rutas elegidas, o array vacío si se cancela.</summary>
     Task<string[]> PickFilesAsync(string title, FileFilter filter, bool multiSelect = true);
 
+    /// <summary>Carpeta elegida, o null si se cancela.</summary>
+    Task<string?> PickFolderAsync(string title);
+
     /// <summary>Ruta donde guardar, o null si se cancela.</summary>
     Task<string?> SaveFileAsync(string title, string suggestedName, FileFilter filter);
 

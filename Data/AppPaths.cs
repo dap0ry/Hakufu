@@ -15,5 +15,7 @@ public static class AppPaths
     public static string DataFile         => Path.Combine(DataDir, "data.json");
     public static string CoversDir        => Path.Combine(DataDir, "covers");
     public static string ProfileDir       => Path.Combine(DataDir, "profile");
+    // Donde hasta ahora Hakufu copiaba los mangas. Ya no se copia nada: solo se
+    // usa como carpeta de la biblioteca por defecto si existe (ver LibraryScanner).
     public static string LibraryDir       => Path.Combine(DataDir, "biblioteca");
 }

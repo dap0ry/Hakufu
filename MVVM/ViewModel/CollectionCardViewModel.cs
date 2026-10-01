@@ -29,9 +29,6 @@ public class CollectionCardViewModel : BaseViewModel
     public Bitmap? Cover4 => CoverAt(3);
     private Bitmap? CoverAt(int i) => CoverPreviews.Count > i ? CoverPreviews[i] : null;
 
-    private bool _isSelected;
-    public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
-
     private bool _isFavorite;
     public bool IsFavorite { get => _isFavorite; private set => SetProperty(ref _isFavorite, value); }
 

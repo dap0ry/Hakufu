@@ -35,6 +35,17 @@ public class FilePickerService : IFilePickerService
                     .ToArray();
     }
 
+    public async Task<string?> PickFolderAsync(string title)
+    {
+        if (Storage is not { } storage) return null;
+        var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title         = title,
+            AllowMultiple = false
+        });
+        return folders.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+    }
+
     public async Task<string?> SaveFileAsync(string title, string suggestedName, FileFilter filter)
     {
         if (Storage is not { } storage) return null;
@@ -51,7 +62,8 @@ public class FilePickerService : IFilePickerService
 
     public void OpenFolder(string path)
     {
-        Directory.CreateDirectory(path);
+        // No se crea nada: puede ser la carpeta del usuario (o un disco sin conectar).
+        if (!Directory.Exists(path)) return;
         var opener = OperatingSystem.IsWindows() ? "explorer.exe"
                    : OperatingSystem.IsMacOS()   ? "open"
                    : "xdg-open";

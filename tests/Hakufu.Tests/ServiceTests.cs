@@ -175,61 +175,56 @@ public class CoverServiceTests
 public class BackupServiceTests
 {
     [Fact]
-    public async Task Export_then_import_restores_library_and_rebases_paths()
+    public async Task Export_then_import_restores_library_and_keeps_this_machines_folder()
     {
         using var tmp = new TempDataDir();
         var repo = new JsonDataRepository();
         await repo.LoadAsync();
 
-        // Manga copiado dentro de la biblioteca de Hakufu + portada + foto de perfil.
-        Directory.CreateDirectory(AppPaths.LibraryDir);
+        // Tomo en la carpeta de la biblioteca (que no viaja) + portada + foto de perfil.
+        var library = Path.Combine(tmp.Root, "Mangas de origen");
+        var mangaPath = Fixtures.MakeCbz(Path.Combine(library, "Berserk"), "Tomo 1.cbz", "1.png");
         Directory.CreateDirectory(AppPaths.CoversDir);
         Directory.CreateDirectory(AppPaths.ProfileDir);
-        var mangaPath = Path.Combine(AppPaths.LibraryDir, "Tomo 1.cbz");
         var coverPath = Path.Combine(AppPaths.CoversDir, "c.png");
         var avatar    = Path.Combine(AppPaths.ProfileDir, "avatar.png");
-        await File.WriteAllTextAsync(mangaPath, "manga");
         await File.WriteAllBytesAsync(coverPath, Fixtures.TinyPng);
         await File.WriteAllBytesAsync(avatar, Fixtures.TinyPng);
-        repo.Current.Mangas.Add(new Manga { Title = "Tomo 1", FilePath = mangaPath, CoverCachePath = coverPath });
+        var manga = new Manga { Title = "Tomo 1", FilePath = mangaPath, RelativePath = "Berserk/Tomo 1.cbz",
+                                CoverCachePath = coverPath, TotalPages = 1 };
+        repo.Current.Mangas.Add(manga);
+        repo.Current.Collections.Add(new Collection { Name = "Berserk", RelativePath = "Berserk", MangaIds = [manga.Id] });
+        repo.Current.Progress.Add(new ReadingProgress { MangaId = manga.Id, CurrentPage = 1 });
+        repo.Current.LibraryRoot = library;
         repo.Current.Profile.AvatarPath = avatar;
 
         var zip = Path.Combine(tmp.Root, "copia.zip");
-        await new BackupService(repo).ExportAsync(zip, includeLibraryFiles: true);
+        await new BackupService(repo).ExportAsync(zip);
+        using (var archive = ZipFile.OpenRead(zip))
+            Assert.DoesNotContain(archive.Entries, e => e.FullName.EndsWith(".cbz"));
 
-        // "Otro equipo": carpeta de datos distinta y vacía.
+        // "Otro equipo": carpeta de datos distinta y su propia carpeta de mangas con el mismo tomo.
         var otherDir = Path.Combine(tmp.Root, "otro equipo");
         Environment.SetEnvironmentVariable("HAKUFU_DATA_DIR", otherDir);
+        var otherLibrary = Path.Combine(tmp.Root, "Mangas de destino");
+        Fixtures.MakeCbz(Path.Combine(otherLibrary, "Berserk"), "Tomo 1.cbz", "1.png");
         var repo2 = new JsonDataRepository();
         await repo2.LoadAsync();
+        repo2.Current.LibraryRoot = otherLibrary;
 
         Assert.True(await new BackupService(repo2).ImportAsync(zip));
+        Assert.Equal(otherLibrary, repo2.Current.LibraryRoot);
+        Assert.True((await new LibraryScanner(repo2).ScanAsync()).Ok);
 
         var m = Assert.Single(repo2.Current.Mangas);
-        Assert.Equal(Path.Combine(otherDir, "biblioteca", "Tomo 1.cbz"), m.FilePath);
+        Assert.Equal(manga.Id, m.Id);
+        Assert.Equal(Path.Combine(otherLibrary, "Berserk", "Tomo 1.cbz"), m.FilePath);
+        Assert.Equal(1, Assert.Single(repo2.Current.Progress).CurrentPage);
         Assert.Equal(Path.Combine(otherDir, "covers", "c.png"), m.CoverCachePath);
-        Assert.True(File.Exists(m.FilePath));
         Assert.True(File.Exists(m.CoverCachePath));
         Assert.Equal(Path.Combine(otherDir, "profile", "avatar.png"), repo2.Current.Profile.AvatarPath);
         Assert.True(File.Exists(repo2.Current.Profile.AvatarPath));
         Assert.True(File.Exists(AppPaths.DataFile));
-    }
-
-    [Fact]
-    public async Task Export_without_library_files_leaves_mangas_out()
-    {
-        using var tmp = new TempDataDir();
-        var repo = new JsonDataRepository();
-        await repo.LoadAsync();
-        Directory.CreateDirectory(AppPaths.LibraryDir);
-        await File.WriteAllTextAsync(Path.Combine(AppPaths.LibraryDir, "t.cbz"), "x");
-
-        var zip = Path.Combine(tmp.Root, "copia.zip");
-        await new BackupService(repo).ExportAsync(zip, includeLibraryFiles: false);
-
-        using var archive = ZipFile.OpenRead(zip);
-        Assert.DoesNotContain(archive.Entries, e => e.FullName.StartsWith("biblioteca/"));
-        Assert.Contains(archive.Entries, e => e.FullName == "data.json");
     }
 
     // Review Focus #3: un zip que no es una copia de Hakufu no toca la biblioteca.

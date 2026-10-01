@@ -6,7 +6,7 @@ using Hakufu.MVVM.ViewModel;
 namespace Hakufu.Tests.Views;
 
 /// <summary>
-/// Humo de las vistas de la Task 3 (biblioteca, colección y sus modales) en
+/// Humo de las vistas de la Task 3 (biblioteca, colección y reordenar) en
 /// tema claro y oscuro: cargan, resuelven estilos/bindings y hacen layout.
 /// </summary>
 public class Task3ViewTests
@@ -63,43 +63,36 @@ public class Task3ViewTests
     }
 
     [AvaloniaFact]
-    public void CreateCollectionView_opens_as_modal()
+    public void LibraryView_asks_for_a_folder_when_there_is_none()
     {
         foreach (var dark in Themes)
         {
-            using var app = ViewSmoke.Start(darkTheme: dark);
-            app.AssertModal<Hakufu.MVVM.View.CreateCollectionView>(
-                new CreateCollectionViewModel(app.Root.Library, app.Root.Dialog));
+            using var app = ViewSmoke.Start(darkTheme: dark, withLibrary: false);
+            app.Root.Navigation.NavigateTo<LibraryViewModel>();
+            var view = app.AssertShows<Hakufu.MVVM.View.LibraryView>();
+
+            var texts = view.GetVisualDescendants().OfType<TextBlock>().Where(t => t.IsEffectivelyVisible)
+                            .Select(t => t.Text).ToList();
+            Assert.Contains("Elige la carpeta donde tienes tus mangas", texts);
+            Assert.DoesNotContain("Tu estantería está vacía", texts);
+            Assert.Contains(view.GetVisualDescendants().OfType<Button>(),
+                            b => b.IsEffectivelyVisible && b.Content as string == "Elegir carpeta…");
         }
     }
 
     [AvaloniaFact]
-    public void MangaPickerView_opens_as_modal()
+    public void LibraryView_header_offers_folder_actions_instead_of_editing()
     {
-        foreach (var dark in Themes)
-        {
-            using var app = ViewSmoke.Start(darkTheme: dark);
-            var mangas = app.Root.Library.GetMangasInCollection(app.SampleCollection.Id).ToList();
-            var view = app.AssertModal<Hakufu.MVVM.View.MangaPickerView>(
-                new MangaPickerViewModel(mangas, _ => Task.CompletedTask, app.Root.Dialog));
+        using var app = ViewSmoke.Start();
+        app.Root.Navigation.NavigateTo<LibraryViewModel>();
+        var view = app.AssertShows<Hakufu.MVVM.View.LibraryView>();
 
-            var titles = view.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
-            Assert.Contains("Tomo 1", titles);
-        }
-    }
-
-    [AvaloniaFact]
-    public void ConfirmDeleteView_opens_as_modal()
-    {
-        foreach (var dark in Themes)
-        {
-            using var app = ViewSmoke.Start(darkTheme: dark);
-            var view = app.AssertModal<Hakufu.MVVM.View.ConfirmDeleteView>(
-                new ConfirmDeleteViewModel("Eliminar colección", "¿Seguro?", () => Task.CompletedTask, app.Root.Dialog));
-
-            var texts = view.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
-            Assert.Contains("Eliminar colección", texts);
-        }
+        var buttons = view.GetVisualDescendants().OfType<Button>().Where(b => b.IsEffectivelyVisible)
+                          .Select(b => b.Content as string).ToList();
+        Assert.Contains("Abrir carpeta", buttons);
+        Assert.Contains("Actualizar", buttons);
+        Assert.DoesNotContain("Nueva colección", buttons);
+        Assert.DoesNotContain("Seleccionar", buttons);
     }
 
     [AvaloniaFact]

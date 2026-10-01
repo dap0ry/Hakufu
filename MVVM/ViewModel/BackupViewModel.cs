@@ -5,8 +5,8 @@ namespace Hakufu.MVVM.ViewModel;
 
 /// <summary>
 /// Copia de seguridad 100% local: exporta/importa un .zip con la biblioteca
-/// (datos, portadas y perfil, y opcionalmente los mangas de la
-/// carpeta de Hakufu). Sustituye a la antigua copia en Dropbox.
+/// (datos, portadas y perfil; los mangas no, son la carpeta del usuario).
+/// Sustituye a la antigua copia en Dropbox.
 /// </summary>
 public class BackupViewModel : BaseViewModel
 {
@@ -15,8 +15,8 @@ public class BackupViewModel : BaseViewModel
     private readonly INavigationService _nav;
     private readonly IDataRepository    _repo;
     private readonly IThemeService      _theme;
+    private readonly LibraryScanner     _scanner;
 
-    private bool    _includeLibraryFiles = true;
     private bool    _isConfirmingRestore;
     private bool    _isBusy;
     private double  _progress;
@@ -25,13 +25,14 @@ public class BackupViewModel : BaseViewModel
     private string? _pendingRestorePath;
 
     public BackupViewModel(IBackupService backup, IFilePickerService files, INavigationService nav,
-                           IDataRepository repo, IThemeService theme)
+                           IDataRepository repo, IThemeService theme, LibraryScanner scanner)
     {
         _backup    = backup;
         _files     = files;
         _nav       = nav;
         _repo      = repo;
         _theme     = theme;
+        _scanner   = scanner;
     }
 
     public string DataFolder => AppPaths.DataDir;
@@ -40,12 +41,6 @@ public class BackupViewModel : BaseViewModel
     public int CollectionCount => _repo.Current.Collections.Count;
     public string SummaryText  =>
         $"{CollectionCount} colección{(CollectionCount != 1 ? "es" : "")} · {MangaCount} tomo{(MangaCount != 1 ? "s" : "")}";
-
-    public bool IncludeLibraryFiles
-    {
-        get => _includeLibraryFiles;
-        set => SetProperty(ref _includeLibraryFiles, value);
-    }
 
     public bool IsConfirmingRestore
     {
@@ -84,7 +79,7 @@ public class BackupViewModel : BaseViewModel
 
         await RunAsync(async p =>
         {
-            await _backup.ExportAsync(path, IncludeLibraryFiles, p);
+            await _backup.ExportAsync(path, p);
             return (true, $"Copia guardada en {path}");
         }, "No se pudo crear la copia");
     }, () => IsIdle);
@@ -115,6 +110,8 @@ public class BackupViewModel : BaseViewModel
             var ok = await _backup.ImportAsync(path, p);
             if (!ok) return (false, "Ese archivo no es una copia de seguridad de Hakufu. No se ha cambiado nada.");
 
+            // Los tomos de la copia se buscan en la carpeta de la biblioteca de este equipo.
+            await _scanner.ScanAsync();
             // El tema viene con la copia: aplicarlo ya.
             _theme.SetTheme(_repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
             OnPropertyChanged(nameof(MangaCount));
@@ -124,7 +121,11 @@ public class BackupViewModel : BaseViewModel
         }, "No se pudo restaurar la copia");
     });
 
-    public RelayCommand OpenDataFolderCommand => new(() => _files.OpenFolder(AppPaths.DataDir));
+    public RelayCommand OpenDataFolderCommand => new(() =>
+    {
+        Directory.CreateDirectory(AppPaths.DataDir); // la de Hakufu: puede no existir aún
+        _files.OpenFolder(AppPaths.DataDir);
+    });
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 

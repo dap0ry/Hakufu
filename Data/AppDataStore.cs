@@ -12,7 +12,10 @@ public class AppDataStore
     public long                      TotalUsageSeconds { get; set; } = 0;
 
     // "name" | "date" | "custom" — recordado entre sesiones.
-    public string                    LibrarySortMode { get; set; } = "date";
+    public string                    LibrarySortMode { get; set; } = "name";
+
+    /// <summary>Carpeta del usuario que es la biblioteca (ver LibraryScanner). Vacía = sin elegir.</summary>
+    public string                    LibraryRoot     { get; set; } = string.Empty;
 
     public UserProfile               Profile         { get; set; } = new();
 

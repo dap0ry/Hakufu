@@ -94,22 +94,14 @@
                                Foreground="{DynamicResource TextMuted}"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <!-- Normal -->
-                    <Button Classes="ghost" Content="Seleccionar" Padding="16,10"
-                            Command="{Binding ToggleSelectionModeCommand}"
-                            IsVisible="{Binding !IsSelectionMode}"/>
-                    <Button Classes="primary" Content="Nueva colección" Padding="18,10"
-                            Command="{Binding CreateCollectionCommand}"
-                            IsVisible="{Binding !IsSelectionMode}"/>
-                    <!-- Selección -->
-                    <Button Classes="ghost" Content="Cancelar" Padding="16,10"
-                            Command="{Binding ToggleSelectionModeCommand}"
-                            IsVisible="{Binding IsSelectionMode}"/>
-                    <Button Classes="primary" Padding="18,10"
-                            Content="{Binding SelectedCount, StringFormat='Eliminar ({0})'}"
-                            Command="{Binding DeleteSelectedCommand}"
-                            IsVisible="{Binding IsSelectionMode}"/>
+                <!-- La biblioteca es una carpeta del usuario: se abre en el explorador y se vuelve a leer -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
+                            IsVisible="{Binding !NeedsRoot}">
+                    <Button Classes="ghost" Content="Actualizar" Padding="16,10"
+                            Command="{Binding RefreshCommand}"
+                            ToolTip.Tip="Volver a leer la carpeta"/>
+                    <Button Classes="primary" Content="Abrir carpeta" Padding="18,10"
+                            Command="{Binding OpenFolderCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -117,6 +109,41 @@
         <!-- ═══ COLECCIONES ═══ -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Panel>
+                <!-- Sin carpeta elegida -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MaxWidth="400" Spacing="12" Margin="40,80"
+                            IsVisible="{Binding NeedsRoot}">
+                    <TextBlock Text="Elige la carpeta donde tienes tus mangas"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="48" LineHeight="46" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Cada carpeta de dentro será una colección, y sus PDF, CBR y CBZ, los tomos. Hakufu solo la lee: no copia, mueve ni borra nada."
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <Button Classes="primary" Content="Elegir carpeta…" HorizontalAlignment="Left"
+                            Padding="22,11" Margin="0,12,0,0"
+                            Command="{Binding PickRootCommand}"/>
+                </StackPanel>
+
+                <!-- La carpeta no se puede leer -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MaxWidth="400" Spacing="12" Margin="40,80"
+                            IsVisible="{Binding HasError}">
+                    <TextBlock Text="No encuentro tus mangas"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="48" LineHeight="46" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{Binding ErrorText}"
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,12,0,0">
+                        <Button Classes="primary" Content="Volver a leer" Padding="22,11"
+                                Command="{Binding RefreshCommand}"/>
+                        <Button Classes="ghost" Content="Elegir otra carpeta…" Padding="18,11"
+                                Command="{Binding PickRootCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+
                 <!-- Vacía -->
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                             MaxWidth="360" Spacing="12" Margin="40,80"
@@ -125,12 +152,12 @@
                                FontFamily="{DynamicResource DisplayFont}"
                                FontSize="48" LineHeight="46" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Crea una colección por serie y añade tus tomos en PDF, CBR o CBZ."
+                    <TextBlock Text="Crea una carpeta por serie dentro de la carpeta de la biblioteca, mete ahí tus tomos en PDF, CBR o CBZ y dale a «Actualizar»."
                                TextWrapping="Wrap" FontSize="14"
                                Foreground="{DynamicResource TextSecondary}"/>
-                    <Button Classes="primary" Content="Nueva colección" HorizontalAlignment="Left"
+                    <Button Classes="primary" Content="Abrir carpeta" HorizontalAlignment="Left"
                             Padding="22,11" Margin="0,12,0,0"
-                            Command="{Binding CreateCollectionCommand}"/>
+                            Command="{Binding OpenFolderCommand}"/>
                 </StackPanel>
 
                 <ItemsControl ItemsSource="{Binding Collections}" Margin="34,36,34,40">
@@ -178,23 +205,11 @@
                                             </Panel>
                                         </Border>
 
-                                        <!-- Delante: portada + selección + estrella -->
+                                        <!-- Delante: portada + estrella -->
                                         <Grid Width="150" Height="222">
                                             <Border Classes="photo">
                                                 <Image Source="{Binding Cover1}" Stretch="UniformToFill"
                                                        RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                            </Border>
-                                            <Border CornerRadius="4"
-                                                    Background="{DynamicResource AccentColor}" Opacity="0.25"
-                                                    IsVisible="{Binding IsSelected}"/>
-                                            <Border Width="26" Height="26" CornerRadius="13"
-                                                    HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                    Margin="0,8,8,0"
-                                                    Background="{DynamicResource AccentColor}"
-                                                    IsVisible="{Binding IsSelected}">
-                                                <TextBlock Text="✓" FontSize="13" FontWeight="Bold"
-                                                           Foreground="{DynamicResource AppBackground}"
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                             <Button Classes="star"
                                                     Classes.isFavorite="{Binding IsFavorite}"

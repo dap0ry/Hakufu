@@ -10,7 +10,7 @@ namespace Hakufu.Tests;
 /// <summary>
 /// No es un test: genera las capturas de la landing (web/img/app-*.png) con la
 /// app real renderizada sin pantalla. Solo hace algo si se le pasa una carpeta
-/// con mangas de ejemplo (una subcarpeta .cbz por colección):
+/// con mangas de ejemplo (una subcarpeta con .cbz por colección, como la carpeta de la biblioteca):
 ///
 ///   HAKUFU_SCREENSHOTS_SRC=/ruta/demo HAKUFU_SCREENSHOTS_OUT=web/img \
 ///     dotnet test tests/Hakufu.Tests --filter LandingScreenshots
@@ -33,15 +33,17 @@ public class LandingScreenshots
             var store = repo.Current;
             var rnd = new Random(7);
             var day = DateTime.Now;
+            store.LibraryRoot = src;
 
             foreach (var dir in Directory.GetDirectories(src).Order())
             {
-                var col = new Collection { Name = Path.GetFileName(dir), CreatedAt = day };
+                var col = new Collection { Name = Path.GetFileName(dir), RelativePath = Path.GetFileName(dir), CreatedAt = day };
                 foreach (var file in Directory.GetFiles(dir, "*.cbz").Order())
                 {
                     var manga = new Manga
                     {
                         Title = Path.GetFileNameWithoutExtension(file), FilePath = file,
+                        RelativePath = $"{Path.GetFileName(dir)}/{Path.GetFileName(file)}",
                         TotalPages = 7, DateAdded = day,
                     };
                     store.Mangas.Add(manga);

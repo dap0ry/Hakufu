@@ -36,8 +36,9 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     public ReaderViewModel(
         Manga manga, int startPage,
         LibraryService library, ProfileService profile,
-        INavigationService nav)
+        INavigationService nav, ReaderSettings? settings = null)
     {
+        settings ??= new ReaderSettings();
         _mangaId    = manga.Id;
         MangaTitle  = manga.Title;
         _library    = library;
@@ -47,10 +48,22 @@ public class ReaderViewModel : BaseViewModel, IDisposable
         TotalPages  = _loader.TotalPages;
         _currentPage = Math.Clamp(startPage, 0, Math.Max(0, TotalPages - 1));
 
+        _isTwoPageMode       = settings.TwoPageByDefault;
+        OpenInZenMode        = settings.OpenInZenMode;
+        AnimatePageTurns     = settings.PageTurnAnimation;
+        PageTurnSpeedFactor  = settings.PageTurnSpeed switch { "fast" => 0.6, "slow" => 1.6, _ => 1.0 };
+
         _ = LoadCurrentPageAsync();
     }
 
     public string MangaTitle { get; }
+
+    // Ajustes → Lectura
+    /// <summary>La ventana entra en zen nada más abrir el lector (lo aplica MainWindow).</summary>
+    public bool   OpenInZenMode       { get; }
+    public bool   AnimatePageTurns    { get; }
+    /// <summary>Multiplica la duración de la animación de pasar la hoja.</summary>
+    public double PageTurnSpeedFactor { get; }
     public int    TotalPages { get; }
 
     public int CurrentPage

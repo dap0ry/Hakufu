@@ -56,7 +56,7 @@ public sealed class CompositionRoot
             id, Library, Cover, Dialog, Navigation, FilePicker),
 
         nameof(ReaderViewModel) when param is ReaderNavigationParam p => new ReaderViewModel(
-            p.Manga, p.StartPage, Library, Profile, Navigation),
+            p.Manga, p.StartPage, Library, Profile, Navigation, Repo.Current.Reader),
 
         nameof(ProfileViewModel) => new ProfileViewModel(Profile, Library, Cover, Dialog, Navigation),
 

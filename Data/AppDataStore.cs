@@ -21,4 +21,6 @@ public class AppDataStore
     public string                    LibrarySortMode { get; set; } = "date";
 
     public HomeCustomization         Customization   { get; set; } = new();
+
+    public ReaderSettings            Reader          { get; set; } = new();
 }

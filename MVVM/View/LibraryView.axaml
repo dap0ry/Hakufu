@@ -63,12 +63,14 @@
             <Setter Property="Foreground" Value="White"/>
         </Style>
 
-        <!-- Cantos de los tomos de detrás -->
-        <Style Selector="Border.edge">
+        <!-- Cada portada del montón: como una foto, con su sombra -->
+        <Style Selector="Border.photo">
             <Setter Property="Background"      Value="{DynamicResource CardBackground}"/>
             <Setter Property="BorderBrush"     Value="{DynamicResource CardBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius"    Value="4"/>
+            <Setter Property="ClipToBounds"    Value="True"/>
+            <Setter Property="BoxShadow"       Value="0 4 14 0 #40000000"/>
         </Style>
     </UserControl.Styles>
 
@@ -145,70 +147,70 @@
                                     CommandParameter="{Binding}">
                                 <StackPanel Width="190">
 
-                                    <!-- Montón: la portada de cada tomo asoma por detrás, más oscura cuanto más al fondo -->
-                                    <Grid Name="Stack" Width="190" Height="256">
-                                        <Border Classes="edge" Width="148" Height="222"
-                                                HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                Margin="42,0,0,0" ClipToBounds="True"
-                                                IsVisible="{Binding BackCover, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    <!-- Montón como fotos apiladas: hasta 4 portadas centradas,
+                                         las de detrás giradas una a cada lado, la de delante recta -->
+                                    <Grid Name="Stack" Width="190" Height="262">
+                                        <Border Classes="photo" Width="150" Height="222"
+                                                RenderTransform="rotate(-10deg)"
+                                                IsVisible="{Binding Cover4, Converter={x:Static ObjectConverters.IsNotNull}}">
                                             <Panel>
-                                                <Image Source="{Binding BackCover}" Stretch="UniformToFill"
+                                                <Image Source="{Binding Cover4}" Stretch="UniformToFill"
                                                        RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                                <Border Background="Black" Opacity="0.45"/>
+                                                <Border Background="Black" Opacity="0.30"/>
                                             </Panel>
                                         </Border>
-                                        <Border Classes="edge" Width="154" Height="230"
-                                                HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                Margin="21,8,0,0" ClipToBounds="True"
-                                                BoxShadow="0 4 12 0 #33000000"
-                                                IsVisible="{Binding MiddleCover, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <Border Classes="photo" Width="150" Height="222"
+                                                RenderTransform="rotate(7deg)"
+                                                IsVisible="{Binding Cover3, Converter={x:Static ObjectConverters.IsNotNull}}">
                                             <Panel>
-                                                <Image Source="{Binding MiddleCover}" Stretch="UniformToFill"
+                                                <Image Source="{Binding Cover3}" Stretch="UniformToFill"
                                                        RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                                <Border Background="Black" Opacity="0.25"/>
+                                                <Border Background="Black" Opacity="0.22"/>
                                             </Panel>
                                         </Border>
-                                        <Border Width="160" Height="240" CornerRadius="4"
-                                                HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                                                ClipToBounds="True"
-                                                Background="{DynamicResource CardBackground}"
-                                                BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"
-                                                BoxShadow="0 6 18 0 #40000000">
-                                            <Image Source="{Binding FrontCover}"
-                                                   Stretch="UniformToFill"
-                                                   RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                        <Border Classes="photo" Width="150" Height="222"
+                                                RenderTransform="rotate(-4deg)"
+                                                IsVisible="{Binding Cover2, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <Panel>
+                                                <Image Source="{Binding Cover2}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                                <Border Background="Black" Opacity="0.12"/>
+                                            </Panel>
                                         </Border>
 
-                                        <!-- Selección -->
-                                        <Border Width="160" Height="240" CornerRadius="4"
-                                                HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                                                Background="{DynamicResource AccentColor}" Opacity="0.25"
-                                                IsVisible="{Binding IsSelected}"/>
-                                        <Border Width="26" Height="26" CornerRadius="13"
-                                                HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                Margin="126,30,0,0"
-                                                Background="{DynamicResource AccentColor}"
-                                                IsVisible="{Binding IsSelected}">
-                                            <TextBlock Text="✓" FontSize="13" FontWeight="Bold"
-                                                       Foreground="{DynamicResource AppBackground}"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-
-                                        <!-- Favorita -->
-                                        <Button Classes="star"
-                                                Classes.isFavorite="{Binding IsFavorite}"
-                                                HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                Margin="8,30,0,0"
-                                                Command="{Binding ToggleFavoriteCommand}"
-                                                ToolTip.Tip="Colección favorita">
-                                            <Border Width="26" Height="26" CornerRadius="13" Background="#80000000">
-                                                <ContentControl Classes="starIcon"
-                                                                Classes.favorite="{Binding IsFavorite}"
-                                                                Template="{StaticResource IconPixelStar}"
-                                                                Width="14" Height="14"
-                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <!-- Delante: portada + selección + estrella -->
+                                        <Grid Width="150" Height="222">
+                                            <Border Classes="photo">
+                                                <Image Source="{Binding Cover1}" Stretch="UniformToFill"
+                                                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
                                             </Border>
-                                        </Button>
+                                            <Border CornerRadius="4"
+                                                    Background="{DynamicResource AccentColor}" Opacity="0.25"
+                                                    IsVisible="{Binding IsSelected}"/>
+                                            <Border Width="26" Height="26" CornerRadius="13"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                    Margin="0,8,8,0"
+                                                    Background="{DynamicResource AccentColor}"
+                                                    IsVisible="{Binding IsSelected}">
+                                                <TextBlock Text="✓" FontSize="13" FontWeight="Bold"
+                                                           Foreground="{DynamicResource AppBackground}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Button Classes="star"
+                                                    Classes.isFavorite="{Binding IsFavorite}"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                                                    Margin="8,8,0,0"
+                                                    Command="{Binding ToggleFavoriteCommand}"
+                                                    ToolTip.Tip="Colección favorita">
+                                                <Border Width="26" Height="26" CornerRadius="13" Background="#80000000">
+                                                    <ContentControl Classes="starIcon"
+                                                                    Classes.favorite="{Binding IsFavorite}"
+                                                                    Template="{StaticResource IconPixelStar}"
+                                                                    Width="14" Height="14"
+                                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Button>
+                                        </Grid>
                                     </Grid>
 
                                     <!-- Nombre + datos -->
@@ -218,13 +220,13 @@
                                                MaxLines="2" TextWrapping="Wrap"
                                                TextTrimming="CharacterEllipsis"
                                                Foreground="{DynamicResource TextPrimary}"
-                                               Margin="0,14,0,0"/>
+                                               Margin="20,10,20,0"/>
                                     <TextBlock Text="{Binding CountText}"
-                                               FontSize="12" Margin="0,3,0,0"
+                                               FontSize="12" Margin="20,3,20,0"
                                                Foreground="{DynamicResource TextMuted}"/>
                                     <ProgressBar Value="{Binding ProgressPct}" Maximum="100"
-                                                 Width="160" MinWidth="0" HorizontalAlignment="Left"
-                                                 Height="3" MinHeight="3" CornerRadius="0" Margin="0,10,0,0"
+                                                 Width="150" MinWidth="0" HorizontalAlignment="Left"
+                                                 Height="3" MinHeight="3" CornerRadius="0" Margin="20,10,0,0"
                                                  Background="{DynamicResource ProgressTrack}"
                                                  Foreground="{DynamicResource ProgressFill}"
                                                  IsVisible="{Binding HasProgress}"/>

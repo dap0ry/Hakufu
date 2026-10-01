@@ -20,13 +20,14 @@ public class CollectionCardViewModel : BaseViewModel
 
     public ObservableCollection<Bitmap> CoverPreviews { get; } = [];
 
-    // Las tres capas del "montón" de portadas de la tarjeta. En WPF se
-    // elegían con DataTriggers sobre CoverPreviews.Count; Avalonia no tiene
-    // DataTrigger, así que se calculan aquí.
-    public Bitmap? FrontCover  => CoverPreviews.Count > 0 ? CoverPreviews[0] : null;
-    // Una capa por tomo (sin repetir portadas): con 1 tomo, solo la de delante.
-    public Bitmap? MiddleCover => CoverPreviews.Count >= 2 ? CoverPreviews[1] : null;
-    public Bitmap? BackCover   => CoverPreviews.Count >= 3 ? CoverPreviews[2] : null;
+    // El montón de la tarjeta, como fotos apiladas: hasta 4 portadas, una por
+    // tomo (sin repetir). Cover1 es la de delante.
+    public const int MaxStack = 4;
+    public Bitmap? Cover1 => CoverAt(0);
+    public Bitmap? Cover2 => CoverAt(1);
+    public Bitmap? Cover3 => CoverAt(2);
+    public Bitmap? Cover4 => CoverAt(3);
+    private Bitmap? CoverAt(int i) => CoverPreviews.Count > i ? CoverPreviews[i] : null;
 
     private bool _isSelected;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
@@ -42,9 +43,10 @@ public class CollectionCardViewModel : BaseViewModel
         _isFavorite = collection.IsFavorite;
         CoverPreviews.CollectionChanged += (_, _) =>
         {
-            OnPropertyChanged(nameof(FrontCover));
-            OnPropertyChanged(nameof(MiddleCover));
-            OnPropertyChanged(nameof(BackCover));
+            OnPropertyChanged(nameof(Cover1));
+            OnPropertyChanged(nameof(Cover2));
+            OnPropertyChanged(nameof(Cover3));
+            OnPropertyChanged(nameof(Cover4));
         };
     }
 
@@ -61,7 +63,7 @@ public class CollectionCardViewModel : BaseViewModel
         ProgressPct = totalPages > 0 ? readPages * 100.0 / totalPages : 0;
         OnPropertyChanged(nameof(HasProgress));
 
-        var mangas = all.Take(3).ToList();
+        var mangas = all.Take(MaxStack).ToList();
 
         foreach (var manga in mangas)
         {

@@ -33,7 +33,7 @@ public class LegalViewModel : BaseViewModel
             "desinstalarla de inmediato de cualquier dispositivo bajo su control. El Desarrollador se reserva el " +
             "derecho a modificar estos Términos en cualquier momento y sin previo aviso individualizado; la " +
             "versión vigente será siempre la publicada en el repositorio oficial de distribución de la Aplicación " +
-            "y/o mostrada dentro de la propia Aplicación en la sección de Ayuda."),
+            "y/o mostrada dentro de la propia Aplicación, en Ajustes → Acerca de."),
 
         new("2. Naturaleza de la Aplicación y ausencia de contenidos propios",
             "Hakufu es, exclusivamente, una herramienta local de organización, catalogación y lectura de archivos " +

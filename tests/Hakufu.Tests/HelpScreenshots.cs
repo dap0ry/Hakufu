@@ -39,15 +39,17 @@ public class HelpScreenshots
         var store = repo.Current;
         var rnd = new Random(7);
         var day = DateTime.Now;
+        store.LibraryRoot = src; // la carpeta de la biblioteca: subcarpetas = colecciones
 
         foreach (var dir in Directory.GetDirectories(src).Order())
         {
-            var col = new Collection { Name = Path.GetFileName(dir), CreatedAt = day };
+            var col = new Collection { Name = Path.GetFileName(dir), RelativePath = Path.GetFileName(dir), CreatedAt = day };
             foreach (var file in Directory.GetFiles(dir, "*.cbz").Order())
             {
                 var manga = new Manga
                 {
                     Title = Path.GetFileNameWithoutExtension(file), FilePath = file,
+                    RelativePath = Path.GetRelativePath(src, file).Replace('\\', '/'),
                     TotalPages = 7, DateAdded = day,
                 };
                 store.Mangas.Add(manga);
@@ -114,6 +116,8 @@ public class HelpScreenshots
         Shot("reader");
         root.Navigation.NavigateTo<ProfileViewModel>();
         Shot("profile");
+        // En la captura, una ruta de ejemplo legible en vez de la carpeta temporal.
+        store.LibraryRoot = OperatingSystem.IsWindows() ? @"C:\Users\tú\Documentos\Manga" : "~/Documentos/Manga";
         root.Navigation.NavigateTo<SettingsViewModel>();
         Shot("settings", new PixelRect((W - 760) / 2, 100, 760, H - 100)); // columna central
         root.Navigation.NavigateTo<BackupViewModel>();

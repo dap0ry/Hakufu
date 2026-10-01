@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Hakufu.MVVM.ViewModel"
+        x:Class="Hakufu.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Hakufu" Icon="avares://Hakufu/HakufuLogo.ico"
+        Width="1280" Height="780"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource AppBackground}"
+        Foreground="{DynamicResource TextPrimary}"
+        FontSize="13">
+
+    <!-- Decoraciones nativas del sistema (barra de título de Windows, macOS o
+         Linux): la barra propia de la 0.9.x no se porta. -->
+    <Grid>
+        <!-- Page content -->
+        <Border Background="{DynamicResource AppBackground}" ClipToBounds="True">
+            <ContentControl Content="{Binding CurrentView}"/>
+        </Border>
+
+        <!-- Modal overlay -->
+        <Grid IsVisible="{Binding IsModalOpen}" ZIndex="100">
+            <Rectangle Fill="{DynamicResource OverlayBackground}"
+                       PointerPressed="Overlay_PointerPressed"/>
+            <Border Classes="card"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MinWidth="420" MaxWidth="560"
+                    Padding="32">
+                <ContentControl Content="{Binding ModalContent}"/>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

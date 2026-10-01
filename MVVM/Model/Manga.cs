@@ -8,11 +8,6 @@ public class Manga
     public string CoverCachePath { get; set; } = string.Empty;
     public int    TotalPages     { get; set; }
     public DateTime DateAdded          { get; set; } = DateTime.Now;
-    public string   CloudinaryCoverUrl { get; set; } = string.Empty;
-
-    // Ruta del archivo en Dropbox una vez respaldado (ver BackupViewModel).
-    // Vacío = todavía no se ha subido.
-    public string   DropboxPath        { get; set; } = string.Empty;
 
     // Posición cuando el orden de la colección es "personalizado" (ver
     // ReorderMangaViewModel). Sin usar en los demás modos de orden.

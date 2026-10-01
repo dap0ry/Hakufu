@@ -8,9 +8,7 @@ public class LibraryService
 {
     private readonly IDataRepository _repo;
 
-    private static readonly string BibliotecaDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "Hakufu", "biblioteca");
+    private static string BibliotecaDir => AppPaths.LibraryDir;
 
     public LibraryService(IDataRepository repo) => _repo = repo;
 
@@ -200,7 +198,11 @@ public class LibraryService
 
     private static string SanitizeFolderName(string name)
     {
-        var invalid = Path.GetInvalidFileNameChars();
+        // Siempre los caracteres prohibidos en Windows (no los de la plataforma
+        // actual): en Linux/macOS solo lo son '/' y '\0', y una carpeta
+        // "Re:Zero" creada allí rompería la copia de seguridad al importarla
+        // en Windows.
+        char[] invalid = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0', .. Enumerable.Range(1, 31).Select(i => (char)i)];
         var clean   = new string(name.Select(c => Array.IndexOf(invalid, c) >= 0 ? '_' : c).ToArray()).Trim();
         return string.IsNullOrEmpty(clean) ? "sin_nombre" : clean;
     }

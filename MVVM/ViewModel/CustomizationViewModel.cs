@@ -107,10 +107,9 @@ public class CustomizationViewModel : BaseViewModel
 
             IconSlot("library", "Icono — Biblioteca"),  BackgroundSlot("library", "Fondo — Biblioteca"),
             IconSlot("profile", "Icono — Perfil"),      BackgroundSlot("profile", "Fondo — Perfil"),
-            IconSlot("friends", "Icono — Amigos"),      BackgroundSlot("friends", "Fondo — Amigos"),
             IconSlot("settings", "Icono — Ajustes"),    BackgroundSlot("settings", "Fondo — Ajustes"),
             IconSlot("help", "Icono — Ayuda"),          BackgroundSlot("help", "Fondo — Ayuda"),
-            IconSlot("account", "Icono — Cuenta"),      BackgroundSlot("account", "Fondo — Cuenta"),
+            IconSlot("account", "Icono — Copia de seguridad"), BackgroundSlot("account", "Fondo — Copia de seguridad"),
             IconSlot("personalize", "Icono — Personalizar"), BackgroundSlot("personalize", "Fondo — Personalizar"),
         ];
     }

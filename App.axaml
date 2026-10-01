@@ -1,0 +1,34 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Hakufu"
+             xmlns:conv="using:Hakufu.Converters"
+             x:Class="Hakufu.App"
+             RequestedThemeVariant="Light">
+
+    <!-- ViewModel → View por convención (XxxViewModel → XxxView), ver ViewLocator. -->
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme/>
+        <StyleInclude Source="avares://Hakufu/Assets/Styles/GlobalStyles.axaml"/>
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- [0] Tema activo: lo sustituye ThemeService en tiempo de ejecución -->
+                <ResourceInclude Source="avares://Hakufu/Assets/Themes/LightTheme.axaml"/>
+                <ResourceInclude Source="avares://Hakufu/Assets/Styles/PixelIcons.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <conv:EqualityConverter x:Key="EqualityConverter"/>
+            <conv:PercentageWidthConverter x:Key="PercentageWidth"/>
+            <conv:BoolToOpacityConverter x:Key="BoolToOpacity"/>
+            <conv:PathToBitmapConverter x:Key="PathToBitmap"/>
+            <conv:PathAndOpacityToImageBrushConverter x:Key="PathAndOpacityToImageBrush"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

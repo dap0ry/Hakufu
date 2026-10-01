@@ -1,281 +1,157 @@
-using System.IO;
 using Hakufu.Data;
-using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
 
+/// <summary>
+/// Copia de seguridad 100% local: exporta/importa un .zip con la biblioteca
+/// (datos, portadas y personalización, y opcionalmente los mangas de la
+/// carpeta de Hakufu). Sustituye a la antigua copia en Dropbox.
+/// </summary>
 public class BackupViewModel : BaseViewModel
 {
-    private readonly IDropboxService _dropbox;
-    private readonly HakufuApiClient     _api;
-    private readonly INavigationService  _nav;
-    private readonly IDataRepository     _repo;
-    private readonly ICoverService       _cover;
+    private readonly IBackupService     _backup;
+    private readonly IFilePickerService _files;
+    private readonly INavigationService _nav;
+    private readonly IDataRepository    _repo;
+    private readonly IThemeService      _theme;
+    private readonly IWallpaperService  _wallpaper;
 
-    private static readonly string LibraryDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu", "library");
-
-    private bool    _isConnected;
-    private bool    _isCheckingStatus = true;
-    private bool    _isConfirmingBackup;
+    private bool    _includeLibraryFiles = true;
     private bool    _isConfirmingRestore;
     private bool    _isBusy;
-    private string  _progressText  = "";
+    private double  _progress;
     private string? _statusMessage;
     private bool    _isSuccess;
+    private string? _pendingRestorePath;
 
-    public bool IsConnected
+    public BackupViewModel(IBackupService backup, IFilePickerService files, INavigationService nav,
+                           IDataRepository repo, IThemeService theme, IWallpaperService wallpaper)
     {
-        get => _isConnected;
-        private set { SetProperty(ref _isConnected, value); OnPropertyChanged(nameof(IsNotConnected)); }
-    }
-    public bool IsNotConnected => !_isConnected;
-    public bool IsCheckingStatus { get => _isCheckingStatus; private set => SetProperty(ref _isCheckingStatus, value); }
-
-    public bool IsConfirmingBackup  { get => _isConfirmingBackup;  private set { SetProperty(ref _isConfirmingBackup,  value); OnPropertyChanged(nameof(IsIdle)); } }
-    public bool IsConfirmingRestore { get => _isConfirmingRestore; private set { SetProperty(ref _isConfirmingRestore, value); OnPropertyChanged(nameof(IsIdle)); } }
-    public bool IsBusy              { get => _isBusy;              private set { SetProperty(ref _isBusy, value); OnPropertyChanged(nameof(IsIdle)); OnPropertyChanged(nameof(IsNotBusy)); } }
-    public bool IsIdle    => !_isBusy && !_isConfirmingBackup && !_isConfirmingRestore;
-    public bool IsNotBusy => !_isBusy;
-
-    public string  ProgressText  { get => _progressText;  private set => SetProperty(ref _progressText,  value); }
-    public string? StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
-    public bool    IsSuccess     { get => _isSuccess;     private set => SetProperty(ref _isSuccess,     value); }
-
-    public BackupViewModel(IDropboxService dropbox, HakufuApiClient api, INavigationService nav,
-                           IDataRepository repo, ICoverService cover)
-    {
-        _dropbox = dropbox;
-        _api     = api;
-        _nav     = nav;
-        _repo    = repo;
-        _cover   = cover;
-        _ = RefreshStatusAsync();
+        _backup    = backup;
+        _files     = files;
+        _nav       = nav;
+        _repo      = repo;
+        _theme     = theme;
+        _wallpaper = wallpaper;
     }
 
-    private async Task RefreshStatusAsync()
+    public string DataFolder => AppPaths.DataDir;
+
+    public int MangaCount      => _repo.Current.Mangas.Count;
+    public int CollectionCount => _repo.Current.Collections.Count;
+    public string SummaryText  =>
+        $"{CollectionCount} colección{(CollectionCount != 1 ? "es" : "")} · {MangaCount} tomo{(MangaCount != 1 ? "s" : "")}";
+
+    public bool IncludeLibraryFiles
     {
-        IsCheckingStatus = true;
-        try { IsConnected = await _dropbox.IsConnectedAsync(); }
-        catch { IsConnected = false; }
-        finally { IsCheckingStatus = false; }
+        get => _includeLibraryFiles;
+        set => SetProperty(ref _includeLibraryFiles, value);
     }
 
-    public AsyncRelayCommand RefreshStatusCommand => new(RefreshStatusAsync, () => !IsBusy);
-
-    private async Task DoConnectAsync()
+    public bool IsConfirmingRestore
     {
+        get => _isConfirmingRestore;
+        private set { SetProperty(ref _isConfirmingRestore, value); OnPropertyChanged(nameof(IsIdle)); }
+    }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        private set { SetProperty(ref _isBusy, value); OnPropertyChanged(nameof(IsIdle)); }
+    }
+
+    public bool IsIdle => !_isBusy && !_isConfirmingRestore;
+
+    /// <summary>0–100.</summary>
+    public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
+
+    public string? StatusMessage
+    {
+        get => _statusMessage;
+        private set { SetProperty(ref _statusMessage, value); OnPropertyChanged(nameof(HasStatus)); }
+    }
+    public bool HasStatus => !string.IsNullOrEmpty(_statusMessage);
+    public bool IsSuccess { get => _isSuccess; private set => SetProperty(ref _isSuccess, value); }
+
+    // ── Commands ─────────────────────────────────────────────────────────────
+
+    public AsyncRelayCommand ExportCommand => new(async () =>
+    {
+        var path = await _files.SaveFileAsync(
+            "Guardar copia de seguridad",
+            $"Hakufu-{DateTime.Now:yyyy-MM-dd}.zip",
+            FileFilter.Backup);
+        if (path is null) return;
+
+        await RunAsync(async p =>
+        {
+            await _backup.ExportAsync(path, IncludeLibraryFiles, p);
+            return (true, $"Copia guardada en {path}");
+        }, "No se pudo crear la copia");
+    }, () => IsIdle);
+
+    public AsyncRelayCommand PickRestoreCommand => new(async () =>
+    {
+        var files = await _files.PickFilesAsync("Restaurar copia de seguridad", FileFilter.Backup, multiSelect: false);
+        if (files.Length == 0) return;
+        _pendingRestorePath = files[0];
+        StatusMessage = null;
+        IsConfirmingRestore = true;
+    }, () => IsIdle);
+
+    public RelayCommand CancelRestoreCommand => new(() =>
+    {
+        _pendingRestorePath = null;
+        IsConfirmingRestore = false;
+    });
+
+    public AsyncRelayCommand ConfirmRestoreCommand => new(async () =>
+    {
+        var path = _pendingRestorePath;
+        IsConfirmingRestore = false;
+        if (path is null) return;
+
+        await RunAsync(async p =>
+        {
+            var ok = await _backup.ImportAsync(path, p);
+            if (!ok) return (false, "Ese archivo no es una copia de seguridad de Hakufu. No se ha cambiado nada.");
+
+            // Tema y fondo vienen con la copia: aplicarlos ya.
+            _theme.SetTheme(_repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
+            var wp = _repo.Current.Customization.GeneralWallpaper;
+            _wallpaper.Apply(wp?.Path, wp?.Opacity ?? 0.3);
+            OnPropertyChanged(nameof(MangaCount));
+            OnPropertyChanged(nameof(CollectionCount));
+            OnPropertyChanged(nameof(SummaryText));
+            return (true, "Copia restaurada.");
+        }, "No se pudo restaurar la copia");
+    });
+
+    public RelayCommand OpenDataFolderCommand => new(() => _files.OpenFolder(AppPaths.DataDir));
+
+    public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
+
+    private async Task RunAsync(Func<IProgress<double>, Task<(bool ok, string message)>> work, string errorPrefix)
+    {
+        IsBusy = true;
+        Progress = 0;
         StatusMessage = null;
         try
         {
-            await _dropbox.StartConnectFlowAsync();
-            StatusMessage = "Completa la conexión en el navegador y pulsa \"Comprobar conexión\".";
-            IsSuccess = true;
+            var progress = new Progress<double>(v => Progress = v * 100);
+            var (ok, message) = await work(progress);
+            IsSuccess = ok;
+            StatusMessage = message;
         }
         catch (Exception ex)
         {
             IsSuccess = false;
-            StatusMessage = $"Error: {ex.Message}";
+            StatusMessage = $"{errorPrefix}: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
-
-    public AsyncRelayCommand ConnectCommand => new(DoConnectAsync, () => !IsBusy);
-
-    private async Task DoDisconnectAsync()
-    {
-        IsBusy = true;
-        try
-        {
-            await _dropbox.DisconnectAsync();
-            IsConnected   = false;
-            IsSuccess     = true;
-            StatusMessage = "Dropbox desconectado.";
-        }
-        catch (Exception ex)
-        {
-            IsSuccess     = false;
-            StatusMessage = $"Error: {ex.Message}";
-        }
-        finally { IsBusy = false; }
-    }
-
-    public AsyncRelayCommand DisconnectCommand => new(DoDisconnectAsync, () => !IsBusy);
-
-    private const string UncategorizedFolderName = "Sin colección";
-
-    // Nombre legible para la ruta en Dropbox — a diferencia del Slugify
-    // que usa SyncViewModel para Cloudinary (piensa en URLs), aquí queremos que
-    // se vea bien al navegar el Dropbox a mano: se conservan mayúsculas y
-    // espacios, solo se quitan los caracteres que dan problemas en una ruta.
-    private static string SanitizeDropboxName(string text)
-    {
-        var invalid = Path.GetInvalidFileNameChars();
-        var clean = new string(text.Where(c => !invalid.Contains(c) && c != '/' && c != '\\').ToArray());
-        clean = string.Join(" ", clean.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-        return string.IsNullOrWhiteSpace(clean) ? "Sin título" : clean.Trim();
-    }
-
-    private async Task DoBackupAsync()
-    {
-        IsBusy = true; StatusMessage = null; IsSuccess = false;
-        try
-        {
-            ProgressText = "Conectando con Dropbox…";
-            var token = await _dropbox.GetAccessTokenAsync();
-
-            var pending = _repo.Current.Mangas
-                .Where(m => string.IsNullOrEmpty(m.DropboxPath) && File.Exists(m.FilePath))
-                .ToList();
-
-            // Un manga puede estar en varias colecciones — se sube una vez y se
-            // coloca en la carpeta de la primera a la que pertenezca.
-            var collections = _repo.Current.Collections;
-            string CollectionFolderNameFor(Manga manga)
-            {
-                var col = collections.FirstOrDefault(c => c.MangaIds.Contains(manga.Id));
-                return col is not null ? SanitizeDropboxName(col.Name) : UncategorizedFolderName;
-            }
-
-            int total = pending.Count, current = 0;
-            foreach (var manga in pending)
-            {
-                current++;
-                var label = $"Subiendo {current} / {total} — {manga.Title}";
-                ProgressText = label;
-                var progress = new Progress<double>(p => ProgressText = $"{label} ({p:F0}%)");
-
-                var ext = Path.GetExtension(manga.FilePath).ToLowerInvariant();
-                var fileName = $"{SanitizeDropboxName(manga.Title)}{ext}";
-                var path = $"/{CollectionFolderNameFor(manga)}/{fileName}";
-                manga.DropboxPath = await _dropbox.UploadFileAsync(
-                    token, path, manga.FilePath, progress);
-
-                // La copia de seguridad solo sube el archivo a Dropbox — sin esto,
-                // un manga respaldado solo por aquí (sin pasar nunca por
-                // "Sincronización") se queda sin CloudinaryCoverUrl, y por eso
-                // no aparecía portada en el perfil público ni en el de amigos.
-                if (string.IsNullOrEmpty(manga.CloudinaryCoverUrl))
-                {
-                    try
-                    {
-                        var bmp = await _cover.GetCoverAsync(manga);
-                        var bytes = bmp is null ? null : await CoverUploadHelper.ToJpegAsync(bmp);
-                        if (bytes is not null)
-                        {
-                            manga.CloudinaryCoverUrl = await _api.UploadCoverAsync(
-                                CoverUploadHelper.Slugify(CollectionFolderNameFor(manga)),
-                                CoverUploadHelper.Slugify(manga.Title),
-                                manga.Id.ToString(), bytes);
-                        }
-                    }
-                    catch { /* la portada es un extra — si falla, seguimos con el respaldo */ }
-                }
-
-                // Guardar tras cada archivo (no al final): si algo interrumpe la
-                // subida a mitad, los archivos que sí llegaron a Dropbox quedan
-                // enlazados localmente — sin esto, un fallo posterior (ej. al
-                // subir los metadatos) perdía el DropboxPath de todo lo ya
-                // subido, y un reintento lo volvía a subir duplicado.
-                await _repo.SaveAsync();
-            }
-
-            ProgressText = "Subiendo metadatos de la biblioteca…";
-            await _api.SyncUploadAsync(SyncPayloadBuilder.Build(_repo));
-
-            ProgressText  = "";
-            IsSuccess     = true;
-            StatusMessage = total > 0
-                ? $"Copia de seguridad completada. {total} archivo(s) subidos."
-                : "Todo tu manga ya estaba respaldado en Dropbox.";
-        }
-        catch (Exception ex)
-        {
-            IsSuccess     = false;
-            StatusMessage = $"Error: {ex.Message}";
-            ProgressText  = "";
-        }
-        finally { IsBusy = false; }
-    }
-
-    private async Task DoRestoreAsync()
-    {
-        IsBusy = true; StatusMessage = null; IsSuccess = false;
-        try
-        {
-            ProgressText = "Descargando metadatos del servidor…";
-            var data = await _api.SyncDownloadAsync();
-            if (data is null)
-            {
-                StatusMessage = "No hay copia de seguridad asociada a tu cuenta.";
-                return;
-            }
-
-            var token = await _dropbox.GetAccessTokenAsync();
-            Directory.CreateDirectory(LibraryDir);
-
-            var toRestore = data.Mangas
-                .Where(m => !string.IsNullOrEmpty(m.DropboxPath) && Guid.TryParse(m.Id, out _))
-                .Where(m => !_repo.Current.Mangas.Any(local =>
-                    local.Id == Guid.Parse(m.Id) && File.Exists(local.FilePath)))
-                .ToList();
-
-            int total = toRestore.Count, current = 0;
-            foreach (var item in toRestore)
-            {
-                current++;
-                var label = $"Descargando {current} / {total} — {item.Title}";
-                ProgressText = label;
-                var progress = new Progress<double>(p => ProgressText = $"{label} ({p:F0}%)");
-
-                var ext      = Path.GetExtension(item.DropboxPath);
-                var destPath = Path.Combine(LibraryDir, $"{item.Id}{ext}");
-
-                await _dropbox.DownloadFileAsync(token, item.DropboxPath, destPath, progress);
-
-                var id    = Guid.Parse(item.Id);
-                var local = _repo.Current.Mangas.FirstOrDefault(m => m.Id == id);
-                if (local is not null)
-                {
-                    local.FilePath = destPath;
-                }
-                else
-                {
-                    _repo.Current.Mangas.Add(new Manga
-                    {
-                        Id                 = id,
-                        Title              = item.Title,
-                        FilePath           = destPath,
-                        TotalPages         = item.TotalPages,
-                        DateAdded          = item.DateAdded,
-                        CloudinaryCoverUrl = item.CoverCloudinaryUrl,
-                        DropboxPath        = item.DropboxPath,
-                    });
-                }
-            }
-
-            await _repo.SaveAsync();
-            ProgressText  = "";
-            IsSuccess     = true;
-            StatusMessage = total > 0
-                ? $"Restaurados {total} archivo(s) desde Dropbox."
-                : "Ya tenías localmente todo lo que hay respaldado.";
-        }
-        catch (Exception ex)
-        {
-            IsSuccess     = false;
-            StatusMessage = $"Error: {ex.Message}";
-            ProgressText  = "";
-        }
-        finally { IsBusy = false; }
-    }
-
-    public RelayCommand RequestBackupCommand  => new(() => { IsConfirmingBackup  = true; IsConfirmingRestore = false; });
-    public RelayCommand RequestRestoreCommand => new(() => { IsConfirmingRestore = true; IsConfirmingBackup  = false; });
-    public RelayCommand CancelCommand         => new(() => { IsConfirmingBackup  = false; IsConfirmingRestore = false; });
-
-    public AsyncRelayCommand ConfirmBackupCommand  => new(DoBackupAsync,  () => !IsBusy);
-    public AsyncRelayCommand ConfirmRestoreCommand => new(DoRestoreAsync, () => !IsBusy);
-
-    public RelayCommand BackCommand => new(() => _nav.NavigateTo<SyncViewModel>());
 }

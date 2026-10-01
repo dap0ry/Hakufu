@@ -1,4 +1,4 @@
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -14,7 +14,7 @@ public class FavoriteSlotViewModel : BaseViewModel
     private readonly INavigationService _nav;
 
     private Manga?        _manga;
-    private BitmapSource? _cover;
+    private Bitmap? _cover;
 
     public FavoriteSlotViewModel(
         int slotIndex, Manga? manga,
@@ -36,7 +36,7 @@ public class FavoriteSlotViewModel : BaseViewModel
     public bool IsEmpty => _manga is null;
     public string? MangaTitle => _manga?.Title;
 
-    public BitmapSource? Cover
+    public Bitmap? Cover
     {
         get => _cover;
         private set => SetProperty(ref _cover, value);

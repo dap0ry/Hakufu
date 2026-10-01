@@ -8,10 +8,6 @@ output/
 .vs/
 *.user
 
-# Python env
-api/.venv/
-__pycache__/
-*.pyc
 
 # Assets with no text content
 Assets/Icons/

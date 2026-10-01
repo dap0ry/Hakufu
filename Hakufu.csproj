@@ -2,41 +2,45 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms> <!-- solo para el icono de la bandeja del sistema (NotifyIcon) -->
     <AssemblyName>Hakufu</AssemblyName>
     <RootNamespace>Hakufu</RootNamespace>
     <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
-    <Version>0.9.7</Version>
-    <AssemblyVersion>0.9.7.0</AssemblyVersion>
-    <FileVersion>0.9.7.0</FileVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>0.10.0</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- Bindings comprobados al compilar: cada vista declara x:DataType. -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
 
-  <!--
-    UseWindowsForms=true (solo para NotifyIcon en TrayIconService) hace que el
-    SDK añada "using System.Windows.Forms;" implícito a TODO el proyecto, lo
-    que choca con "UserControl"/"Application" de WPF en cada vista. Se quita
-    aquí el using global; TrayIconService.cs pone el suyo propio, local.
-  -->
+  <!-- El resto del repo (web/, tests/) no forma parte de la app. -->
   <ItemGroup>
-    <Using Remove="System.Windows.Forms" />
+    <Compile Remove="web/**;tests/**;publish/**;Releases/**" />
+    <AvaloniaXaml Remove="web/**;tests/**;publish/**;Releases/**" />
+    <None Remove="web/**;tests/**;publish/**;Releases/**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\**\*.png" />
-    <Resource Include="HakufuLogo.ico" />
+    <AvaloniaResource Include="Images\**\*.png" />
+    <AvaloniaResource Include="HakufuLogo.ico" />
+    <AvaloniaResource Include="HakufuLogo.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3912.50" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
-    <PackageReference Include="SharpCompress" Version="0.47.4" />
-    <PackageReference Include="Velopack" Version="1.2.0" />
+    <PackageReference Include="SharpCompress" Version="0.50.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Hakufu.Tests" />
   </ItemGroup>
 
 </Project>

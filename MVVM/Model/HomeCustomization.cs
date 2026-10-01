@@ -21,7 +21,8 @@ public class HomeCustomization
     // de todo el tema — ver WallpaperService).
     public CustomizationImage? GeneralWallpaper { get; set; }
 
-    // Claves: "library", "profile", "friends", "settings", "help", "account".
+    // Claves: "library", "profile", "settings", "help", "account" (tesela de
+    // Copia de seguridad; conserva el nombre de cuando era "Cuenta"), "personalize".
     public Dictionary<string, CustomizationImage> NavIcons       { get; set; } = [];
     public Dictionary<string, CustomizationImage> NavBackgrounds { get; set; } = [];
 }

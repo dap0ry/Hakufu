@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -12,7 +12,14 @@ public class CollectionCardViewModel : BaseViewModel
     public string Name       => Model.Name;
     public int    MangaCount => Model.MangaIds.Count;
 
-    public ObservableCollection<BitmapSource> CoverPreviews { get; } = [];
+    public ObservableCollection<Bitmap> CoverPreviews { get; } = [];
+
+    // Las tres capas del "montón" de portadas de la tarjeta. En WPF se
+    // elegían con DataTriggers sobre CoverPreviews.Count; Avalonia no tiene
+    // DataTrigger, así que se calculan aquí.
+    public Bitmap? FrontCover  => CoverPreviews.Count > 0 ? CoverPreviews[0] : null;
+    public Bitmap? MiddleCover => CoverPreviews.Count switch { >= 2 => CoverPreviews[1], 1 => CoverPreviews[0], _ => null };
+    public Bitmap? BackCover   => CoverPreviews.Count switch { >= 3 => CoverPreviews[2], 2 => CoverPreviews[1], _ => null };
 
     private bool _isSelected;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
@@ -26,6 +33,12 @@ public class CollectionCardViewModel : BaseViewModel
     {
         Model       = collection;
         _isFavorite = collection.IsFavorite;
+        CoverPreviews.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(FrontCover));
+            OnPropertyChanged(nameof(MiddleCover));
+            OnPropertyChanged(nameof(BackCover));
+        };
     }
 
     public async Task LoadCoversAsync(LibraryService library, ICoverService coverService)

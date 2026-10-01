@@ -1,0 +1,168 @@
+<!--
+    Estilos compartidos. En Avalonia un estilo con nombre es una CLASE:
+    Classes="primary" en vez de Style="{StaticResource PrimaryButton}".
+    Tabla completa en docs/superpowers/specs/2026-10-01-avalonia-offline-design.md.
+
+    Ojo: NO hay estilo global de TextBlock con Foreground: rompería la
+    herencia (el texto dentro de un botón "primary" tiene que salir del color
+    del botón). El color de texto por defecto lo pone MainWindow
+    (Foreground = TextPrimary) y se hereda.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===================== TYPOGRAPHY ===================== -->
+    <Style Selector="TextBlock.title">
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="TextBlock.subtitle">
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+    </Style>
+
+    <!-- ===================== BUTTONS ===================== -->
+    <!-- REGLA para plantillas de botón propias: el ContentPresenter NUNCA se
+         llama "PART_ContentPresenter" (aquí y en las vistas se llama
+         "ContentHost"). El tema Fluent, en :pointerover/:pressed/:disabled,
+         cambia el fondo y el color de ese elemento por nombre y con más
+         prioridad que cualquier estilo nuestro: dejaba texto ilegible (negro
+         sobre gris en "primary") y un recuadro gris detrás del texto.
+         Todos los botones llevan una clase con plantilla propia; el color de
+         texto por defecto es el del tema (no el ButtonForeground del primario,
+         que Fluent usaría porque comparte nombre de clave). -->
+    <Style Selector="Button">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+
+    <!-- Plantilla común de los botones propios: un Border "Root" + contenido. -->
+    <Style Selector="Button.primary, Button.ghost, Button.icon">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Name="ContentHost"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.primary:disabled /template/ Border#Root, Button.ghost:disabled /template/ Border#Root">
+        <Setter Property="Opacity" Value="0.4"/>
+    </Style>
+
+    <!-- Primary filled button -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{DynamicResource ButtonBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="20,9"/>
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ Border#Root">
+        <Setter Property="Background" Value="{DynamicResource ButtonHover}"/>
+    </Style>
+
+    <!-- Ghost / outline button -->
+    <Style Selector="Button.ghost">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="20,9"/>
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ Border#Root">
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+    </Style>
+
+    <!-- Icon-only button (toolbar) -->
+    <Style Selector="Button.icon">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="6"/>
+    </Style>
+    <Style Selector="Button.icon:pointerover /template/ Border#Root">
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+    </Style>
+
+    <!-- ===================== TEXT INPUT ===================== -->
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="{DynamicResource AppBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+    <Style Selector="TextBox:pointerover, TextBox:focus">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource AppBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource InputBorder}"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{DynamicResource AppBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- ===================== CARD ===================== -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="BoxShadow" Value="0 2 10 0 #14000000"/>
+    </Style>
+
+    <!-- ===================== SLIDER (grid size) ===================== -->
+    <Style Selector="Slider.compact">
+        <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
+        <Setter Property="MinHeight" Value="20"/>
+    </Style>
+
+    <!-- ===================== TOGGLE (theme switch) ===================== -->
+    <Style Selector="ToggleButton.themeToggle">
+        <Setter Property="Width" Value="48"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <Border Name="Track" Background="{DynamicResource CardBorder}" CornerRadius="12"/>
+                    <Border Name="Thumb" Width="18" Height="18" CornerRadius="9"
+                            Background="{DynamicResource TextPrimary}"
+                            HorizontalAlignment="Left" Margin="3,0,0,0"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ToggleButton.themeToggle:checked /template/ Border#Track">
+        <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+    </Style>
+    <Style Selector="ToggleButton.themeToggle:checked /template/ Border#Thumb">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="Margin" Value="0,0,3,0"/>
+        <Setter Property="Background" Value="{DynamicResource AppBackground}"/>
+    </Style>
+
+</Styles>

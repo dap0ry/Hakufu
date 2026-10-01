@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.CreateCollectionView"
+             x:DataType="vm:CreateCollectionViewModel">
+
+    <StackPanel MinWidth="380">
+        <TextBlock Text="Nueva colección"
+                   Classes="subtitle"
+                   Margin="0,0,0,24"/>
+
+        <!-- Name field -->
+        <TextBlock Text="Nombre *"
+                   Classes="caption"
+                   Margin="0,0,0,6"/>
+        <TextBox Text="{Binding Name}"
+                 Margin="0,0,0,16"/>
+
+        <!-- Description field -->
+        <TextBlock Text="Descripción"
+                   Classes="caption"
+                   Margin="0,0,0,6"/>
+        <TextBox Text="{Binding Description}"
+                 Height="72"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True"
+                 Margin="0,0,0,28"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Classes="ghost"
+                    Content="Cancelar"
+                    Margin="0,0,12,0"
+                    Command="{Binding CancelCommand}"/>
+            <Button Classes="primary"
+                    Content="Crear"
+                    Command="{Binding ConfirmCommand}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

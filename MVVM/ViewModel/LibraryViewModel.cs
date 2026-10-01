@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -15,10 +15,10 @@ public class LibraryViewModel : BaseViewModel
 
     // "Continuar leyendo" section
     private string?       _lastMangaTitle;
-    private BitmapSource? _lastMangaCover;
+    private Bitmap? _lastMangaCover;
 
     public string?       LastMangaTitle { get => _lastMangaTitle; private set => SetProperty(ref _lastMangaTitle, value); }
-    public BitmapSource? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
+    public Bitmap? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
     public bool HasLastManga => LastMangaTitle is not null;
 
     public LibraryViewModel(LibraryService library, ICoverService cover,

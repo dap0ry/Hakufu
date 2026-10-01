@@ -1,4 +1,4 @@
-using System.Windows.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -18,8 +18,8 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     private bool          _isTwoPageMode;
     private bool          _isZenMode;
     private bool          _showZenHint;
-    private BitmapSource? _pageLeft;
-    private BitmapSource? _pageRight;
+    private Bitmap? _pageLeft;
+    private Bitmap? _pageRight;
 
     /// <summary>Raised when zen mode changes; arg is true=entering, false=exiting.</summary>
     public event EventHandler<bool>? ZenModeChanged;
@@ -91,8 +91,8 @@ public class ReaderViewModel : BaseViewModel, IDisposable
         private set => SetProperty(ref _showZenHint, value);
     }
 
-    public BitmapSource? PageLeft  { get => _pageLeft;  private set => SetProperty(ref _pageLeft, value); }
-    public BitmapSource? PageRight { get => _pageRight; private set => SetProperty(ref _pageRight, value); }
+    public Bitmap? PageLeft  { get => _pageLeft;  private set => SetProperty(ref _pageLeft, value); }
+    public Bitmap? PageRight { get => _pageRight; private set => SetProperty(ref _pageRight, value); }
 
     public RelayCommand NextPageCommand => new(
         () => CurrentPage = Math.Min(CurrentPage + (IsTwoPageMode ? 2 : 1), TotalPages - 1),

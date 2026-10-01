@@ -2,718 +2,679 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hakufu — Gestor de manga offline</title>
-  <meta name="description" content="Hakufu es un gestor de manga offline para Windows, con lector web y copia de seguridad en Dropbox.">
-  <meta name="theme-color" content="#0D0D0D">
-
-  <!-- Añadir a pantalla de inicio (iOS) — sin esto Safari abre como pestaña normal, no como app -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Hakufu">
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="description" content="Hakufu organiza y lee tu manga en PDF, CBR y CBZ sin conexión. Gratis para Windows, macOS y Linux. Sin cuentas ni servidores.">
+  <meta name="theme-color" content="#8A8A8A">
+  <meta property="og:title" content="Hakufu — Gestor de manga offline">
+  <meta property="og:description" content="Organiza y lee tu manga sin conexión. Gratis para Windows, macOS y Linux.">
+  <meta property="og:image" content="https://hakufuweb.vercel.app/img/app-library-dark.webp">
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/img/app-library-dark.webp">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* Los colores del fondo de Inicio de la app. */
     :root {
-      --bg:       #0D0D0D;
-      --surface:  #111111;
-      --card:     #1A1A1A;
-      --border:   #2A2A2A;
-      --divider:  #222222;
-      --text:     #F0F0F0;
-      --muted:    #666666;
-      --secondary:#AAAAAA;
-      --success:  #3EA76A;
-      --error:    #E05C5C;
+      --red:   #E5001A;
+      --ash:   #8A8A8A;
+      --ink:   #000000;
+      --night: #141414;
+      --paper: #FFFFFF;
+      --smoke: #EDEDED;
+      --skew:  -12deg;
+      --ease:  cubic-bezier(.2, .8, .2, 1);
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
+      font-family: 'Archivo', system-ui, sans-serif;
+      font-size: 17px;
+      line-height: 1.55;
+      background: var(--paper);
+      color: var(--ink);
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    a { color: inherit; }
-    button, input { font-family: inherit; }
+    a { color: inherit; text-underline-offset: 3px; }
+    img { display: block; max-width: 100%; height: auto; }
 
-    /* Fondo personalizado (Configuración): fijo, detrás de todo, opacidad
-       muy baja — se aplica una vez por imagen, sin coste de red ni de
-       repintado en cada página. */
-    #app-background {
-      position: fixed; inset: 0; z-index: -1;
-      background-size: cover; background-position: center;
-      opacity: 0.08; pointer-events: none;
+    :focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+
+    .wrap { width: min(1180px, 100% - 32px); margin-inline: auto; }
+
+    .display {
+      font-stretch: 62%;
+      font-weight: 900;
+      line-height: .9;
+      letter-spacing: -.005em;
     }
 
-    /* ── HERO ─────────────────────────────────────────────── */
+    /* Trama de puntos de manga. */
+    .screentone {
+      background-image: radial-gradient(circle, rgba(0,0,0,.22) 1.3px, transparent 1.6px);
+      background-size: 9px 9px;
+    }
+
+    /* Captura de la app: marco negro y sombra dura de color. */
+    .shot {
+      border: 2px solid var(--ink);
+      background: var(--night);
+      box-shadow: 14px 14px 0 var(--shadow, var(--ink));
+    }
+
+    /* ── Portada ─────────────────────────────────────────── */
     .hero {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      position: relative;
+      background: var(--ash);
+      padding-block: 56px 112px;
+      isolation: isolate;
     }
 
-    .hero-left {
-      background: var(--surface);
-      border-right: 1px solid var(--border);
+    .hero::before,
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+    }
+
+    /* El corte rojo en diagonal. */
+    .hero::before {
+      background: var(--red);
+      clip-path: polygon(0 0, 38% 0, 22% 100%, 0 100%);
+      animation: slab 520ms var(--ease) both;
+    }
+
+    .hero::after {
+      background-image: radial-gradient(circle, rgba(0,0,0,.2) 1.3px, transparent 1.6px);
+      background-size: 9px 9px;
+      -webkit-mask-image: linear-gradient(200deg, #000 0%, transparent 55%);
+      mask-image: linear-gradient(200deg, #000 0%, transparent 55%);
+    }
+
+    @keyframes slab {
+      from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+    }
+
+    .hero-top {
       display: flex;
-      flex-direction: column;
       justify-content: space-between;
-      padding: 56px;
-    }
-
-    .hero-right {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 56px 72px;
-    }
-
-    .logo {
-      font-size: clamp(72px, 10vw, 120px);
-      font-weight: 900;
-      line-height: 1;
-      letter-spacing: -2px;
-    }
-
-    .logo-line {
-      width: 64px;
-      height: 4px;
-      background: var(--text);
-      margin-top: 12px;
-    }
-
-    .hero-tagline {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-    }
-
-    .hero-footer {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .hero-footer a {
-      color: var(--muted);
-      text-decoration: none;
-    }
-    .hero-footer a:hover { color: var(--secondary); }
-
-    .hero-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 32px;
-    }
-
-    .hero-desc {
-      font-size: clamp(28px, 3.5vw, 42px);
-      font-weight: 300;
-      line-height: 1.25;
-      color: var(--text);
-      margin-bottom: 48px;
-    }
-
-    .hero-desc strong {
-      font-weight: 700;
-    }
-
-    .btn-download {
-      display: inline-flex;
       align-items: center;
-      gap: 10px;
-      background: var(--text);
-      color: #0A0A0A;
-      border: none;
-      padding: 16px 32px;
-      font-size: 14px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background 0.15s;
-      text-decoration: none;
-    }
-    .btn-download:hover { background: #CCCCCC; }
-    .btn-download:active { background: #AAAAAA; }
-
-    .btn-download svg {
-      flex-shrink: 0;
-    }
-
-    .version-label {
-      margin-top: 16px;
-      font-size: 11px;
-      color: var(--muted);
-      min-height: 16px;
-    }
-
-    .req-label {
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .os-note {
-      margin-top: 14px;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      font-size: 12px;
-      color: var(--secondary);
-      line-height: 1.5;
-      max-width: 420px;
-      display: none;
-    }
-    .os-note.visible { display: block; }
-
-    /* iPhone (instalación) o app ya instalada sin sesión: portada reducida
-       a solo la marca + el bloque de arriba (instrucciones o login) — nada
-       de secciones de marketing/descarga por debajo. */
-    #marketing.marketing-minimal .features,
-    #marketing.marketing-minimal .social-section,
-    #marketing.marketing-minimal .formats,
-    #marketing.marketing-minimal footer { display: none; }
-
-    .ios-steps { margin-top: 8px; padding-left: 20px; max-width: 380px; }
-    .ios-steps li { font-size: 13px; color: var(--secondary); line-height: 1.6; margin-bottom: 10px; }
-    .ios-steps strong { color: var(--text); }
-
-    /* ── FEATURES ─────────────────────────────────────────── */
-    .features {
-      border-top: 1px solid var(--divider);
-      padding: 96px 56px;
-    }
-
-    .section-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 48px;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-
-    .feature-card {
-      background: var(--bg);
-      padding: 40px 36px;
-    }
-
-    .feature-num {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--muted);
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
-
-    .feature-title {
-      font-size: 20px;
+      margin-bottom: 56px;
+      font-size: 15px;
       font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--text);
     }
 
-    .feature-desc {
-      font-size: 13px;
-      color: var(--secondary);
-      line-height: 1.65;
-    }
+    .hero-top nav { display: flex; gap: 24px; }
+    .hero-top a { text-decoration: none; }
+    .hero-top a:hover { text-decoration: underline; }
 
-    /* ── SOCIAL / STATS ───────────────────────────────────── */
-    .social-section {
-      border-top: 1px solid var(--divider);
+    .hero-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .social-left {
-      padding: 72px 56px;
-      border-right: 1px solid var(--divider);
-    }
-
-    .social-right {
-      padding: 72px 56px;
-    }
-
-    .social-title {
-      font-size: clamp(24px, 3vw, 36px);
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .social-desc {
-      font-size: 13px;
-      color: var(--secondary);
-      line-height: 1.7;
-    }
-
-    /* ── FORMATS ──────────────────────────────────────────── */
-    .formats {
-      border-top: 1px solid var(--divider);
-      padding: 72px 56px;
-    }
-
-    .formats-row {
-      display: flex;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      margin-top: 32px;
-    }
-
-    .format-item {
-      flex: 1;
-      background: var(--bg);
-      padding: 32px;
-      text-align: center;
-    }
-
-    .format-ext {
-      font-size: 28px;
-      font-weight: 900;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    .format-label {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* ── FOOTER ───────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--divider);
-      padding: 40px 56px;
-      display: flex;
-      justify-content: space-between;
+      grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
+      gap: 48px;
       align-items: center;
     }
 
-    .footer-brand {
-      font-size: 14px;
-      font-weight: 900;
+    .logo { width: min(440px, 100%); }
+
+    .hero h1 {
+      font-size: clamp(52px, 7vw, 104px);
+      margin-top: 28px;
     }
 
-    .footer-links {
+    .hero-lead {
+      margin-top: 24px;
+      max-width: 36ch;
+      font-size: 19px;
+      line-height: 1.5;
+    }
+
+    .hero-actions {
+      margin-top: 32px;
       display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 24px;
+    }
+
+    .hero-meta { font-size: 14px; flex-basis: 100%; }
+
+    .hero-shot {
+      --shadow: var(--ink);
+      transform: rotate(-2.5deg);
+      margin-right: -120px;
+      animation: shot-in 620ms 120ms var(--ease) both;
+    }
+
+    @keyframes shot-in {
+      from { opacity: 0; transform: rotate(-6deg) translate(40px, 24px); }
+    }
+
+    /* ── Botones en paralelogramo ────────────────────────── */
+    .tab {
+      display: inline-block;
+      transform: skewX(var(--skew));
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      padding: 12px 26px;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      transition: background-color 180ms ease-out, color 180ms ease-out, transform 180ms var(--ease);
+    }
+
+    .tab > span {
+      display: inline-block;
+      transform: skewX(calc(var(--skew) * -1));
+      font-stretch: 75%;
+      font-weight: 800;
+      font-size: 20px;
+      white-space: nowrap;
+    }
+
+    .tab:hover { background: var(--red); transform: skewX(var(--skew)) translateX(4px); }
+    .tab:active { transform: skewX(var(--skew)) translateX(2px) scale(.98); }
+    .tab.primary { background: var(--red); padding: 16px 34px; }
+    .tab.primary > span { font-size: 24px; }
+    .tab.primary:hover { background: var(--ink); }
+    /* En la portada el rojo del fondo se comería el botón. */
+    .hero .tab.primary { background: var(--ink); }
+    .hero .tab.primary:hover { background: var(--paper); color: var(--ink); }
+    .tab.small { padding: 9px 20px; }
+    .tab.small > span { font-size: 17px; }
+
+    /* ── Secciones ───────────────────────────────────────── */
+    section { padding-block: 112px; }
+
+    h2 { font-size: clamp(44px, 6vw, 80px); }
+
+    .lead { margin-top: 16px; max-width: 56ch; font-size: 18px; }
+
+    /* ── Qué hace ────────────────────────────────────────── */
+    .tour { background: var(--ink); color: var(--paper); }
+    .tour .lead { color: #BDBDBD; }
+
+    .feature {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      gap: 72px;
+      align-items: center;
+      margin-top: 120px;
+    }
+
+    .feature:nth-of-type(even) { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); }
+    .feature:nth-of-type(even) .feature-media { order: 2; }
+
+    .feature-media .shot { --shadow: var(--red); border-color: #2A2A2A; }
+
+    .feature h3 { font-size: clamp(36px, 4vw, 56px); }
+
+    .feature p { margin-top: 16px; color: #CFCFCF; max-width: 40ch; }
+
+    .feature ul { margin-top: 20px; list-style: none; display: grid; gap: 8px; color: #E5E5E5; }
+
+    .feature li { padding-left: 24px; position: relative; }
+
+    /* Estrella de la «u» del logo. */
+    .star::before,
+    .feature li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: .32em;
+      width: 13px; height: 13px;
+      background: var(--red);
+      clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    /* Cambio de tema sobre la captura. */
+    .theme-switch {
+      display: inline-flex;
+      gap: 6px;
+      margin-top: 24px;
+    }
+
+    .theme-switch .tab { background: transparent; color: var(--paper); box-shadow: inset 0 0 0 2px #444; }
+    .theme-switch .tab[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: none; }
+    .theme-switch .tab:hover { transform: skewX(var(--skew)); }
+
+    .swap { position: relative; }
+    .swap img + img { position: absolute; inset: 0; }
+    .swap img { transition: opacity 240ms ease-out; }
+    .swap[data-theme="dark"] .is-light,
+    .swap[data-theme="light"] .is-dark { opacity: 0; }
+
+    /* Lo demás, en pequeño. */
+    .extras {
+      margin-top: 128px;
+      padding-top: 40px;
+      border-top: 1px solid #333;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 32px;
     }
 
-    .footer-links a {
-      font-size: 12px;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.15s;
-    }
-    .footer-links a:hover { color: var(--text); }
+    .extras div { position: relative; padding-left: 24px; }
+    .extras strong { display: block; font-stretch: 75%; font-weight: 800; font-size: 22px; line-height: 1.15; }
+    .extras p { margin-top: 6px; font-size: 15px; color: #BDBDBD; }
 
-    .footer-copy {
-      font-size: 11px;
-      color: var(--muted);
+    /* ── Descargas ───────────────────────────────────────── */
+    .downloads { position: relative; }
+
+    .platforms {
+      margin-top: 56px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
     }
 
-    /* ── ACCOUNT BOX (login / register / session) ────────────── */
-    .account-box {
-      margin-top: 28px;
-      padding: 20px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      max-width: 340px;
-    }
-    .account-box h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 14px; }
-    .account-box .field { margin-bottom: 10px; }
-    .account-box label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
-    .account-box input[type="text"], .account-box input[type="password"], .account-box input[type="email"] {
-      background: var(--bg); border: 1px solid var(--border); color: var(--text);
-      padding: 9px 11px; width: 100%; font-size: 13px;
-    }
-    .account-box input:focus { outline: 1px solid var(--secondary); }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      background: var(--text); color: #0A0A0A; border: none; padding: 11px 20px;
-      font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.15s; }
-    .btn:hover { background: #CCCCCC; }
-    .btn:disabled { opacity: 0.5; cursor: default; }
-    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    .btn-ghost:hover { background: var(--card); }
-    .btn-danger { background: var(--error); color: #fff; }
-    .account-switch { margin-top: 12px; font-size: 11px; color: var(--muted); }
-    .account-switch button { background: none; border: none; color: var(--text); text-decoration: underline; cursor: pointer; padding: 0; font-size: 11px; }
-    .account-error { font-size: 11px; color: var(--error); margin-top: 8px; }
-    .account-session { font-size: 13px; }
-    .account-session .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-
-    /* ── WEBAPP (biblioteca / cuenta / configuración / amigos) ── */
-    #webapp { display: none; min-height: 100vh; flex-direction: column; }
-    .topbar {
-      display: flex; align-items: center;
-      /* padding-top respeta el notch/reloj del iPhone en modo standalone —
-         sin esto el título queda debajo de la barra de estado. */
-      padding: calc(14px + env(safe-area-inset-top)) 20px 14px;
-      border-bottom: 1px solid var(--divider); background: var(--surface);
-      position: sticky; top: 0; z-index: 10;
-    }
-    .topbar .brand { font-weight: 900; font-size: 16px; letter-spacing: -0.5px; }
-
-    /* Navegación real de la app: barra fija abajo, grande, con icono +
-       etiqueta — como una app móvil de verdad, no una lista de enlaces. */
-    .tabbar {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-      display: flex; background: var(--surface); border-top: 1px solid var(--divider);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    .tabbar-item {
-      flex: 1;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-      text-decoration: none; font-size: 10.5px; font-weight: 500; color: var(--muted);
-      padding: 12px 4px 10px;
-      border-top: 2px solid transparent;
-    }
-    .tabbar-item svg { width: 24px; height: 24px; flex-shrink: 0; }
-    .tabbar-item.active { color: var(--text); border-top-color: var(--text); }
-
-    .page {
-      flex: 1; padding: 20px; padding-bottom: calc(20px + 78px + env(safe-area-inset-bottom));
-      max-width: 1100px; width: 100%; margin: 0 auto;
-    }
-    .page h2 { font-size: 18px; margin-bottom: 16px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; }
-    .manga-card { cursor: pointer; }
-    .manga-cover {
+    .platform {
       position: relative;
-      aspect-ratio: 2/3; background: var(--card); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center; overflow: hidden;
-      margin-bottom: 8px; color: var(--muted); font-size: 11px; text-align: center; padding: 8px;
+      border: 2px solid var(--ink);
+      background: var(--paper);
+      padding: 28px 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: box-shadow 200ms var(--ease), transform 200ms var(--ease);
     }
-    .manga-cover img { width: 100%; height: 100%; object-fit: cover; }
-    /* No descargado todavía: portada apagada — toca para bajarla. */
-    .manga-cover-locked img { filter: grayscale(1); opacity: 0.55; }
-    .manga-cover-locked { color: var(--muted); }
-    .manga-progress {
-      position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
-      background: rgba(0,0,0,0.5);
-    }
-    .manga-progress-fill { height: 100%; width: 0%; background: var(--text); transition: width 0.15s linear; }
-    .manga-title { font-size: 12px; line-height: 1.4; }
-    .manga-badge { display: inline-block; font-size: 9px; color: var(--muted); border: 1px solid var(--border); padding: 1px 6px; margin-top: 4px; }
-    .empty-state { color: var(--muted); font-size: 13px; padding: 40px 0; text-align: center; }
 
-    .card { background: var(--card); border: 1px solid var(--border); padding: 22px; margin-bottom: 20px; max-width: 520px; }
-    .card h3 { font-size: 14px; margin-bottom: 8px; }
-    .card p { font-size: 12px; color: var(--secondary); line-height: 1.6; margin-bottom: 16px; }
-    .status-line { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-    .status-line.on  { color: var(--success); }
-    .status-line.off { color: var(--muted); }
+    .platform.is-yours { box-shadow: 10px 10px 0 var(--red); transform: translate(-4px, -4px); }
 
-    /* Pantalla completa de verdad: tapa hasta la topbar de la app. Un toque
-       en la página alterna .controls-hidden — así se lee a página completa
-       y con zoom nativo (pellizcar para acercar), sin nada estorbando. */
-    .reader {
-      position: fixed; inset: 0; z-index: 200;
-      display: flex; flex-direction: column; background: #000;
-    }
-    .reader-topbar, .reader-controls {
-      position: absolute; left: 0; right: 0; z-index: 2;
-      background: rgba(17,17,17,0.9);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-    .reader-topbar { top: 0; display: flex; align-items: center; justify-content: space-between; padding: max(10px, env(safe-area-inset-top)) 16px 10px; border-bottom: 1px solid var(--divider); }
-    .reader-controls { bottom: 0; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px max(10px, env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); font-size: 12px; color: var(--secondary); }
-    .reader.controls-hidden .reader-topbar { opacity: 0; transform: translateY(-100%); pointer-events: none; }
-    .reader.controls-hidden .reader-controls { opacity: 0; transform: translateY(100%); pointer-events: none; }
-    .reader-topbar .title { font-size: 13px; }
-    .reader-page { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; }
-    .reader-page img, .reader-page canvas { max-width: 100%; max-height: 100%; object-fit: contain; touch-action: pinch-zoom; }
-    .reader-controls button { background: none; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; cursor: pointer; }
+    .platform h3 { font-size: 44px; }
 
-    /* ── RESPONSIVE ───────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .hero        { grid-template-columns: 1fr; }
-      .hero-left   { padding: 40px 32px 32px; min-height: auto; }
-      .hero-right  { padding: 40px 32px 56px; }
-      .social-section { grid-template-columns: 1fr; }
-      .social-left { border-right: none; border-bottom: 1px solid var(--divider); padding: 48px 32px; }
-      .social-right { padding: 48px 32px; }
-      .features, .formats { padding: 64px 32px; }
-      footer { flex-direction: column; gap: 24px; text-align: center; }
-      .footer-links { flex-wrap: wrap; justify-content: center; }
-      .formats-row { flex-direction: column; }
-      .grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 10px; }
+    .platform .req { font-size: 14px; color: #555; }
+
+    .platform .buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+
+    .platform .size { font-size: 13px; color: #555; min-height: 1.4em; }
+
+    .platform .first-run { font-size: 14px; color: #333; margin-top: auto; padding-top: 12px; border-top: 1px solid #DDD; }
+
+    .platform code {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      background: var(--smoke);
+      padding: 1px 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .yours {
+      position: absolute;
+      top: -14px; right: 20px;
+      background: var(--red);
+      color: var(--paper);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 12px;
+      transform: skewX(var(--skew));
+    }
+
+    .platform:not(.is-yours) .yours { display: none; }
+
+    .version-line { margin-top: 32px; font-size: 14px; color: #555; }
+
+    /* ── 0.9.7 ───────────────────────────────────────────── */
+    .upgrade { background: var(--smoke); padding-block: 72px; }
+    .upgrade .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 32px; align-items: start; }
+    .upgrade h2 { font-size: clamp(36px, 4.4vw, 56px); }
+    .upgrade p { max-width: 58ch; }
+    .upgrade p + p { margin-top: 12px; }
+
+    footer { background: var(--red); color: var(--paper); padding-block: 40px; font-size: 14px; }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 28px; justify-content: space-between; align-items: center; }
+    footer img { width: 150px; }
+    footer nav { display: flex; gap: 20px; }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .hero { padding-block: 32px 72px; }
+      .hero::before { clip-path: polygon(0 0, 100% 0, 100% 10%, 0 22%); }
+      @keyframes slab { from { clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); } }
+      .hero-top { margin-bottom: 40px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 56px; }
+      .hero-shot { margin-right: 0; transform: rotate(-1.5deg); }
+      .feature, .feature:nth-of-type(even) { grid-template-columns: 1fr; gap: 40px; margin-top: 88px; }
+      .feature:nth-of-type(even) .feature-media { order: 0; }
+      .extras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .platforms { grid-template-columns: 1fr; gap: 32px; }
+      .upgrade .wrap { grid-template-columns: 1fr; }
+      section { padding-block: 80px; }
+    }
+
+    @media (max-width: 560px) {
+      .hero-top nav { display: none; }
+      .shot { box-shadow: 8px 8px 0 var(--shadow, var(--ink)); }
+      .extras { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Fondo personalizado opcional (Configuración) — muy poca opacidad a
-       propósito: se nota que está, pero no compite con el contenido. -->
-  <div id="app-background"></div>
+  <header class="hero">
+    <div class="wrap">
+      <div class="hero-top">
+        <span>Gratis y sin anuncios</span>
+        <nav>
+          <a href="#tour">Qué hace</a>
+          <a href="#descargas">Descargar</a>
+        </nav>
+      </div>
 
-  <!-- ═══ MARKETING (portada + login/registro) ═══ -->
-  <div id="marketing">
-
-    <section class="hero">
-
-      <!-- Left — branding -->
-      <div class="hero-left">
+      <div class="hero-grid">
         <div>
-          <div class="logo">HAKUFU</div>
-          <div class="logo-line"></div>
-          <p class="hero-tagline">Tu biblioteca de manga offline</p>
-        </div>
-        <div class="hero-footer">
-          <a href="https://danielpozarivera.es/" target="_blank" rel="noopener">por Daniel Poza Rivera</a>
-        </div>
-      </div>
-
-      <!-- Right — CTA (varía según plataforma, ver renderPlatformView) + cuenta -->
-      <div class="hero-right">
-
-        <!-- Windows/escritorio por defecto — reemplazado por JS en iPhone -->
-        <div id="platform-cta">
-          <p class="hero-label">Aplicación de escritorio · Windows</p>
-
-          <p class="hero-desc">
-            Lee y organiza tu manga<br>
-            <strong>sin conexión a internet.</strong>
+          <img class="logo" src="/img/hakufu-logo.png" width="676" height="208" alt="Hakufu">
+          <h1 class="display">Tu manga, en tu equipo.</h1>
+          <p class="hero-lead">
+            Ordena tus PDF, CBR y CBZ en colecciones y léelos sin conexión.
+            Sin cuentas ni servidores: todo se queda en tu disco.
           </p>
-
-          <button class="btn-download" onclick="downloadLatest()" id="btn-dl">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Descargar para Windows
-          </button>
-
-          <p class="version-label" id="version-txt">Comprobando versión…</p>
-          <p class="req-label">Requiere Windows 10 x64 o superior</p>
-          <p class="os-note" id="os-note"></p>
+          <div class="hero-actions">
+            <a class="tab primary" id="hero-dl" href="#descargas"><span>Descargar Hakufu</span></a>
+            <a href="#descargas" id="hero-others" hidden>Otros sistemas</a>
+            <p class="hero-meta" id="hero-meta">Para Windows, macOS y Linux.</p>
+          </div>
         </div>
 
-        <!-- Cuenta: login/registro o acceso directo a la biblioteca — oculta
-             en iPhone sin instalar (ver renderPlatformView) -->
-        <div class="account-box" id="account-box"></div>
+        <img class="shot hero-shot" src="/img/app-library-dark.webp" width="1280" height="800"
+             alt="La biblioteca de Hakufu: una fila de colecciones con sus portadas y el último manga que estabas leyendo.">
       </div>
+    </div>
+  </header>
 
+  <main>
+    <section class="tour" id="tour">
+      <div class="wrap">
+        <h2 class="display">Qué hace</h2>
+        <p class="lead">Hecho para leer manga en el ordenador, sin distracciones y sin depender de nadie.</p>
+
+        <article class="feature">
+          <div class="feature-media">
+            <img class="shot" src="/img/app-reader-dark.webp" width="1280" height="800" loading="lazy"
+                 alt="El lector de Hakufu mostrando una página de manga, con el número de página abajo.">
+          </div>
+          <div>
+            <h3 class="display">Sigue donde lo dejaste</h3>
+            <p>Cada tomo guarda su página. Ábrelo mañana y estarás en la misma viñeta.</p>
+            <ul>
+              <li>Pasa páginas con el teclado o el ratón</li>
+              <li>Modo zen a pantalla completa</li>
+              <li>Vista de una o dos páginas</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="feature">
+          <div class="feature-media">
+            <img class="shot" src="/img/app-home-dark.webp" width="1280" height="800" loading="lazy"
+                 alt="La pantalla de inicio de Hakufu con el botón de continuar leyendo.">
+          </div>
+          <div>
+            <h3 class="display">Tu estantería, ordenada</h3>
+            <p>Agrupa tus series en colecciones y Hakufu saca las portadas solo.</p>
+            <ul>
+              <li>Ordena por nombre, por fecha o a mano</li>
+              <li>Marca favoritos con una estrella</li>
+              <li>Continuar leyendo desde el inicio</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="feature">
+          <div class="feature-media">
+            <div class="swap shot" data-theme="dark" id="theme-swap">
+              <img class="is-dark" src="/img/app-collection-dark.webp" width="1280" height="800" loading="lazy"
+                   alt="Una colección con sus tomos, en tema oscuro.">
+              <img class="is-light" src="/img/app-collection-light.webp" width="1280" height="800" loading="lazy"
+                   alt="La misma colección en tema claro.">
+            </div>
+          </div>
+          <div>
+            <h3 class="display">Claro u oscuro, y tus fondos</h3>
+            <p>Cambia el tema con un clic y pon tus propias imágenes de fondo en la app y en el menú de inicio.</p>
+            <div class="theme-switch" role="group" aria-label="Ver la captura en tema oscuro o claro">
+              <button class="tab small" type="button" data-theme="dark" aria-pressed="true"><span>Oscuro</span></button>
+              <button class="tab small" type="button" data-theme="light" aria-pressed="false"><span>Claro</span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="feature">
+          <div class="feature-media">
+            <img class="shot" src="/img/app-profile-dark.webp" width="1280" height="800" loading="lazy"
+                 alt="El perfil de Hakufu con tus tres mangas favoritos y tus colecciones favoritas.">
+          </div>
+          <div>
+            <h3 class="display">Tu perfil de lector</h3>
+            <p>Tus tres mangas favoritos, lo último que terminaste y cuánto llevas leído.</p>
+            <ul>
+              <li>Páginas leídas y tiempo de uso</li>
+              <li>Páginas por colección</li>
+              <li>Historial completo</li>
+            </ul>
+          </div>
+        </article>
+
+        <div class="extras">
+          <div class="star">
+            <strong>Sin internet</strong>
+            <p>No pide cuenta ni se conecta a nada. Tus archivos no salen de tu equipo.</p>
+          </div>
+          <div class="star">
+            <strong>PDF, CBR y CBZ</strong>
+            <p>Abre los formatos de manga y cómic más comunes.</p>
+          </div>
+          <div class="star">
+            <strong>Copia en un .zip</strong>
+            <p>Exporta tu biblioteca e impórtala en otro ordenador, aunque sea de otro sistema.</p>
+          </div>
+          <div class="star">
+            <strong>Tres sistemas</strong>
+            <p>La misma app en Windows, macOS y Linux.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- ═══ FEATURES ═══ -->
-    <section class="features">
-      <p class="section-label">Características</p>
-      <div class="features-grid">
+    <section class="downloads" id="descargas">
+      <div class="wrap">
+        <h2 class="display">Descargar</h2>
+        <p class="lead">La app viene completa: descomprime y ábrela, no hace falta instalar nada más.</p>
 
-        <div class="feature-card">
-          <p class="feature-num">01</p>
-          <h3 class="feature-title">100% offline</h3>
-          <p class="feature-desc">Sin servidores, sin telemetría. Tus archivos se quedan en tu disco. Funciona sin conexión a internet.</p>
+        <div class="platforms">
+          <article class="platform" data-os="windows">
+            <span class="yours">Tu sistema</span>
+            <h3 class="display">Windows</h3>
+            <p class="req">Windows 10 u 11, 64 bits.</p>
+            <div class="buttons">
+              <a class="tab" data-asset="win"><span>Descargar .zip</span></a>
+            </div>
+            <p class="size" data-size="win"></p>
+            <p class="first-run">
+              Ábrela con <code>Hakufu.exe</code>. Si Windows avisa de un editor desconocido,
+              pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>.
+            </p>
+          </article>
+
+          <article class="platform" data-os="mac">
+            <span class="yours">Tu sistema</span>
+            <h3 class="display">macOS</h3>
+            <p class="req">macOS 12 o posterior.</p>
+            <div class="buttons">
+              <a class="tab" data-asset="macArm"><span>Chip Apple</span></a>
+              <a class="tab small" data-asset="macIntel"><span>Intel</span></a>
+            </div>
+            <p class="size" data-size="macArm"></p>
+            <p class="first-run">
+              Arrastra <code>Hakufu.app</code> a Aplicaciones. La primera vez macOS la bloquea
+              porque no viene de la App Store: ve a Ajustes del Sistema → Privacidad y seguridad
+              y pulsa <em>Abrir igualmente</em>.
+            </p>
+          </article>
+
+          <article class="platform" data-os="linux">
+            <span class="yours">Tu sistema</span>
+            <h3 class="display">Linux</h3>
+            <p class="req">x64, cualquier distro de escritorio reciente.</p>
+            <div class="buttons">
+              <a class="tab" data-asset="linux"><span>Descargar .tar.gz</span></a>
+            </div>
+            <p class="size" data-size="linux"></p>
+            <p class="first-run">
+              Descomprime y ejecuta <code>./Hakufu</code>. Si no arranca, instala las librerías
+              de Avalonia: <code>sudo apt install libfontconfig1 libice6 libsm6</code>.
+            </p>
+          </article>
         </div>
 
-        <div class="feature-card">
-          <p class="feature-num">02</p>
-          <h3 class="feature-title">Lector integrado</h3>
-          <p class="feature-desc">Lector de páginas con carga anticipada inteligente. Navega con teclado o ratón sin interrupciones.</p>
-        </div>
-
-        <div class="feature-card">
-          <p class="feature-num">03</p>
-          <h3 class="feature-title">Colecciones</h3>
-          <p class="feature-desc">Organiza tu biblioteca en colecciones. Añade, mueve y elimina mangas con control total.</p>
-        </div>
-
-        <div class="feature-card">
-          <p class="feature-num">04</p>
-          <h3 class="feature-title">Progreso de lectura</h3>
-          <p class="feature-desc">Guarda automáticamente la página donde lo dejaste. Retoma cualquier tomo desde donde lo dejaste.</p>
-        </div>
-
-        <div class="feature-card">
-          <p class="feature-num">05</p>
-          <h3 class="feature-title">Copia de seguridad en Dropbox</h3>
-          <p class="feature-desc">Respalda tus archivos en tu propio Dropbox y léelos desde el navegador, también en el móvil.</p>
-        </div>
-
-        <div class="feature-card">
-          <p class="feature-num">06</p>
-          <h3 class="feature-title">Tema claro y oscuro</h3>
-          <p class="feature-desc">Cambia entre tema claro y oscuro con un clic. Tu elección se guarda para la próxima sesión.</p>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ═══ SOCIAL ═══ -->
-    <section class="social-section">
-      <div class="social-left">
-        <p class="section-label">Social</p>
-        <h2 class="social-title">Conecta con otros lectores</h2>
-        <p class="social-desc">
-          Crea un perfil público, añade amigos y comparte tu historial de lectura.
-          Sincroniza tu biblioteca en la nube para ver qué están leyendo.
+        <p class="version-line" id="version-line">
+          Todas las versiones y novedades en <a href="https://github.com/dap0ry/Hakufu/releases">GitHub</a>.
         </p>
       </div>
-      <div class="social-right">
-        <p class="section-label">Nube</p>
-        <h2 class="social-title">Sincronización opcional</h2>
-        <p class="social-desc">
-          Inicia sesión (arriba) para sincronizar tu biblioteca, respaldar tus mangas en Dropbox
-          y leerlos desde cualquier dispositivo. La app de escritorio funciona igual sin cuenta.
-        </p>
-      </div>
     </section>
 
-    <!-- ═══ FORMATS ═══ -->
-    <section class="formats">
-      <p class="section-label">Formatos compatibles</p>
-      <div class="formats-row">
-        <div class="format-item">
-          <div class="format-ext">PDF</div>
-          <div class="format-label">Documento PDF</div>
-        </div>
-        <div class="format-item">
-          <div class="format-ext">CBZ</div>
-          <div class="format-label">Comic Book ZIP</div>
-        </div>
-        <div class="format-item">
-          <div class="format-ext">CBR</div>
-          <div class="format-label">Comic Book RAR / ZIP</div>
+    <section class="upgrade">
+      <div class="wrap">
+        <h2 class="display">¿Usabas la 0.9 en Windows?</h2>
+        <div>
+          <p>
+            Descarga la versión nueva y ábrela: lee la misma carpeta de datos, así que tus
+            colecciones y tu progreso siguen ahí.
+          </p>
+          <p>
+            Las cuentas, los amigos y la copia en Dropbox ya no existen. Para pasar tu biblioteca
+            a otro ordenador, usa la copia de seguridad en .zip.
+          </p>
         </div>
       </div>
     </section>
+  </main>
 
-    <!-- ═══ FOOTER ═══ -->
-    <footer>
-      <span class="footer-brand">HAKUFU</span>
-      <div class="footer-links">
-        <a href="https://github.com/dap0ry/Hakufu/releases" target="_blank" rel="noopener">Releases</a>
-        <a href="https://github.com/dap0ry/Hakufu" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://danielpozarivera.es/" target="_blank" rel="noopener">Autor</a>
-      </div>
-      <span class="footer-copy">© 2026 Daniel Poza Rivera</span>
-    </footer>
-
-  </div>
-
-  <!-- ═══ WEBAPP (biblioteca / lector / backup) — misma página, se activa al iniciar sesión ═══ -->
-  <div id="webapp"></div>
+  <footer>
+    <div class="wrap">
+      <img src="/img/hakufu-logo.png" width="676" height="208" alt="Hakufu" loading="lazy">
+      <span>© 2026 Daniel Poza Rivera</span>
+      <nav>
+        <a href="https://github.com/dap0ry/Hakufu/releases">Versiones</a>
+        <a href="https://danielpozarivera.es/">Autor</a>
+      </nav>
+    </div>
+  </footer>
 
   <script>
     const REPO = 'dap0ry/Hakufu';
-    let downloadUrl = `https://github.com/${REPO}/releases/latest`;
+    const RELEASES = `https://github.com/${REPO}/releases`;
+
+    // Nombre del archivo de cada plataforma en la release (lo genera
+    // .github/workflows/build.yml). En Windows, el .exe es la 0.9.7.
+    const ASSETS = {
+      win:      ['Hakufu-win-x64.zip', 'Hakufu-win-Setup.exe'],
+      macArm:   ['Hakufu-osx-arm64.zip'],
+      macIntel: ['Hakufu-osx-x64.zip'],
+      linux:    ['Hakufu-linux-x64.tar.gz'],
+    };
+    const LABELS = { windows: 'Windows', mac: 'macOS', linux: 'Linux' };
+    const HERO_ASSET = { windows: 'win', mac: 'macArm', linux: 'linux' };
+
+    const links = (key) => document.querySelectorAll(`[data-asset="${key}"]`);
+
+    // Mientras llega la respuesta de GitHub, enlace directo a la última release.
+    for (const [key, names] of Object.entries(ASSETS)) {
+      links(key).forEach((a) => { a.href = `${RELEASES}/latest/download/${names[0]}`; });
+    }
 
     function detectOS() {
       const ua = navigator.userAgent;
+      if (/iPhone|iPad|iPod|Android/i.test(ua)) return null;
       if (/Windows/i.test(ua)) return 'windows';
-      if (/Android/i.test(ua)) return 'android';
-      if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
       if (/Mac OS X|Macintosh/i.test(ua)) return 'mac';
-      if (/Linux/i.test(ua)) return 'linux';
-      return 'unknown';
+      if (/Linux|X11/i.test(ua)) return 'linux';
+      return null;
     }
 
-    function showOsNote() {
-      const os = detectOS();
-      if (os === 'windows') return;
-      const labels = { linux: 'Linux', mac: 'macOS', android: 'Android', unknown: 'tu sistema' };
-      const note = document.getElementById('os-note');
-      note.textContent =
-        `Detectamos ${labels[os]} — Hakufu es una app de escritorio solo para Windows. ` +
-        `Puedes descargar el .zip igualmente y ejecutarlo con una capa de compatibilidad (p. ej. Wine).`;
-      note.classList.add('visible');
-    }
-
-    // True cuando ya se abrió como app instalada (Compartir → Añadir a
-    // pantalla de inicio en iPhone, o el equivalente de Android/desktop) —
-    // en ese caso la portada de marketing/descarga no debe verse nunca.
-    function isStandalone() {
-      return window.navigator.standalone === true ||
-        window.matchMedia('(display-mode: standalone)').matches;
-    }
-
-    // Decide qué se ve en la portada según plataforma: Windows/otros ven la
-    // descarga de siempre; iPhone (sin instalar) ve solo las instrucciones
-    // de instalación, sin cuenta ni botón de descarga; ya instalada (y sin
-    // sesión) ve solo el login, sin instrucciones ni descarga.
-    function renderPlatformView() {
-      const os = detectOS();
-      const standalone = isStandalone();
-      const marketing = document.getElementById('marketing');
-      const cta = document.getElementById('platform-cta');
-      const accountBox = document.getElementById('account-box');
-
-      marketing.classList.toggle('marketing-minimal', standalone || os === 'ios');
-
-      if (standalone) {
-        cta.style.display = 'none';
-        return;
-      }
-
-      if (os === 'ios') {
-        accountBox.style.display = 'none';
-        cta.innerHTML = `
-          <p class="hero-label">Aplicación móvil · iPhone</p>
-          <p class="hero-desc">
-            Instala Hakufu como una app<br>
-            <strong>desde la pantalla de inicio.</strong>
-          </p>
-          <ol class="ios-steps">
-            <li>Toca el icono de <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba) en la barra de Safari.</li>
-            <li>Elige <strong>«Añadir a pantalla de inicio»</strong>.</li>
-            <li>Ábrela desde el icono de Hakufu — a partir de ahí entrarás directo a tu biblioteca.</li>
-          </ol>
-        `;
-        return;
-      }
-
-      // Windows / resto: la descarga de siempre.
-      fetchLatest();
-      showOsNote();
-    }
-
-    async function fetchLatest() {
+    // Solo Chrome/Edge dicen la arquitectura; si no, se asume chip Apple
+    // (lo más común hoy) y el botón de Intel sigue en la sección.
+    async function macAsset() {
       try {
-        const res  = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
-        const data = await res.json();
-        const asset = data.assets?.find(a => a.name.endsWith('.exe'));
-        if (asset) downloadUrl = asset.browser_download_url;
-        const versionEl = document.getElementById('version-txt');
-        versionEl.textContent = data.tag_name
-          ? `Versión actual: ${data.tag_name}  ·  ${asset ? formatBytes(asset.size) : ''}`
-          : '';
-      } catch {
-        document.getElementById('version-txt').textContent = '';
-      }
+        const { architecture } = await navigator.userAgentData.getHighEntropyValues(['architecture']);
+        if (architecture === 'x86') return 'macIntel';
+      } catch {}
+      return 'macArm';
     }
-
-    function downloadLatest() { window.location.href = downloadUrl; }
 
     function formatBytes(bytes) {
-      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
-      return `${(bytes / 1024).toFixed(0)} KB`;
+      return `${Math.round(bytes / (1024 * 1024))} MB`;
     }
 
-    renderPlatformView();
-  </script>
+    async function init() {
+      const os = detectOS();
+      const hero = document.getElementById('hero-dl');
+      let heroKey = null;
 
-  <script type="module" src="webapp.js"></script>
-  <script nomodule>
-    document.getElementById('account-box').innerHTML =
-      '<p style="font-size:12px;color:var(--secondary)">Tu navegador es demasiado antiguo para iniciar sesión aquí. Prueba con una versión reciente de Chrome, Safari o Firefox.</p>';
+      if (os) {
+        heroKey = os === 'mac' ? await macAsset() : HERO_ASSET[os];
+        hero.querySelector('span').textContent = `Descargar para ${LABELS[os]}`;
+        hero.href = links(heroKey)[0].href;
+        document.getElementById('hero-others').hidden = false;
+        document.querySelector(`.platform[data-os="${os}"]`).classList.add('is-yours');
+      }
+
+      let release;
+      try {
+        const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
+        if (!res.ok) return;
+        release = await res.json();
+      } catch { return; }
+
+      for (const [key, names] of Object.entries(ASSETS)) {
+        const asset = names.map((n) => release.assets?.find((a) => a.name === n)).find(Boolean);
+        const href = asset ? asset.browser_download_url : RELEASES;
+        links(key).forEach((a) => { a.href = href; });
+        const size = document.querySelector(`[data-size="${key}"]`);
+        if (size) size.textContent = asset ? `${release.tag_name} · ${formatBytes(asset.size)}` : 'Próximamente';
+        if (key === heroKey) {
+          hero.href = href;
+          document.getElementById('hero-meta').textContent = asset
+            ? `${release.tag_name} · ${formatBytes(asset.size)} · también para los demás sistemas`
+            : 'Todavía no hay versión para tu sistema. Mira las demás abajo.';
+        }
+      }
+
+      const line = document.getElementById('version-line');
+      const tag = document.createElement('a');
+      tag.href = release.html_url;
+      tag.textContent = release.tag_name;
+      line.prepend('Última versión: ', tag, '. ');
+    }
+
+    init();
+
+    // Botones Oscuro / Claro de la captura de colección.
+    const swap = document.getElementById('theme-swap');
+    document.querySelectorAll('.theme-switch button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        swap.dataset.theme = btn.dataset.theme;
+        document.querySelectorAll('.theme-switch button').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+      });
+    });
+
+    // Da de baja el service worker del antiguo lector web (ver sw.js).
+    navigator.serviceWorker?.getRegistrations().then((regs) => regs.forEach((r) => r.update()));
   </script>
 
 </body>

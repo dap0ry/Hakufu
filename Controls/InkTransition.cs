@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.VisualTree;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -80,7 +82,7 @@ public sealed class InkTransition : Control
     private static readonly SKRuntimeEffect? InkEffect = CreateEffect();
 
     private readonly Stopwatch _clock = new();
-    private SKImage?            _image;     // foto del tema viejo, para el shader
+    private PhotoHolder?        _image;     // foto del tema viejo, para el shader
     private RenderTargetBitmap? _fallback;  // la misma foto si no hay shader
     private double              _scale = 1;
     private bool                _running;
@@ -112,14 +114,22 @@ public sealed class InkTransition : Control
         var scale = top.RenderScaling;
         var px    = PixelSize.FromSize(size, scale);
         var rtb   = new RenderTargetBitmap(px, new Vector(96 * scale, 96 * scale));
-        rtb.Render(target);
+        // Con GPU (macOS), RenderTargetBitmap se salta lo que hay dentro de un
+        // Border con sombra: salían las tarjetas vacías. Sin sombras mientras se
+        // hace la foto (son casi invisibles) y se devuelven al momento.
+        var noShadows = target.GetVisualDescendants().OfType<Border>()
+            .Where(b => b.BoxShadow.Count > 0)
+            .Select(b => b.SetValue(Border.BoxShadowProperty, default(BoxShadows), BindingPriority.Animation))
+            .ToList();
+        try { rtb.Render(target); }
+        finally { foreach (var d in noShadows) d?.Dispose(); }
 
         var image = ToSkImage(rtb, px);
         if (image is not null) { rtb.Dispose(); rtb = null; }
 
         Finish();
         _scale    = scale;
-        _image    = image;
+        _image    = image is null ? null : new PhotoHolder(image);
         _fallback = rtb;
         return true;
     }
@@ -221,7 +231,29 @@ public sealed class InkTransition : Control
     /// SkiaSharp 2.88 aborta el proceso (SIGILL) al pintar cualquier shader SkSL
     /// en CPU, y en CPU es como se dibuja en los tests y sin aceleración.
     /// </summary>
-    private sealed class InkDrawOperation(Rect bounds, SKImage image, float scale, float progress,
+    /// <summary>
+    /// La foto, y su copia en la GPU: subirla (unos 16 MB en una pantalla
+    /// retina) en cada fotograma dejaba la animación a tirones.
+    /// </summary>
+    private sealed class PhotoHolder(SKImage raster)
+    {
+        public SKImage Raster { get; } = raster;
+        private SKImage?   _texture;
+        private GRContext? _context;
+
+        public SKImage For(GRContext? context)
+        {
+            if (context is null) return Raster;
+            if (_texture is null || _context != context)
+            {
+                _texture = Raster.ToTextureImage(context) ?? Raster;
+                _context = context;
+            }
+            return _texture;
+        }
+    }
+
+    private sealed class InkDrawOperation(Rect bounds, PhotoHolder photo, float scale, float progress,
                                           bool rightToLeft)
         : ICustomDrawOperation
     {
@@ -238,13 +270,14 @@ public sealed class InkTransition : Control
             if (context.TryGetFeature<ISkiaSharpApiLeaseFeature>() is not { } feature) return;
             using var lease = feature.Lease();
 
+            var image = photo.For(lease.GrContext);
             if (InkEffect is not null && lease.GrContext is { Backend: GRBackend.OpenGL })
-                DrawWithShader(lease.SkCanvas);
+                DrawWithShader(lease.SkCanvas, image);
             else
-                DrawWithPaths(lease.SkCanvas);
+                DrawWithPaths(lease.SkCanvas, image);
         }
 
-        private void DrawWithShader(SKCanvas canvas)
+        private void DrawWithShader(SKCanvas canvas, SKImage image)
         {
             // La foto está en píxeles físicos; el lienzo, en DIPs del control.
             using var photo = image.ToShader(SKShaderTileMode.Clamp, SKShaderTileMode.Clamp,
@@ -267,7 +300,7 @@ public sealed class InkTransition : Control
         /// la tinta que chupa el papel; detrás, la banda densa de tinta. De
         /// derecha a izquierda es lo mismo con el lienzo en espejo.
         /// </summary>
-        private void DrawWithPaths(SKCanvas canvas)
+        private void DrawWithPaths(SKCanvas canvas, SKImage image)
         {
             float w = (float)bounds.Width, h = (float)bounds.Height;
             if (progress >= 0.999f || w < 1 || h < 1) return;   // ya está todo destapado

@@ -70,6 +70,11 @@ public class FilePickerService : IFilePickerService
         try
         {
             var psi = new ProcessStartInfo(opener) { UseShellExecute = false };
+            // En macOS "open" ejecuta un paquete .app aunque sea una carpeta: una
+            // colección llamada "algo.app" (p. ej. de una copia de seguridad ajena)
+            // se enseña en el Finder (-R) en vez de abrirse.
+            if (OperatingSystem.IsMacOS() && !string.IsNullOrEmpty(Path.GetExtension(path.TrimEnd('/'))))
+                psi.ArgumentList.Add("-R");
             psi.ArgumentList.Add(path);
             Process.Start(psi);
         }

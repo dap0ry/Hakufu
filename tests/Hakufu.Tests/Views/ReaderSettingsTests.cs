@@ -116,4 +116,19 @@ public class ReaderSettingsTests
         Assert.Equal("→", settings.Shortcuts.Single(r => r.Action.Id == "next").Slots[0].Text);
         Assert.Empty(app.Root.Repo.Current.Reader.Shortcuts);
     }
+
+    [AvaloniaFact]
+    public void Page_turn_animation_is_off_for_now_and_hidden_in_settings()
+    {
+        using var app = ViewSmoke.Start();
+        Assert.True(app.Root.Repo.Current.Reader.PageTurnAnimation); // el ajuste guardado da igual
+
+        app.Root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
+        var vm = Assert.IsType<ReaderViewModel>(app.Root.Navigation.CurrentViewModel);
+        Assert.False(vm.AnimatePageTurns);
+
+        app.Root.Navigation.NavigateTo<SettingsViewModel>();
+        var settings = Assert.IsType<SettingsViewModel>(app.Root.Navigation.CurrentViewModel);
+        Assert.False(settings.ShowPageTurnSettings);
+    }
 }

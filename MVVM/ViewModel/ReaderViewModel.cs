@@ -58,7 +58,7 @@ public class ReaderViewModel : BaseViewModel, IDisposable
 
         _isTwoPageMode       = settings.TwoPageByDefault;
         OpenInZenMode        = settings.OpenInZenMode;
-        AnimatePageTurns     = settings.PageTurnAnimation;
+        AnimatePageTurns     = PageTurnAnimationAvailable && settings.PageTurnAnimation;
         PageTurnSpeedFactor  = settings.PageTurnSpeed switch { "fast" => 0.6, "slow" => 1.6, _ => 1.0 };
 
         _ = LoadCurrentPageAsync();
@@ -70,6 +70,13 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     /// <summary>La ventana entra en zen nada más abrir el lector (lo aplica MainWindow).</summary>
     public bool   OpenInZenMode       { get; }
     public bool   AnimatePageTurns    { get; }
+
+    /// <summary>
+    /// Interruptor general de la animación de pasar la hoja. Apagado de momento
+    /// (01/10/2026, a petición de Dani): el código sigue ahí para recuperarla
+    /// poniendo esto a true; mientras, Ajustes no enseña sus opciones.
+    /// </summary>
+    public static bool PageTurnAnimationAvailable { get; set; } = false;
     /// <summary>Multiplica la duración de la animación de pasar la hoja.</summary>
     public double PageTurnSpeedFactor { get; }
     public int    TotalPages { get; }

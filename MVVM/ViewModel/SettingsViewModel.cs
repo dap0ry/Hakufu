@@ -78,6 +78,9 @@ public class SettingsViewModel : BaseViewModel
         set { if (Reader.PageTurnAnimation == value) return; Reader.PageTurnAnimation = value; SaveReader(); }
     }
 
+    /// <summary>Las opciones de animación solo se enseñan si la animación existe (ver ReaderViewModel).</summary>
+    public bool ShowPageTurnSettings => ReaderViewModel.PageTurnAnimationAvailable;
+
     public bool IsSpeedFast   => Reader.PageTurnSpeed == "fast";
     public bool IsSpeedNormal => Reader.PageTurnSpeed is not ("fast" or "slow");
     public bool IsSpeedSlow   => Reader.PageTurnSpeed == "slow";

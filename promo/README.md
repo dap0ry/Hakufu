@@ -1,54 +1,31 @@
-# Remotion video
+# Vídeo de presentación de Hakufu
 
-<p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.apng">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif">
-    </picture>
-  </a>
-</p>
+Proyecto de [Remotion](https://www.remotion.dev). 35 s, 1920×1080, 30 fps, con música y efectos.
 
-Welcome to your Remotion project!
-
-## Commands
-
-**Install Dependencies**
-
-```console
-npm i --loglevel=error
+```bash
+npm i
+npm run dev                     # Remotion Studio (vista previa)
+npx remotion render HakufuPromoDemo out/hakufu-promo-35s-demo.mp4   # versión para publicar
+npx remotion render HakufuPromo     out/hakufu-promo-35s.mp4        # con tus mangas reales (privada)
 ```
 
-**Start Preview**
+- **`HakufuPromoDemo`**: con mangas inventados (`public/pages`, `public/demo`). Es la que se puede subir a la web y a redes.
+- **`HakufuPromo`**: con las portadas, páginas y capturas de tu biblioteca real, en `public/real/`. **No está en git**: los mangas tienen copyright y el repo es público. Para regenerarla hay que volver a sacar las capturas de la app y las páginas de tus `.cbz`/`.cbr` a `public/real/{app,covers,pages}` con los nombres que espera `src/assets.ts`.
 
-```console
-npm run dev
+## Sonido
+
+Todo sintetizado, sin samples ni licencias de terceros:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install numpy scipy
+.venv/bin/python audio/compose.py public/audio
 ```
 
-**Render video**
+`music.wav` (100 BPM, si menor) va cuadrada con las escenas de `src/timeline.ts`; los `sfx-*.wav` se colocan en `src/HakufuPromo.tsx`.
 
-```console
-npx remotion render
-```
+## Estructura
 
-**Upgrade Remotion**
-
-```console
-npx remotion upgrade
-```
-
-## Docs
-
-Get started with Remotion by reading the [fundamentals page](https://www.remotion.dev/docs/the-fundamentals).
-
-## Help
-
-We provide help on our [Discord server](https://discord.gg/6VzzNDwUwV).
-
-## Issues
-
-Found an issue with Remotion? [File an issue here](https://github.com/remotion-dev/remotion/issues/new).
-
-## License
-
-Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+- `src/scenes/`: Intro, LaptopReveal, Dive, ReaderScene, Montage, Finale.
+- `src/devices/`: portátil y monitor en 3D con CSS (sin modelos ni marcas).
+- `src/env/`: estudio (suelo, foco, portadas flotando), grano y viñeta.
+- `src/screen/`: capturas de la app y el lector con la animación de pasar la hoja.

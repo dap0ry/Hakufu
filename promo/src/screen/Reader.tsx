@@ -1,5 +1,5 @@
 import React from "react";
-import { Img, staticFile, useCurrentFrame } from "remotion";
+import { Img, useCurrentFrame } from "remotion";
 import { easeInSine, easeOutSine } from "../ease";
 import { inter } from "../fonts";
 
@@ -12,10 +12,12 @@ const H = 800;
 const TOP = 53;
 const BOTTOM = 52;
 const PAGE_H = H - TOP - BOTTOM - 16;
-const PAGE_W = Math.round((PAGE_H * 600) / 900);
 const CENTER = W / 2;
 
-const page = (n: number) => staticFile(`pages/p${n}.png`);
+// Lo que cambia entre el juego "real" y el "demo" (ver assets.ts).
+type Book = { page: (n: number) => string; pageAspect: number; title: string; totalPages: number };
+const BookContext = React.createContext<Book | null>(null);
+const useBook = () => React.useContext(BookContext)!;
 
 type Flip = { start: number; duration: number };
 
@@ -24,21 +26,25 @@ const PageImg: React.FC<{
   side: "left" | "right";
   style?: React.CSSProperties;
   children?: React.ReactNode;
-}> = ({ n, side, style, children }) => (
-  <div
-    style={{
-      position: "absolute",
-      top: TOP + 8,
-      left: side === "left" ? CENTER - PAGE_W - 0.5 : CENTER + 0.5,
-      width: PAGE_W,
-      height: PAGE_H,
-      ...style,
-    }}
-  >
-    <Img src={page(n)} style={{ width: "100%", height: "100%", display: "block" }} />
-    {children}
-  </div>
-);
+}> = ({ n, side, style, children }) => {
+  const book = useBook();
+  const pageW = Math.round(PAGE_H * book.pageAspect);
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: TOP + 8,
+        left: side === "left" ? CENTER - pageW - 0.5 : CENTER + 0.5,
+        width: pageW,
+        height: PAGE_H,
+        ...style,
+      }}
+    >
+      <Img src={book.page(n)} style={{ width: "100%", height: "100%", display: "block" }} />
+      {children}
+    </div>
+  );
+};
 
 /** Degradado negro que nace en el lomo (sombra sobre la página de debajo). */
 const spineShadow = (spineOnLeft: boolean, alpha: number) =>
@@ -47,8 +53,15 @@ const spineShadow = (spineOnLeft: boolean, alpha: number) =>
 const leafShade = (spineOnLeft: boolean, alpha: number) =>
   `linear-gradient(${spineOnLeft ? "90deg" : "270deg"}, rgba(0,0,0,0) 0%, rgba(0,0,0,${alpha}) 100%)`;
 
-export const Reader: React.FC<{ flips: Flip[]; firstPage?: number }> = ({ flips, firstPage = 1 }) => {
+export const Reader: React.FC<{ flips: Flip[]; firstPage?: number } & Book> = ({ flips, firstPage = 1, ...book }) => (
+  <BookContext.Provider value={book}>
+    <ReaderInner flips={flips} firstPage={firstPage} />
+  </BookContext.Provider>
+);
+
+const ReaderInner: React.FC<{ flips: Flip[]; firstPage: number }> = ({ flips, firstPage }) => {
   const frame = useCurrentFrame();
+  const book = useBook();
 
   // Cuántas hojas se han pasado ya y cuánto lleva la que se está pasando.
   let done = 0;
@@ -113,7 +126,7 @@ export const Reader: React.FC<{ flips: Flip[]; firstPage?: number }> = ({ flips,
           color: "#F0F0F0", fontSize: 14, fontWeight: 500,
         }}
       >
-        <span>Kurogane 1</span>
+        <span>{book.title}</span>
         <span style={{ border: "1px solid #44FFFFFF", borderColor: "rgba(255,255,255,0.27)", borderRadius: 6, padding: "6px 18px", fontSize: 13 }}>
           Cerrar
         </span>
@@ -129,7 +142,7 @@ export const Reader: React.FC<{ flips: Flip[]; firstPage?: number }> = ({ flips,
           </>
         ) : null}
         {flipLayer}
-        <div style={{ position: "absolute", top: TOP + 8, left: CENTER - 0.5, width: 1, height: PAGE_H, background: "rgba(0,0,0,0.18)" }} />
+        <div style={{ position: "absolute", top: TOP + 8, left: CENTER - 0.5, width: 1, height: PAGE_H, background: "rgba(0,0,0,0.25)" }} />
       </div>
 
       {/* Barra de abajo */}
@@ -142,7 +155,7 @@ export const Reader: React.FC<{ flips: Flip[]; firstPage?: number }> = ({ flips,
       >
         <span style={{ display: "flex", gap: 34, alignItems: "center" }}>
           <span style={{ fontSize: 16 }}>‹</span>
-          <span>{pageNo + 1} / 180</span>
+          <span>{pageNo + 1} / {book.totalPages}</span>
           <span style={{ fontSize: 16 }}>›</span>
         </span>
         <span style={{ display: "flex", gap: 8 }}>

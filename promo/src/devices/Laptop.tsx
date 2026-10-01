@@ -18,9 +18,11 @@ const SCREEN_H = LID_H - BEZEL * 2 - 8;
 const alu = "linear-gradient(160deg, #e4e6e9 0%, #c3c7cc 45%, #a7abb1 100%)";
 const aluDark = "linear-gradient(180deg, #b9bdc2 0%, #8c9096 100%)";
 
+// Caras visibles por los dos lados (el reflejo del suelo es una copia en
+// espejo y vería las traseras); las que comparten plano se separan 2 px.
 const face: React.CSSProperties = {
   position: "absolute",
-  backfaceVisibility: "hidden",
+  backfaceVisibility: "visible",
   transformStyle: "preserve-3d",
 };
 
@@ -52,7 +54,9 @@ export const Laptop: React.FC<{
   lidAngle: number;
   children: React.ReactNode;
   style?: React.CSSProperties;
-}> = ({ lidAngle, children, style }) => {
+  contentW?: number;
+  contentH?: number;
+}> = ({ lidAngle, children, style, contentW = 1280, contentH = 800 }) => {
   const lidTilt = lidAngle - 90; // rotateX: -90 cerrada (tumbada sobre la base)
   return (
     <div style={{ position: "absolute", left: 0, top: 0, width: 0, height: 0, transformStyle: "preserve-3d", transform: `translateZ(${-D / 2}px)`, ...style }}>
@@ -119,7 +123,7 @@ export const Laptop: React.FC<{
               borderRadius: 6, overflow: "hidden", background: "#000",
             }}
           >
-            <div style={{ width: 1280, height: 800, transformOrigin: "0 0", scale: `${SCREEN_W / 1280} ${SCREEN_H / 800}` }}>
+            <div style={{ width: contentW, height: contentH, transformOrigin: "0 0", scale: `${SCREEN_W / contentW} ${SCREEN_H / contentH}` }}>
               {children}
             </div>
             {/* Reflejo del cristal */}
@@ -136,7 +140,7 @@ export const Laptop: React.FC<{
         <div
           style={{
             ...face, inset: 0, borderRadius: "24px 24px 6px 6px",
-            transform: "rotateY(180deg)",
+            transform: "translateZ(-2px) rotateY(180deg)",
             background: alu,
             boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.4)",
           }}

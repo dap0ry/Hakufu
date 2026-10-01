@@ -1,15 +1,12 @@
-import { loadFont as loadLocal } from "@remotion/fonts";
-import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
+import { loadFont } from "@remotion/fonts";
 import { staticFile } from "remotion";
 
-// Las mismas fuentes que la app: Inter (interfaz) y la condensada de los rótulos.
-export const { fontFamily: inter } = loadInter("normal", {
-  weights: ["400", "500", "600", "700", "900"],
-  subsets: ["latin"],
-});
-
+// Fuentes dentro del proyecto (el render no depende de internet): Inter
+// (interfaz, variable 100–900) y la condensada de los rótulos de la app.
+export const inter = "Inter";
 export const display = "Hakufu Display";
 export const displaySemi = "Hakufu Display Semi";
 
-loadLocal({ family: display, url: staticFile("fonts/HakufuDisplay-Black.ttf") });
-loadLocal({ family: displaySemi, url: staticFile("fonts/HakufuDisplaySemi-Bold.ttf") });
+loadFont({ family: inter, url: staticFile("fonts/Inter.ttf"), weight: "100 900" });
+loadFont({ family: display, url: staticFile("fonts/HakufuDisplay-Black.ttf") });
+loadFont({ family: displaySemi, url: staticFile("fonts/HakufuDisplaySemi-Bold.ttf") });

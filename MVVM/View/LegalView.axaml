@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             x:Class="Hakufu.MVVM.View.LegalView"
+             x:DataType="vm:LegalViewModel">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ═══ CABECERA ═══ -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource DividerBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="40,24,40,24">
+            <Grid ColumnDefinitions="Auto,*">
+                <Button Grid.Column="0"
+                        Classes="ghost"
+                        Content="← Ajustes"
+                        Command="{Binding GoBackCommand}"
+                        Margin="0,0,24,0"/>
+                <TextBlock Grid.Column="1" Text="AVISO LEGAL"
+                           FontSize="11" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMuted}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- ═══ TEXTO ═══ Una columna estrecha, para leer con calma -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="720" Margin="40,48,40,64" HorizontalAlignment="Center">
+
+                <TextBlock Text="Términos y aviso legal"
+                           FontFamily="{DynamicResource DisplayFont}"
+                           FontSize="56" LineHeight="54" TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextPrimary}"/>
+                <TextBlock Text="Términos, condiciones, aviso legal y privacidad de Hakufu. Léelos con calma — el uso de Hakufu implica su aceptación."
+                           FontSize="14" LineHeight="22" TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextSecondary}"
+                           Margin="0,18,0,36"/>
+
+                <ItemsControl ItemsSource="{Binding LegalSections}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LegalSection">
+                            <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0"
+                                    Padding="0,26,0,30">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}"
+                                               FontSize="16" FontWeight="SemiBold"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               Margin="0,0,0,12"/>
+                                    <TextBlock Text="{Binding Body}"
+                                               FontSize="14" LineHeight="24"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextSecondary}"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="0,20,0,0">
+                    <TextBlock Text="Este texto tiene fines informativos y de protección razonable, no constituye asesoramiento jurídico profesional."
+                               FontSize="11" FontStyle="Italic" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextMuted}"/>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

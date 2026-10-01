@@ -449,6 +449,11 @@
                             <TextBlock Text="por Daniel Poza Rivera"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"/>
+                            <Button Classes="ghost"
+                                    Content="Términos y aviso legal"
+                                    HorizontalAlignment="Left"
+                                    Padding="16,9" Margin="0,18,0,0"
+                                    Command="{Binding OpenLegalCommand}"/>
                         </StackPanel>
 
                         <TextBlock Grid.Column="1"

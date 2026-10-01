@@ -303,6 +303,8 @@ public class SettingsViewModel : BaseViewModel
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 
+    public RelayCommand OpenLegalCommand => new(() => _nav.NavigateTo<LegalViewModel>());
+
     // Cierra Hakufu (igual que la X de la ventana).
     public RelayCommand ExitApplicationCommand => new(() =>
     {

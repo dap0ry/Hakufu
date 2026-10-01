@@ -11,18 +11,20 @@ public class BackupService(IDataRepository repo) : IBackupService
     private const string ManifestEntry = "hakufu-backup.json";
 
     // Carpetas de AppPaths.DataDir que viajan en la copia (nombre en el zip = nombre en disco).
+    // Los mangas no: son la carpeta del usuario, no de Hakufu.
     private static readonly string[] MediaFolders = ["covers", "profile"];
-    private const string LibraryFolder = "biblioteca";
+    // Copias de versiones antiguas que sí traían los mangas copiados a Hakufu:
+    // se siguen restaurando para no perderlos (quedan en AppPaths.LibraryDir).
+    private const string LegacyLibraryFolder = "biblioteca";
 
     private sealed record Manifest(int Version, string DataDir, DateTime CreatedAt);
 
-    public async Task ExportAsync(string zipPath, bool includeLibraryFiles, IProgress<double>? progress = null)
+    public async Task ExportAsync(string zipPath, IProgress<double>? progress = null)
     {
         await repo.SaveAsync();
 
         var dataDir = AppPaths.DataDir;
-        var folders = includeLibraryFiles ? [.. MediaFolders, LibraryFolder] : MediaFolders;
-        var files = folders
+        var files = MediaFolders
             .Select(f => Path.Combine(dataDir, f))
             .Where(Directory.Exists)
             .SelectMany(d => Directory.EnumerateFiles(d, "*", SearchOption.AllDirectories))
@@ -41,10 +43,7 @@ public class BackupService(IDataRepository repo) : IBackupService
                 for (var i = 0; i < files.Count; i++)
                 {
                     var rel = Path.GetRelativePath(dataDir, files[i]).Replace('\\', '/');
-                    // Los mangas ya van comprimidos: no gastar CPU en recomprimirlos.
-                    var level = rel.StartsWith(LibraryFolder + "/") ? CompressionLevel.NoCompression
-                                                                    : CompressionLevel.Optimal;
-                    zip.CreateEntryFromFile(files[i], rel, level);
+                    zip.CreateEntryFromFile(files[i], rel, CompressionLevel.Optimal);
                     progress?.Report((i + 1) / (double)Math.Max(1, files.Count));
                 }
             }
@@ -122,6 +121,9 @@ public class BackupService(IDataRepository repo) : IBackupService
                 }
 
                 RebasePaths(store, manifest.DataDir, dataDir);
+                // La carpeta de la biblioteca es de este equipo, no la del de la
+                // copia: los tomos se vuelven a encontrar por su ruta relativa.
+                store.LibraryRoot = repo.Current.LibraryRoot;
                 repo.Replace(store);
                 return true;
             }
@@ -133,7 +135,7 @@ public class BackupService(IDataRepository repo) : IBackupService
     }
 
     private static bool IsMediaEntry(string fullName) =>
-        MediaFolders.Append(LibraryFolder).Any(f => fullName.StartsWith(f + "/"));
+        MediaFolders.Append(LegacyLibraryFolder).Any(f => fullName.StartsWith(f + "/"));
 
     private static void WriteJson<T>(ZipArchive zip, string name, T value)
     {

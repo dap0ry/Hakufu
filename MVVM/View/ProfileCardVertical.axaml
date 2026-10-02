@@ -158,8 +158,10 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Grid.Column="0" Classes="label" Text="{Binding StreakText}"
                                IsVisible="{Binding HasStreak}" VerticalAlignment="Center"/>
-                    <Image Grid.Column="1" Source="avares://Hakufu/Images/HakufuTitleDark.png"
-                           Height="30" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                    <!-- Solo el nombre, como el título de Inicio -->
+                    <TextBlock Grid.Column="1" Text="Hakufu"
+                               FontSize="24" FontWeight="Black" LetterSpacing="-0.8"
+                               VerticalAlignment="Center"/>
                 </Grid>
             </Panel>
         </StackPanel>

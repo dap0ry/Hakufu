@@ -436,7 +436,11 @@
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,3"/>
-                            <TextBlock Text="por Daniel Poza Rivera"
+                            <TextBlock Text="Desarrollado por @dp0r1"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,0,0,3"/>
+                            <TextBlock Text="Diseño con la ayuda de @_.riscooo"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"/>
                             <Button Classes="ghost"

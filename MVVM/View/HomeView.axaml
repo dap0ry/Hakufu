@@ -154,11 +154,16 @@
                 </StackPanel>
 
                 <!-- Sin enlace: la app no abre URLs de red -->
-                <TextBlock Grid.Row="2"
-                           Text="por Daniel Poza Rivera"
-                           FontFamily="{DynamicResource DisplayFont}"
-                           FontSize="16"
-                           Foreground="{DynamicResource TextMuted}"/>
+                <StackPanel Grid.Row="2" Spacing="2">
+                    <TextBlock Text="Desarrollado por @dp0r1"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="16"
+                               Foreground="{DynamicResource TextMuted}"/>
+                    <TextBlock Text="Diseño con la ayuda de @_.riscooo"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="16"
+                               Foreground="{DynamicResource TextMuted}"/>
+                </StackPanel>
             </Grid>
         </Border>
 

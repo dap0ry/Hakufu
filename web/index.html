@@ -202,6 +202,59 @@
     .upgrade h3 { font-size: 20px; font-weight: 700; letter-spacing: -.02em; line-height: 1.3; }
     .upgrade p { color: var(--muted-d); font-size: 15px; }
 
+    /* ── Guía de instalación ─────────────────────────── */
+    .guide-btn {
+      align-self: flex-start;
+      border: 0;
+      background: none;
+      padding: 0;
+      color: var(--paper);
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+    .guide-btn:hover { color: var(--muted-d); }
+
+    dialog.guide {
+      border: 1px solid var(--line-d);
+      border-radius: 16px;
+      background: var(--coal);
+      color: var(--paper);
+      padding: 0;
+      width: min(680px, 94vw);
+      max-height: 88vh;
+      margin: auto;
+    }
+    dialog.guide::backdrop { background: rgba(10,10,12,.8); backdrop-filter: blur(4px); }
+    dialog.guide[open] { animation: zoom-in 220ms var(--ease) both; }
+    dialog.guide[open]::backdrop { animation: fade 200ms ease-out both; }
+    .guide-head { position: sticky; top: 0; background: var(--coal); padding: 24px 28px 16px; border-bottom: 1px solid var(--line-d); display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+    .guide-head h2 { font-size: 30px; }
+    .guide-tabs { margin-top: 16px; display: inline-flex; padding: 4px; border-radius: 10px; background: var(--night); gap: 4px; }
+    .guide-tabs button { border: 0; background: transparent; padding: 7px 14px; border-radius: 7px; font-size: 14px; font-weight: 600; color: var(--muted-d); cursor: pointer; }
+    .guide-tabs button[aria-selected="true"] { background: #2C2C30; color: var(--paper); }
+    .guide-close { border: 0; background: transparent; color: var(--muted-d); font-size: 26px; line-height: 1; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; flex: none; }
+    .guide-close:hover { background: #2C2C30; color: var(--paper); }
+    .guide-body { padding: 8px 28px 28px; }
+    .guide-body ol { list-style: none; counter-reset: step; display: grid; gap: 18px; margin-top: 16px; }
+    .guide-body li { counter-increment: step; position: relative; padding-left: 44px; color: #D4D4D8; font-size: 15px; }
+    .guide-body li::before {
+      content: counter(step);
+      position: absolute; left: 0; top: -2px;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--paper); color: var(--ink);
+      font-weight: 700; font-size: 14px;
+    }
+    .guide-body li b { color: var(--paper); }
+    .guide-body .tip { margin-top: 22px; padding: 14px 16px; border-radius: 10px; background: var(--night); font-size: 14px; color: var(--muted-d); }
+    .guide-body .tip b { color: var(--paper); }
+    .guide-body [hidden] { display: none; }
+    .guide-body section { padding: 0; }
+    .guide-open { align-self: flex-start; margin-top: 4px; }
+
     /* ── Pie ─────────────────────────────────────────────── */
     footer { background: var(--night); color: var(--muted-d); font-size: 15px; padding-block: 56px 32px; border-top: 1px solid var(--line-d); }
     .foot-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 3fr); gap: 40px 56px; }
@@ -378,7 +431,7 @@
     <section class="downloads" id="descargas">
       <div class="wrap">
         <h2 class="display" data-reveal>Descargar</h2>
-        <p class="lead" data-reveal>La app viene completa: descomprime y ábrela, no hace falta instalar nada más.</p>
+        <p class="lead" data-reveal>La app viene completa: descomprime y ábrela, no hace falta instalar nada más. Si te pierdes entre tantos archivos, abre la guía paso a paso de tu sistema.</p>
 
         <div class="platforms">
           <article class="platform" data-os="windows">
@@ -388,6 +441,7 @@
             <div class="buttons"><a class="btn" data-asset="win" data-os-dl="windows">Descargar .zip</a></div>
             <p class="size" data-size="win"></p>
             <p class="first-run">Ábrela con <code>Hakufu.exe</code>. Si Windows avisa de un editor desconocido, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>.</p>
+            <button class="btn outline small guide-open" type="button" data-guide="windows">Cómo instalarlo, paso a paso</button>
           </article>
 
           <article class="platform" data-os="mac">
@@ -400,6 +454,7 @@
             </div>
             <p class="size" data-size="macArm"></p>
             <p class="first-run">Arrastra <code>Hakufu.app</code> a Aplicaciones. La primera vez, ve a Ajustes del Sistema → Privacidad y seguridad y pulsa <em>Abrir igualmente</em>.</p>
+            <button class="btn outline small guide-open" type="button" data-guide="mac">Cómo instalarlo, paso a paso</button>
           </article>
 
           <article class="platform" data-os="linux">
@@ -409,6 +464,7 @@
             <div class="buttons"><a class="btn" data-asset="linux" data-os-dl="linux">Descargar .tar.gz</a></div>
             <p class="size" data-size="linux"></p>
             <p class="first-run">Descomprime y ejecuta <code>./Hakufu</code>. Si no arranca: <code>sudo apt install libfontconfig1 libice6 libsm6</code>.</p>
+            <button class="btn outline small guide-open" type="button" data-guide="linux">Cómo instalarlo, paso a paso</button>
           </article>
         </div>
 
@@ -451,6 +507,56 @@
     <button class="btn light small lightbox-close" type="button" id="lightbox-close">Cerrar</button>
     <img id="lightbox-img" alt="">
     <p id="lightbox-caption"></p>
+  </dialog>
+
+  <dialog class="guide" id="guide" aria-labelledby="guide-title">
+    <div class="guide-head">
+      <div>
+        <h2 class="display" id="guide-title">Cómo instalar Hakufu</h2>
+        <div class="guide-tabs" role="tablist" aria-label="Sistema">
+          <button type="button" role="tab" data-tab="windows" aria-selected="true">Windows</button>
+          <button type="button" role="tab" data-tab="mac" aria-selected="false">macOS</button>
+          <button type="button" role="tab" data-tab="linux" aria-selected="false">Linux</button>
+        </div>
+      </div>
+      <button class="guide-close" type="button" id="guide-close" aria-label="Cerrar guía">×</button>
+    </div>
+
+    <div class="guide-body">
+      <section data-panel="windows">
+        <ol>
+          <li><b>Descarga el .zip.</b> Se guarda en tu carpeta Descargas como <code>Hakufu-win-x64.zip</code>.</li>
+          <li><b>Descomprímelo, no lo abras con doble clic.</b> Haz clic derecho sobre el .zip → <em>Extraer todo…</em> → <em>Extraer</em>. Se crea la carpeta <code>Hakufu-win-x64</code>.</li>
+          <li><b>Entra en la carpeta.</b> Verás muchos archivos (<code>.dll</code> y otros): son piezas de la app, no hace falta tocarlos ni borrarlos.</li>
+          <li><b>Abre <code>Hakufu.exe</code>.</b> Es el que tiene el icono de Hakufu; si no ves las extensiones, es el que pone <em>Aplicación</em> en la columna Tipo.</li>
+          <li><b>Si sale «Windows protegió su PC»</b>, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>. Solo pasa la primera vez.</li>
+          <li><b>Para tenerla a mano:</b> mueve la carpeta entera adonde quieras (por ejemplo, Documentos) y después clic derecho en <code>Hakufu.exe</code> → <em>Enviar a</em> → <em>Escritorio (crear acceso directo)</em>. No saques el .exe solo de su carpeta: necesita el resto de archivos.</li>
+        </ol>
+        <p class="tip"><b>Para actualizar</b>, descarga la versión nueva y sustituye la carpeta. Tu biblioteca y tu progreso se guardan aparte y no se pierden.</p>
+      </section>
+
+      <section data-panel="mac" hidden>
+        <ol>
+          <li><b>Elige tu versión.</b> Menú Apple (la manzana, arriba a la izquierda) → <em>Acerca de este Mac</em>: si pone <em>Chip Apple M1, M2, M3…</em> descarga <b>Chip Apple</b>; si pone <em>Procesador Intel</em>, descarga <b>Intel</b>.</li>
+          <li><b>Descomprime el .zip.</b> Abre Descargas y haz doble clic en <code>Hakufu-osx-…zip</code> (Safari a veces lo hace solo). Aparece <code>Hakufu.app</code>.</li>
+          <li><b>Arrastra <code>Hakufu.app</code> a Aplicaciones.</b></li>
+          <li><b>Ábrela desde Aplicaciones.</b> La primera vez macOS dirá que no puede comprobar quién la ha hecho: cierra el aviso, ve a <em>Ajustes del Sistema → Privacidad y seguridad</em>, baja hasta el final y pulsa <em>Abrir igualmente</em>. Confirma con tu contraseña.</li>
+          <li><b>Listo.</b> A partir de ahí se abre normal. Si quieres, déjala en el Dock.</li>
+        </ol>
+        <p class="tip"><b>Si dice que «está dañada»</b>, abre Terminal y escribe <code>xattr -cr /Applications/Hakufu.app</code>, pulsa Intro y vuelve a abrirla.</p>
+      </section>
+
+      <section data-panel="linux" hidden>
+        <ol>
+          <li><b>Descarga el .tar.gz.</b> Se guarda como <code>Hakufu-linux-x64.tar.gz</code>.</li>
+          <li><b>Descomprímelo.</b> Clic derecho → <em>Extraer aquí</em>, o en una terminal: <code>tar xzf Hakufu-linux-x64.tar.gz</code>. Se crea la carpeta <code>Hakufu-linux-x64</code>.</li>
+          <li><b>Abre el archivo <code>Hakufu</code></b> (el que no tiene extensión). Si el doble clic no hace nada, clic derecho → <em>Ejecutar como programa</em>, o desde la terminal: <code>cd Hakufu-linux-x64 &amp;&amp; ./Hakufu</code>. Los <code>.dll</code> son parte de la app.</li>
+          <li><b>Si dice «permiso denegado»</b>: <code>chmod +x Hakufu</code> dentro de la carpeta.</li>
+          <li><b>Si no arranca</b>, instala las librerías gráficas. Ubuntu o Debian: <code>sudo apt install libfontconfig1 libice6 libsm6</code>. Fedora: <code>sudo dnf install fontconfig libICE libSM</code>.</li>
+        </ol>
+        <p class="tip"><b>Para actualizar</b>, descarga la versión nueva y sustituye la carpeta. Tus datos se guardan aparte y no se pierden.</p>
+      </section>
+    </div>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite">
@@ -612,7 +718,8 @@
 
     function showToast(os) {
       document.getElementById('toast-title').textContent = `Descargando Hakufu para ${LABELS[os]}`;
-      document.getElementById('toast-body').innerHTML = FIRST_RUN[os];
+      document.getElementById('toast-body').innerHTML =
+        `${FIRST_RUN[os]} <button class="guide-btn" type="button" data-guide-toast="${os}">Ver la guía paso a paso</button>`;
       toast.classList.add('is-open');
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => toast.classList.remove('is-open'), 10000);
@@ -622,10 +729,29 @@
       const a = e.target.closest('[data-os-dl]');
       if (a && a.getAttribute('href') !== '#descargas') showToast(a.dataset.osDl);
     });
+    toast.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-guide-toast]');
+      if (b) showGuide(b.dataset.guideToast);
+    });
     document.getElementById('toast-close').addEventListener('click', () => {
       clearTimeout(toastTimer);
       toast.classList.remove('is-open');
     });
+
+    // ── Guía de instalación por sistema ─────────────────────
+    const guide = document.getElementById('guide');
+    const guideTabs = guide.querySelectorAll('[data-tab]');
+
+    function showGuide(os) {
+      guideTabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === os)));
+      guide.querySelectorAll('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== os; });
+      if (!guide.open) guide.showModal();
+    }
+
+    document.querySelectorAll('[data-guide]').forEach((b) => b.addEventListener('click', () => showGuide(b.dataset.guide)));
+    guideTabs.forEach((t) => t.addEventListener('click', () => showGuide(t.dataset.tab)));
+    document.getElementById('guide-close').addEventListener('click', () => guide.close());
+    guide.addEventListener('click', (e) => { if (e.target === guide) guide.close(); });
 
     // Da de baja el service worker del antiguo lector web (ver sw.js).
     navigator.serviceWorker?.getRegistrations().then((regs) => regs.forEach((r) => r.update()));

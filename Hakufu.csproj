@@ -9,7 +9,7 @@
     <RootNamespace>Hakufu</RootNamespace>
     <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.10.0</Version>
+    <Version>0.10.1</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- Bindings comprobados al compilar: cada vista declara x:DataType. -->
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>

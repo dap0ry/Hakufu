@@ -113,6 +113,16 @@ public class LandingScreenshots
             root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(store.Mangas[0], 2));
             Shot("reader");
 
+            // Biblioteca entera en una ventana muy alta, para la estantería de la landing
+            // (se desplaza dentro de un marco al hacer scroll).
+            if (int.TryParse(Environment.GetEnvironmentVariable("HAKUFU_SCREENSHOTS_TALL"), out var tall))
+            {
+                window.Height = tall;
+                root.Navigation.NavigateTo<LibraryViewModel>();
+                Shot("library-tall");
+                window.Height = 800;
+            }
+
             window.Close();
         }
     }

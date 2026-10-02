@@ -129,58 +129,33 @@
     }
     .hero-stage .shot { position: relative; }
 
-    /* ── Colecciones: estantería que corre en horizontal ── */
-    .shelf { padding: 0; background: var(--mist); }
+    /* ── Colecciones: la Biblioteca de la app se desplaza dentro de su ventana ── */
+    .shelf { padding: 0; background: var(--mist); height: 260vh; }
 
     .shelf-sticky {
       position: sticky;
       top: 0;
       height: 100svh;
+      display: flex;
+      align-items: center;
+    }
+
+    .shelf-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 72px; align-items: center; }
+
+    .shelf-count { margin-top: 32px; }
+    .shelf-count b { display: block; font-weight: 900; font-size: clamp(40px, 4.4vw, 56px); letter-spacing: -.04em; line-height: 1; }
+    .shelf-count span { font-size: 15px; color: var(--muted); }
+
+    .app-window {
+      aspect-ratio: 16 / 10;
+      max-height: calc(100svh - 120px);
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 56px;
+      border-radius: 12px;
+      background: #0A0A0B;
+      border: 1px solid var(--line);
+      box-shadow: 0 30px 60px -24px rgba(17,17,19,.4);
     }
-
-    .shelf-head { display: flex; justify-content: space-between; align-items: end; gap: 32px; }
-    .shelf-count { text-align: right; flex: none; }
-    .shelf-count b { display: block; font-weight: 900; font-size: clamp(36px, 4vw, 52px); letter-spacing: -.04em; line-height: 1; }
-    .shelf-count span { font-size: 14px; color: var(--muted); }
-
-    .shelf-track {
-      display: flex;
-      gap: 44px;
-      width: max-content;
-      padding-inline: max(16px, (100vw - 1160px) / 2);
-      transform: translateX(var(--x, 0));
-      will-change: transform;
-    }
-
-    .col { width: 176px; flex: none; }
-
-    /* El montón de portadas, como en la Biblioteca de la app. */
-    .stack { position: relative; aspect-ratio: 2 / 3; }
-    .stack img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 4px;
-      box-shadow: 0 10px 22px -10px rgba(0,0,0,.45);
-      transition: transform 320ms var(--ease);
-    }
-    .stack img:nth-child(1) { z-index: 3; }
-    .stack img:nth-child(2) { z-index: 2; transform: rotate(4deg) translate(8px, 2px); }
-    .stack img:nth-child(3) { z-index: 1; transform: rotate(-5deg) translate(-8px, 4px); }
-    .col:hover .stack img:nth-child(1) { transform: translateY(-6px); }
-    .col:hover .stack img:nth-child(2) { transform: rotate(9deg) translate(26px, 0); }
-    .col:hover .stack img:nth-child(3) { transform: rotate(-10deg) translate(-26px, 4px); }
-
-    .col h3 { margin-top: 22px; font-size: 17px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
-    .col p { font-size: 13px; color: var(--muted); }
-    .col .bar { margin-top: 10px; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
-    .col .bar i { display: block; height: 100%; background: var(--ink); width: var(--w); }
+    .app-window img { width: 100%; transform: translateY(var(--y, 0)); will-change: transform; }
 
     /* ── Perfil ──────────────────────────────────────────── */
     .dark { background: var(--night); color: var(--paper); }
@@ -349,11 +324,9 @@
       .nav nav a:not(.btn) { display: none; }
       .hero-grid { grid-template-columns: 1fr; padding-top: 48px; gap: 48px; }
       .hero-stage { margin-right: 0; }
-      .shelf-head { flex-direction: column; align-items: start; gap: 16px; }
-      .shelf-count { text-align: left; }
-      .shelf-sticky { gap: 36px; }
-      .col { width: 132px; }
-      .shelf-track { gap: 32px; }
+      .shelf-grid { grid-template-columns: 1fr; gap: 32px; }
+      .shelf-count { margin-top: 20px; }
+      .shelf .lead { font-size: 17px; }
       .profile-head, .reading-grid { grid-template-columns: 1fr; gap: 40px; }
       .platforms { grid-template-columns: 1fr; }
       .upgrade { grid-template-columns: 1fr; }
@@ -406,20 +379,20 @@
   </header>
 
   <main>
-    <!-- Colecciones: al bajar, la estantería corre en horizontal. -->
+    <!-- Colecciones: al bajar, la Biblioteca de la app se desplaza como si hicieras scroll en ella. -->
     <section class="shelf" id="colecciones">
       <div class="shelf-sticky">
-        <div class="wrap shelf-head">
+        <div class="wrap shelf-grid">
           <div>
             <h2 class="display">Todas tus colecciones</h2>
             <p class="lead">Elige una carpeta y Hakufu la convierte en tu estantería: cada subcarpeta es una colección, con sus portadas apiladas y lo que llevas leído.</p>
+            <div class="shelf-count"><b>18</b><span>colecciones en esta biblioteca de ejemplo</span></div>
           </div>
-          <div class="shelf-count" aria-hidden="true">
-            <b id="shelf-cols">18</b>
-            <span id="shelf-vols">colecciones</span>
+          <div class="app-window">
+            <img id="shelf-img" src="/img/app-library-all.webp" width="1280" height="1620"
+                 alt="La Biblioteca de Hakufu con 18 colecciones, cada una como un montón de portadas con su progreso.">
           </div>
         </div>
-        <div class="shelf-track" id="shelf-track"></div>
       </div>
     </section>
 
@@ -644,62 +617,25 @@
 
     init();
 
-    // ── Colecciones de ejemplo (portadas inventadas, ver scripts/landing-demo-mangas.py) ──
-    const COLLECTIONS = [
-      ['Kurogane', 'kurogane', 24, 3], ['Ciudad Sin Luna', 'ciudad-sin-luna', 2, 2], ['Ginga Express', 'ginga-express', 7, 3],
-      ['Hoshikage', 'hoshikage', 3, 3], ['Yoru No Hana', 'yoru-no-hana', 5, 3], ['Raijin Club', 'raijin-club', 2, 2],
-      ['Shiro', 'shiro', 6, 3], ['Marea Roja', 'marea-roja', 2, 2], ['Neón 99', 'neon-99', 4, 3],
-      ['Kaminari', 'kaminari', 3, 3], ['Sakura Shift', 'sakura-shift', 4, 3], ['Tsuki 404', 'tsuki-404', 4, 3],
-      ['Akane', 'akane', 5, 3], ['Kagerou', 'kagerou', 3, 3], ['Hibana', 'hibana', 2, 2],
-      ['Zero Gravity', 'zero-gravity', 3, 3], ['Kaze No Michi', 'kaze-no-michi', 2, 2], ['Último Tren', 'ultimo-tren', 1, 1],
-    ];
-
-    const shelfTrack = document.getElementById('shelf-track');
-    COLLECTIONS.forEach(([name, slug, vols, covers], i) => {
-      const col = document.createElement('article');
-      col.className = 'col';
-      const stack = document.createElement('div');
-      stack.className = 'stack';
-      for (let c = 1; c <= covers; c++) {
-        const img = document.createElement('img');
-        img.src = `/img/covers/${slug}-${c}.webp`;
-        img.width = 240; img.height = 360;
-        img.alt = c === 1 ? `Portada de ${name}` : '';
-        stack.append(img);
-      }
-      const read = [72, 40, 88, 55, 20, 100, 63, 35, 80, 47, 12, 68, 90, 30, 58, 76, 25, 100][i];
-      col.innerHTML = `<h3></h3><p>${vols} ${vols === 1 ? 'tomo' : 'tomos'}</p><div class="bar"><i style="--w:${read}%"></i></div>`;
-      col.querySelector('h3').textContent = name;
-      col.prepend(stack);
-      shelfTrack.append(col);
-    });
-    document.getElementById('shelf-cols').textContent = COLLECTIONS.length;
-    document.getElementById('shelf-vols').textContent =
-      `colecciones, ${COLLECTIONS.reduce((n, c) => n + c[2], 0)} tomos`;
-
-    // ── Scroll: la estantería avanza en horizontal mientras bajas ──
+    // ── Colecciones: al bajar, la captura se desplaza dentro de la ventana ──
     const shelf = document.getElementById('colecciones');
+    const shelfImg = document.getElementById('shelf-img');
     let ticking = false;
-
-    // La sección mide lo que tarda la fila en pasar entera, más una pantalla.
-    function sizeShelf() {
-      const extra = Math.max(0, shelfTrack.scrollWidth - innerWidth);
-      shelf.style.height = `${extra + innerHeight}px`;
-      onScroll();
-    }
 
     function onScroll() {
       ticking = false;
       const span = shelf.offsetHeight - innerHeight;
-      const p = span > 0 ? Math.min(1, Math.max(0, -shelf.getBoundingClientRect().top / span)) : 0;
-      shelfTrack.style.setProperty('--x', `${(-p * Math.max(0, shelfTrack.scrollWidth - innerWidth)).toFixed(1)}px`);
+      const p = Math.min(1, Math.max(0, -shelf.getBoundingClientRect().top / span));
+      const max = shelfImg.offsetHeight - shelfImg.parentElement.clientHeight;
+      shelfImg.style.setProperty('--y', `${(-p * Math.max(0, max)).toFixed(1)}px`);
     }
 
     addEventListener('scroll', () => {
       if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
     }, { passive: true });
-    addEventListener('resize', sizeShelf);
-    sizeShelf();
+    addEventListener('resize', onScroll);
+    shelfImg.addEventListener('load', onScroll);
+    onScroll();
 
     // ── Entrada suave, una sola vez ─────────────────────────
     const revealer = new IntersectionObserver((entries) => {

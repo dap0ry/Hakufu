@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hakufu — Gestor de manga offline</title>
   <meta name="description" content="Hakufu organiza y lee tu manga en PDF, CBR y CBZ sin conexión. Gratis para Windows, macOS y Linux. Sin cuentas ni servidores.">
-  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#FFFFFF">
   <meta property="og:title" content="Hakufu — Gestor de manga offline">
   <meta property="og:description" content="Organiza y lee tu manga sin conexión. Gratis para Windows, macOS y Linux.">
   <meta property="og:image" content="https://hakufuweb.vercel.app/img/app-library-dark.webp">
@@ -14,213 +13,785 @@
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Inter, la misma letra que la app (WithInterFont). -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Inter: la letra de la app (WithInterFont) y de su título de Inicio. -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/img/app-library-dark.webp">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Solo blanco, negro y grises, como la app. */
+    /* Blanco, negro y grises. Nada de color. */
     :root {
-      --bg:    #FFFFFF;
-      --fg:    #000000;
-      --muted: #6B6B6B;
-      --line:  #E4E4E4;
-      --soft:  #F4F4F4;
-      color-scheme: light;
+      --ink:   #000000;
+      --paper: #FFFFFF;
+      --ash:   #8A8A8A;
+      --smoke: #EDEDED;
+      --night: #141414;
+      --skew:  -12deg;
+      --ease:  cubic-bezier(.2, .8, .2, 1);
+      --pop:   cubic-bezier(.34, 1.56, .64, 1);
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg:    #000000;
-        --fg:    #FFFFFF;
-        --muted: #9A9A9A;
-        --line:  #262626;
-        --soft:  #141414;
-        color-scheme: dark;
-      }
-    }
-
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: clip; }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
       font-size: 17px;
       line-height: 1.55;
-      background: var(--bg);
-      color: var(--fg);
+      background: var(--paper);
+      color: var(--ink);
       -webkit-font-smoothing: antialiased;
+      overflow-x: clip;
     }
 
     a { color: inherit; text-underline-offset: 3px; }
     img { display: block; max-width: 100%; height: auto; }
-    :focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+    button { font: inherit; color: inherit; }
 
-    .wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
+    :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+    .tour :focus-visible, footer :focus-visible { outline-color: var(--paper); }
 
-    /* El título de Inicio de la app: «Hakufu» en Inter Black, apretado. */
-    .title {
+    .wrap { width: min(1180px, 100% - 32px); margin-inline: auto; }
+
+    /* Como el título de Inicio de la app: Inter Black, letras apretadas. */
+    .display {
       font-weight: 900;
-      letter-spacing: -0.034em;
-      line-height: 1;
+      line-height: .92;
+      letter-spacing: -.04em;
     }
 
-    .hero { padding-block: 96px 64px; }
+    /* Barra de progreso del scroll (se invierte sobre fondos negros). */
+    .progress {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: var(--paper);
+      transform-origin: 0 50%;
+      transform: scaleX(var(--p, 0));
+      z-index: 50;
+      mix-blend-mode: difference;
+    }
 
-    .hero h1 { font-size: clamp(72px, 15vw, 184px); }
+    /* Las capturas, en gris; el color aparece al pasar por encima. */
+    .gray { filter: grayscale(1); transition: filter 300ms ease-out; }
+    .gray:hover, .gray:focus-visible { filter: grayscale(0); }
 
-    .hero p {
-      margin-top: 24px;
-      max-width: 34ch;
-      font-size: 21px;
+    /* Captura: marco negro y sombra dura. */
+    .shot {
+      border: 2px solid var(--ink);
+      background: var(--night);
+      box-shadow: 14px 14px 0 var(--shadow, var(--ink));
+    }
+
+    .zoomable { cursor: zoom-in; }
+
+    /* ── Entrada y salida con el scroll ─────────────────── */
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(56px);
+      transition: opacity 600ms var(--ease), transform 700ms var(--ease);
+      transition-delay: var(--d, 0ms);
+    }
+    [data-reveal="left"]  { transform: translateX(-72px) rotate(-2deg); }
+    [data-reveal="right"] { transform: translateX(72px) rotate(2deg); }
+    [data-reveal="pop"]   { transform: scale(.82); transition-timing-function: var(--ease), var(--pop); }
+    [data-reveal].is-in   { opacity: 1; transform: none; }
+    /* Al salir por arriba se va hacia arriba, no hacia abajo. */
+    [data-reveal].is-gone { opacity: 0; transform: translateY(-56px); }
+
+    /* ── Portada ─────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      padding-block: 32px 96px;
+      isolation: isolate;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .hero::before,
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+    }
+
+    /* El corte en diagonal, ahora negro. */
+    .hero::before {
+      background: var(--ink);
+      clip-path: polygon(0 0, 42% 0, 26% 100%, 0 100%);
+      animation: slab 700ms var(--ease) both;
+    }
+
+    /* Trama de puntos de manga. */
+    .hero::after {
+      background-image: radial-gradient(circle, rgba(0,0,0,.22) 1.3px, transparent 1.6px);
+      background-size: 9px 9px;
+      -webkit-mask-image: linear-gradient(200deg, #000 0%, transparent 55%);
+      mask-image: linear-gradient(200deg, #000 0%, transparent 55%);
+    }
+
+    @keyframes slab { from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); } }
+
+    /* Blanco con «difference»: negro sobre el papel, blanco sobre el corte. */
+    .blend { color: var(--paper); mix-blend-mode: difference; }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .hero-top nav { display: flex; gap: 24px; }
+    .hero-top a { text-decoration: none; }
+    .hero-top a:hover { text-decoration: underline; }
+
+    .hero-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
+      gap: 48px;
+      align-items: center;
+      margin-top: 48px;
+    }
+
+    /* Por encima de la captura: sobre ella también se invierte. */
+    .hero h1 {
+      position: relative;
+      z-index: 2;
+      font-size: clamp(80px, 11vw, 168px);
+      white-space: nowrap;
+    }
+
+    .hero h1 span {
+      display: inline-block;
+      animation: letter 700ms var(--pop) both;
+      animation-delay: calc(250ms + var(--i) * 55ms);
+    }
+
+    @keyframes letter { from { opacity: 0; transform: translateY(.5em) rotate(8deg); } }
+
+    .hero-lead {
+      margin-top: 28px;
+      max-width: 30ch;
+      font-size: 20px;
       line-height: 1.45;
+      font-weight: 500;
+      animation: fade-up 600ms 650ms var(--ease) both;
     }
 
-    .actions {
-      margin-top: 36px;
+    .hero-actions {
+      margin-top: 32px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 12px 20px;
+      gap: 12px 24px;
     }
 
-    .meta { font-size: 14px; color: var(--muted); }
+    /* La animación va en cada hijo: en el contenedor rompería el «difference». */
+    .hero-actions > * { animation: fade-up 600ms 780ms var(--ease) both; }
 
-    .btn {
-      display: inline-block;
-      background: var(--fg);
-      color: var(--bg);
-      text-decoration: none;
-      font-weight: 700;
-      padding: 13px 24px;
-      border-radius: 6px;
-      transition: opacity 160ms ease-out, transform 160ms cubic-bezier(.2, .8, .2, 1);
+    @keyframes fade-up { from { opacity: 0; transform: translateY(20px); } }
+
+    .hero-meta { font-size: 14px; flex-basis: 100%; }
+    /* Blanco con borde: se ve igual sobre el corte negro que sobre el papel. */
+    .hero .tab.primary { background: var(--paper); color: var(--ink); }
+    .hero .tab.primary:hover { background: var(--ink); color: var(--paper); box-shadow: inset 0 0 0 2px var(--paper); }
+    #hero-others { font-size: 15px; }
+
+    .hero-shot-wrap {
+      margin-right: -140px;
+      transform: translateY(calc(var(--scroll, 0) * -90px)) rotate(calc(-2.5deg + var(--scroll, 0) * 3deg));
+      will-change: transform;
     }
 
-    .btn:hover { opacity: .82; }
-    .btn:active { transform: scale(.97); }
+    .hero-shot { animation: shot-in 800ms 300ms var(--ease) both; }
 
-    .btn.ghost {
-      background: transparent;
-      color: var(--fg);
-      box-shadow: inset 0 0 0 1px var(--line);
-      font-weight: 500;
-    }
+    @keyframes shot-in { from { opacity: 0; transform: rotate(-8deg) translate(80px, 40px); } }
 
-    .shot {
-      border-radius: 10px;
-      border: 1px solid var(--line);
+    .scroll-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 28px;
+      width: 2px;
+      height: 44px;
+      background: var(--smoke);
       overflow: hidden;
     }
+    .scroll-hint::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--ink);
+      animation: hint 1.8s var(--ease) infinite;
+    }
+    @keyframes hint { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
 
-    section { padding-block: 96px; }
+    /* ── Botones en paralelogramo ────────────────────────── */
+    .tab {
+      display: inline-block;
+      transform: skewX(var(--skew));
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      padding: 12px 26px;
+      border: 0;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 2px var(--ink);
+      transition: background-color 180ms ease-out, color 180ms ease-out, transform 220ms var(--pop);
+    }
 
-    h2 { font-size: clamp(36px, 5vw, 56px); }
+    .tab > span {
+      display: inline-block;
+      transform: skewX(calc(var(--skew) * -1));
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -.02em;
+      white-space: nowrap;
+    }
 
-    .lead { margin-top: 12px; max-width: 48ch; color: var(--muted); font-size: 18px; }
+    .tab:hover { background: var(--paper); color: var(--ink); transform: skewX(var(--skew)) translateX(5px); }
+    .tab:active { transform: skewX(var(--skew)) translateX(2px) scale(.96); }
+    .tab.primary { padding: 16px 34px; }
+    .tab.primary > span { font-size: 22px; }
+    .tab.small { padding: 9px 20px; }
+    .tab.small > span { font-size: 16px; }
+    .tab.ghost { background: var(--paper); color: var(--ink); }
+    .tab.ghost:hover { background: var(--ink); color: var(--paper); }
 
-    .feature + .feature { margin-top: 96px; }
-    .feature .shot { margin-top: 40px; }
+    /* ── Cintas que corren ───────────────────────────────── */
+    .tickers { position: relative; z-index: 2; margin-block: -24px; }
 
-    /* ── Descargas ───────────────────────────────────────── */
-    .downloads { border-top: 1px solid var(--line); }
+    .ticker {
+      background: var(--ink);
+      color: var(--paper);
+      overflow: hidden;
+      padding-block: 20px;
+      transform: rotate(-1.5deg) scale(1.03);
+    }
 
-    .platforms {
-      margin-top: 48px;
+    .ticker.alt {
+      background: var(--paper);
+      color: var(--ink);
+      transform: rotate(1deg) scale(1.03);
+      border-block: 2px solid var(--ink);
+    }
+
+    .ticker-track {
+      display: flex;
+      width: max-content;
+      animation: ticker 32s linear infinite;
+    }
+    .ticker.alt .ticker-track { animation-direction: reverse; animation-duration: 40s; }
+    .ticker:hover .ticker-track { animation-play-state: paused; }
+
+    .ticker-track span {
+      display: inline-flex;
+      align-items: center;
+      gap: 32px;
+      padding-right: 32px;
+      font-weight: 900;
+      font-size: clamp(28px, 4vw, 48px);
+      letter-spacing: -.035em;
+      white-space: nowrap;
+    }
+
+    .ticker-track span::after {
+      content: '';
+      width: .6em; height: .6em;
+      background: currentColor;
+      clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    @keyframes ticker { to { transform: translateX(-50%); } }
+
+    /* ── Secciones ───────────────────────────────────────── */
+    section { padding-block: 128px; }
+
+    h2 { font-size: clamp(48px, 7vw, 96px); }
+
+    .lead { margin-top: 16px; max-width: 52ch; font-size: 18px; }
+
+    /* ── Qué hace ────────────────────────────────────────── */
+    .tour { background: var(--ink); color: var(--paper); padding-top: 168px; }
+    .tour .lead { color: #BDBDBD; }
+
+    .feature {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      gap: 72px;
+      align-items: center;
+      margin-top: 140px;
+    }
+
+    .feature.flip { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); }
+    .feature.flip .feature-media { order: 2; }
+
+    .feature.wide { grid-template-columns: 1fr; gap: 48px; }
+    .feature.wide .feature-text { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 72px; align-items: end; }
+
+    .feature-media .shot { --shadow: var(--paper); border-color: #2A2A2A; }
+
+    .feature h3 { font-size: clamp(38px, 4.4vw, 60px); }
+    .feature p { margin-top: 16px; color: #CFCFCF; max-width: 42ch; }
+    .feature ul { margin-top: 20px; list-style: none; display: grid; gap: 8px; color: #E5E5E5; }
+    .feature li { padding-left: 24px; position: relative; }
+
+    .star::before,
+    .feature li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: .32em;
+      width: 13px; height: 13px;
+      background: currentColor;
+      clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    /* Cifras que cuentan al aparecer. */
+    .stats { display: flex; flex-wrap: wrap; gap: 16px 48px; }
+    .stats div { display: grid; }
+    .stats b { font-weight: 900; font-size: clamp(44px, 5vw, 64px); letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+    .stats small { color: #9A9A9A; font-size: 14px; }
+
+    /* Lo demás, en pequeño. */
+    .extras {
+      margin-top: 140px;
+      padding-top: 40px;
+      border-top: 1px solid #333;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 32px;
+    }
+
+    .extras div { position: relative; padding-left: 24px; }
+    .extras strong { display: block; font-weight: 800; font-size: 21px; line-height: 1.2; letter-spacing: -.02em; }
+    .extras p { margin-top: 6px; font-size: 15px; color: #BDBDBD; }
+
+    /* ── Recorrido en horizontal ─────────────────────────── */
+    .rail { height: 420vh; padding: 0; background: var(--smoke); }
+
+    .rail-sticky {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       gap: 40px;
     }
 
-    .platform { display: flex; flex-direction: column; gap: 12px; }
-    .platform h3 { font-size: 30px; }
-    .platform .req,
-    .platform .size { font-size: 14px; color: var(--muted); min-height: 1.4em; }
-    .platform .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-    .platform .first-run { font-size: 14px; color: var(--muted); }
-    .platform.is-yours h3::after { content: ' · tu sistema'; font-size: 14px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+    .rail-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+    .rail-head h2 { font-size: clamp(44px, 6vw, 80px); }
+    .rail-count { font-weight: 900; font-size: 28px; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+
+    .rail-track {
+      display: flex;
+      gap: 48px;
+      padding-inline: max(16px, (100vw - 1180px) / 2);
+      width: max-content;
+      transform: translateX(var(--x, 0));
+      will-change: transform;
+    }
+
+    .panel {
+      width: min(62vw, 820px, (100svh - 300px) * 1.6);
+      flex: none;
+      transition: transform 500ms var(--ease), opacity 500ms var(--ease);
+      transform: scale(.9);
+      opacity: .45;
+    }
+
+    .panel.is-active { transform: none; opacity: 1; }
+
+    .panel figcaption { margin-top: 28px; display: flex; gap: 16px; align-items: baseline; }
+    .panel figcaption b { font-weight: 900; font-size: 30px; letter-spacing: -.03em; white-space: nowrap; }
+    .panel figcaption span { color: #555; font-size: 15px; }
+
+    .rail-bar { height: 2px; background: #C9C9C9; }
+    .rail-bar i { display: block; height: 100%; background: var(--ink); transform-origin: 0 50%; transform: scaleX(var(--rp, 0)); }
+
+    /* ── Descargas ───────────────────────────────────────── */
+    .platforms {
+      margin-top: 56px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .platform {
+      position: relative;
+      border: 2px solid var(--ink);
+      background: var(--paper);
+      padding: 28px 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* La sombra usa «translate» para no pisar el «transform» de la entrada. */
+    .platform {
+      transition: opacity 600ms var(--ease), transform 700ms var(--ease), box-shadow 260ms var(--ease), translate 260ms var(--ease);
+      transition-delay: var(--d, 0ms), var(--d, 0ms), 0ms, 0ms;
+    }
+    .platform.is-in:hover,
+    .platform.is-in.is-yours { box-shadow: 10px 10px 0 var(--ink); translate: -4px -4px; }
+
+    .platform h3 { font-size: 44px; }
+    .platform .req { font-size: 14px; color: #555; }
+    .platform .buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+    .platform .size { font-size: 13px; color: #555; min-height: 1.4em; }
+    .platform .first-run { font-size: 14px; color: #333; margin-top: auto; padding-top: 12px; border-top: 1px solid #DDD; }
 
     code {
       font-family: ui-monospace, Menlo, Consolas, monospace;
       font-size: 12.5px;
-      background: var(--soft);
+      background: var(--smoke);
       padding: 1px 5px;
-      border-radius: 3px;
       overflow-wrap: anywhere;
     }
 
-    .note { margin-top: 48px; font-size: 14px; color: var(--muted); max-width: 70ch; }
-
-    footer {
-      border-top: 1px solid var(--line);
-      padding-block: 32px;
-      font-size: 14px;
-      color: var(--muted);
+    .yours {
+      position: absolute;
+      top: -14px; right: 20px;
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 12px;
+      transform: skewX(var(--skew));
+      animation: wiggle 2.4s 1.2s var(--ease) infinite;
     }
 
-    footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; }
+    @keyframes wiggle {
+      0%, 86%, 100% { transform: skewX(var(--skew)) rotate(0); }
+      90% { transform: skewX(var(--skew)) rotate(-5deg); }
+      95% { transform: skewX(var(--skew)) rotate(4deg); }
+    }
+
+    .platform:not(.is-yours) .yours { display: none; }
+
+    .version-line { margin-top: 32px; font-size: 14px; color: #555; }
+
+    /* ── 0.9.7 ───────────────────────────────────────────── */
+    .upgrade { background: var(--smoke); padding-block: 80px; }
+    .upgrade .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 32px; align-items: start; }
+    .upgrade h2 { font-size: clamp(36px, 4.4vw, 56px); }
+    .upgrade p { max-width: 58ch; }
+    .upgrade p + p { margin-top: 12px; }
+
+    /* ── Pie ─────────────────────────────────────────────── */
+    footer { background: var(--ink); color: var(--paper); padding-block: 72px 40px; font-size: 14px; overflow: hidden; }
+
+    .footer-title {
+      font-size: clamp(96px, 22vw, 320px);
+      color: transparent;
+      -webkit-text-stroke: 2px var(--paper);
+      transition: color 400ms var(--ease);
+      line-height: .8;
+      margin-bottom: 40px;
+    }
+    .footer-title:hover { color: var(--paper); }
+
+    footer .row { display: flex; flex-wrap: wrap; gap: 16px 28px; justify-content: space-between; align-items: center; }
     footer nav { display: flex; gap: 20px; }
 
-    @media (max-width: 860px) {
-      .hero { padding-block: 40px 40px; }
-      section { padding-block: 72px; }
-      .platforms { grid-template-columns: 1fr; gap: 48px; }
+    /* ── Ventana para ampliar capturas ───────────────────── */
+    dialog.lightbox {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      max-width: min(1400px, 94vw);
+      max-height: none;
+      margin: auto;
+      overflow: visible;
+    }
+
+    dialog.lightbox::backdrop { background: rgba(0,0,0,.86); }
+
+    dialog.lightbox img {
+      max-height: 80vh;
+      width: auto;
+      border: 2px solid var(--paper);
+      box-shadow: 16px 16px 0 var(--paper);
+      cursor: zoom-out;
+    }
+
+    dialog.lightbox p { color: var(--paper); margin-top: 28px; font-size: 15px; max-width: 70ch; }
+
+    dialog.lightbox[open] { animation: pop-in 320ms var(--pop) both; }
+    dialog.lightbox[open]::backdrop { animation: fade 240ms ease-out both; }
+    dialog.lightbox.closing { animation: pop-out 180ms ease-in both; }
+    dialog.lightbox.closing::backdrop { animation: fade-out 180ms ease-in both; }
+
+    @keyframes pop-in { from { opacity: 0; transform: scale(.88) rotate(-1.5deg); } }
+    @keyframes pop-out { to { opacity: 0; transform: scale(.94); } }
+    @keyframes fade { from { opacity: 0; } }
+    @keyframes fade-out { to { opacity: 0; } }
+
+    .lightbox-close {
+      position: absolute;
+      top: -56px; right: 0;
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: inset 0 0 0 2px var(--paper);
+    }
+    .lightbox-close:hover { background: var(--ink); color: var(--paper); }
+
+    /* ── Aviso al descargar ──────────────────────────────── */
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 60;
+      width: min(400px, calc(100vw - 32px));
+      background: var(--ink);
+      color: var(--paper);
+      padding: 22px 24px 24px;
+      box-shadow: 10px 10px 0 var(--ash);
+      transform: translateY(calc(100% + 48px)) rotate(3deg);
+      visibility: hidden;
+      transition: transform 420ms var(--pop), visibility 0s 420ms;
+    }
+    .toast.is-open { transform: none; visibility: visible; transition: transform 420ms var(--pop), visibility 0s; }
+    .toast strong { display: block; font-weight: 900; font-size: 26px; letter-spacing: -.03em; line-height: 1.05; padding-right: 32px; }
+    .toast p { margin-top: 10px; font-size: 14px; color: #CFCFCF; }
+    .toast code { background: #2A2A2A; color: var(--paper); }
+    .toast-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 32px; height: 32px;
+      background: transparent;
+      border: 0;
+      color: var(--paper);
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 200ms var(--pop);
+    }
+    .toast-close:hover { transform: rotate(90deg); }
+    .toast-timer { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--paper); transform-origin: 0 50%; }
+    .toast.is-open .toast-timer { animation: timer 9s linear both; }
+    @keyframes timer { to { transform: scaleX(0); } }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .hero { padding-block: 24px 88px; min-height: auto; }
+      .hero::before { clip-path: polygon(0 0, 100% 0, 100% 18%, 0 34%); }
+      @keyframes slab { from { clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); } }
+      .hero-grid { grid-template-columns: 1fr; gap: 56px; margin-top: 40px; }
+      .hero-shot-wrap { margin-right: 0; }
+      .scroll-hint { display: none; }
+      .feature, .feature.flip { grid-template-columns: 1fr; gap: 40px; margin-top: 96px; }
+      .feature.flip .feature-media { order: 0; }
+      .feature.wide .feature-text { grid-template-columns: 1fr; }
+      .extras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .platforms { grid-template-columns: 1fr; gap: 32px; }
+      .upgrade .wrap { grid-template-columns: 1fr; }
+      section { padding-block: 88px; }
+      .tour { padding-top: 128px; }
+      .panel { width: 84vw; }
+      .rail-track { gap: 24px; }
+    }
+
+    @media (max-width: 560px) {
+      .hero-top nav { display: none; }
+      .shot { box-shadow: 8px 8px 0 var(--shadow, var(--ink)); }
+      .extras { grid-template-columns: 1fr; }
+      .panel figcaption { flex-direction: column; gap: 4px; }
+      .toast { right: 16px; bottom: 16px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
-      * { transition: none !important; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      [data-reveal] { opacity: 1; transform: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="wrap">
-    <div class="hero">
-      <h1 class="title">Hakufu</h1>
-      <p>Ordena y lee tu manga sin conexión. Sin cuentas ni servidores: todo se queda en tu disco.</p>
-      <div class="actions">
-        <a class="btn" id="hero-dl" href="#descargas">Descargar Hakufu</a>
-        <span class="meta" id="hero-meta">Gratis para Windows, macOS y Linux.</span>
+  <div class="progress" aria-hidden="true"></div>
+
+  <header class="hero">
+    <div class="wrap hero-top blend">
+      <span>Gratis y sin anuncios</span>
+      <nav>
+        <a href="#tour">Qué hace</a>
+        <a href="#recorrido">Recorrido</a>
+        <a href="#descargas">Descargar</a>
+      </nav>
+    </div>
+
+    <div class="wrap hero-grid">
+      <div>
+        <h1 class="display blend" aria-label="Hakufu"><span style="--i:0">H</span><span style="--i:1">a</span><span style="--i:2">k</span><span style="--i:3">u</span><span style="--i:4">f</span><span style="--i:5">u</span></h1>
+        <p class="hero-lead blend">
+          Tu manga, en tu equipo. Ordena tus PDF, CBR y CBZ en colecciones y léelos sin conexión.
+        </p>
+        <div class="hero-actions">
+          <a class="tab primary" id="hero-dl" href="#descargas"><span>Descargar Hakufu</span></a>
+          <a class="blend" href="#descargas" id="hero-others" hidden>Otros sistemas</a>
+          <p class="hero-meta blend" id="hero-meta">Para Windows, macOS y Linux.</p>
+        </div>
+      </div>
+
+      <div class="hero-shot-wrap">
+        <img class="shot hero-shot gray zoomable" src="/img/app-library-dark.webp" width="1280" height="800" tabindex="0"
+             alt="La biblioteca de Hakufu: cada colección como un montón de portadas, con su progreso debajo.">
       </div>
     </div>
 
-    <picture>
-      <source srcset="/img/app-library-dark.webp" media="(prefers-color-scheme: dark)">
-      <img class="shot" src="/img/app-library-light.webp" width="1280" height="800" fetchpriority="high"
-           alt="La biblioteca de Hakufu: cada colección como un montón de portadas, con su progreso debajo.">
-    </picture>
+    <span class="scroll-hint" aria-hidden="true"></span>
+  </header>
+
+  <div class="tickers" aria-hidden="true">
+    <div class="ticker">
+      <div class="ticker-track">
+        <span>PDF</span><span>CBR</span><span>CBZ</span><span>Sin internet</span><span>Sin cuentas</span><span>Modo zen</span><span>Doble página</span><span>Atajos a tu gusto</span>
+        <span>PDF</span><span>CBR</span><span>CBZ</span><span>Sin internet</span><span>Sin cuentas</span><span>Modo zen</span><span>Doble página</span><span>Atajos a tu gusto</span>
+      </div>
+    </div>
+    <div class="ticker alt">
+      <div class="ticker-track">
+        <span>Windows</span><span>macOS</span><span>Linux</span><span>Gratis</span><span>Sin anuncios</span><span>Copia en .zip</span><span>Tu perfil</span>
+        <span>Windows</span><span>macOS</span><span>Linux</span><span>Gratis</span><span>Sin anuncios</span><span>Copia en .zip</span><span>Tu perfil</span>
+      </div>
+    </div>
   </div>
 
   <main>
-    <section>
+    <section class="tour" id="tour">
       <div class="wrap">
-        <article class="feature">
-          <h2 class="title">Sigue donde lo dejaste</h2>
-          <p class="lead">Cada tomo guarda su página. Lee a una o dos páginas, o en modo zen a pantalla completa.</p>
-          <img class="shot" src="/img/app-reader-dark.webp" width="1280" height="800" loading="lazy"
-               alt="El lector de Hakufu mostrando una página de manga, con el número de página abajo.">
-        </article>
+        <h2 class="display" data-reveal>Qué hace</h2>
+        <p class="lead" data-reveal style="--d:100ms">Hecho para leer manga en el ordenador, sin distracciones y sin depender de nadie.</p>
 
         <article class="feature">
-          <h2 class="title">Tu perfil</h2>
-          <p class="lead">Horas leyendo, tus últimas 12 semanas y lo que estás leyendo. Guárdalo como imagen y compártelo.</p>
-          <img class="shot" src="/img/app-profile-horizontal.webp" width="1600" height="876" loading="lazy"
-               alt="Tarjeta de perfil de Hakufu en horizontal: nombre, horas, páginas, gráfica de 12 semanas, manga favorito y los que estás leyendo.">
+          <div class="feature-media" data-reveal="left">
+            <img class="shot gray zoomable" src="/img/app-reader-dark.webp" width="1280" height="800" loading="lazy" tabindex="0"
+                 alt="El lector de Hakufu mostrando una página de manga, con el número de página abajo.">
+          </div>
+          <div>
+            <h3 class="display" data-reveal>Sigue donde lo dejaste</h3>
+            <p data-reveal style="--d:80ms">Cada tomo guarda su página. Ábrelo mañana y estarás en la misma viñeta.</p>
+            <ul>
+              <li data-reveal style="--d:140ms">Pasa páginas con el teclado o el ratón</li>
+              <li data-reveal style="--d:200ms">Modo zen a pantalla completa</li>
+              <li data-reveal style="--d:260ms">Una o dos páginas, con la hoja girando al pasar</li>
+            </ul>
+          </div>
         </article>
+
+        <article class="feature flip">
+          <div class="feature-media" data-reveal="right">
+            <img class="shot gray zoomable" src="/img/app-home-dark.webp" width="1280" height="800" loading="lazy" tabindex="0"
+                 alt="La pantalla de inicio de Hakufu con el menú a la izquierda y el último manga para seguir leyendo.">
+          </div>
+          <div>
+            <h3 class="display" data-reveal>Tu estantería, ordenada</h3>
+            <p data-reveal style="--d:80ms">Elige una carpeta: cada subcarpeta es una colección y Hakufu saca las portadas solo. Tus archivos no se mueven de sitio.</p>
+            <ul>
+              <li data-reveal style="--d:140ms">Ordena por nombre, por fecha o a mano</li>
+              <li data-reveal style="--d:200ms">Marca favoritos con una estrella</li>
+              <li data-reveal style="--d:260ms">Continuar leyendo desde el inicio</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="feature wide">
+          <div class="feature-text">
+            <div>
+              <h3 class="display" data-reveal>Tu perfil, listo para compartir</h3>
+              <p data-reveal style="--d:80ms">Cuántas horas llevas leyendo y una gráfica de tus semanas, como en una app de deporte. Guárdalo como imagen y súbelo donde quieras.</p>
+            </div>
+            <div class="stats" data-counters>
+              <div data-reveal="pop"><b data-count="53">0</b><small>horas leyendo</small></div>
+              <div data-reveal="pop" style="--d:90ms"><b data-count="4372">0</b><small>páginas</small></div>
+              <div data-reveal="pop" style="--d:180ms"><b data-count="12">0</b><small>semanas en la gráfica</small></div>
+            </div>
+          </div>
+          <div class="feature-media" data-reveal>
+            <img class="shot gray zoomable" src="/img/app-profile-horizontal.webp" width="1600" height="876" loading="lazy" tabindex="0"
+                 alt="Tarjeta de perfil de Hakufu en horizontal: nombre, horas, páginas, gráfica de 12 semanas, manga favorito y los que estás leyendo.">
+          </div>
+        </article>
+
+        <div class="extras">
+          <div class="star" data-reveal="pop">
+            <strong>Sin internet</strong>
+            <p>No pide cuenta ni se conecta a nada. Tus archivos no salen de tu equipo.</p>
+          </div>
+          <div class="star" data-reveal="pop" style="--d:90ms">
+            <strong>PDF, CBR y CBZ</strong>
+            <p>Abre los formatos de manga y cómic más comunes.</p>
+          </div>
+          <div class="star" data-reveal="pop" style="--d:180ms">
+            <strong>Copia en un .zip</strong>
+            <p>Exporta tu biblioteca e impórtala en otro ordenador, aunque sea de otro sistema.</p>
+          </div>
+          <div class="star" data-reveal="pop" style="--d:270ms">
+            <strong>Tres sistemas</strong>
+            <p>La misma app en Windows, macOS y Linux.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rail" id="recorrido">
+      <div class="rail-sticky">
+        <div class="wrap rail-head">
+          <h2 class="display">Un recorrido</h2>
+          <span class="rail-count" aria-hidden="true"><span id="rail-now">1</span>/5</span>
+        </div>
+
+        <div class="rail-track" id="rail-track">
+          <figure class="panel">
+            <img class="shot gray zoomable" src="/img/app-home-dark.webp" width="1280" height="800" loading="lazy" tabindex="0"
+                 alt="Inicio de Hakufu: menú y el último manga que leías.">
+            <figcaption><b>Inicio</b><span>El menú y lo último que estabas leyendo, a un clic.</span></figcaption>
+          </figure>
+          <figure class="panel">
+            <img class="shot gray zoomable" src="/img/app-library-dark.webp" width="1280" height="800" loading="lazy" tabindex="0"
+                 alt="Biblioteca de Hakufu con las colecciones apiladas.">
+            <figcaption><b>Biblioteca</b><span>Cada colección, un montón de portadas con su progreso.</span></figcaption>
+          </figure>
+          <figure class="panel">
+            <img class="shot gray zoomable" src="/img/app-collection-dark.webp" width="1280" height="800" loading="lazy" tabindex="0"
+                 alt="Una colección abierta con sus tomos y la página por la que vas.">
+            <figcaption><b>Colección</b><span>Los tomos en orden, con la página por la que vas.</span></figcaption>
+          </figure>
+          <figure class="panel">
+            <img class="shot gray zoomable" src="/img/app-reader-dark.webp" width="1280" height="800" loading="lazy" tabindex="0"
+                 alt="El lector de Hakufu a una página.">
+            <figcaption><b>Lector</b><span>Una o dos páginas, modo zen y atajos de teclado.</span></figcaption>
+          </figure>
+          <figure class="panel">
+            <img class="shot gray zoomable" src="/img/app-profile-dark.webp" width="1280" height="800" loading="lazy" tabindex="0"
+                 alt="La pantalla de perfil con la tarjeta de lector.">
+            <figcaption><b>Perfil</b><span>Tu tarjeta de lector, lista para guardar como imagen.</span></figcaption>
+          </figure>
+        </div>
+
+        <div class="wrap rail-bar" aria-hidden="true"><i></i></div>
       </div>
     </section>
 
     <section class="downloads" id="descargas">
       <div class="wrap">
-        <h2 class="title">Descargar</h2>
-        <p class="lead">Descomprime y ábrela. No hace falta instalar nada más.</p>
+        <h2 class="display" data-reveal>Descargar</h2>
+        <p class="lead" data-reveal style="--d:100ms">La app viene completa: descomprime y ábrela, no hace falta instalar nada más.</p>
 
         <div class="platforms">
-          <article class="platform" data-os="windows">
-            <h3 class="title">Windows</h3>
+          <article class="platform" data-os="windows" data-reveal>
+            <span class="yours">Tu sistema</span>
+            <h3 class="display">Windows</h3>
             <p class="req">Windows 10 u 11, 64 bits.</p>
             <div class="buttons">
-              <a class="btn" data-asset="win">Descargar .zip</a>
+              <a class="tab" data-asset="win" data-os-dl="windows"><span>Descargar .zip</span></a>
             </div>
             <p class="size" data-size="win"></p>
             <p class="first-run">
@@ -229,56 +800,90 @@
             </p>
           </article>
 
-          <article class="platform" data-os="mac">
-            <h3 class="title">macOS</h3>
+          <article class="platform" data-os="mac" data-reveal style="--d:100ms">
+            <span class="yours">Tu sistema</span>
+            <h3 class="display">macOS</h3>
             <p class="req">macOS 12 o posterior.</p>
             <div class="buttons">
-              <a class="btn" data-asset="macArm">Chip Apple</a>
-              <a class="btn ghost" data-asset="macIntel">Intel</a>
+              <a class="tab" data-asset="macArm" data-os-dl="mac"><span>Chip Apple</span></a>
+              <a class="tab small ghost" data-asset="macIntel" data-os-dl="mac"><span>Intel</span></a>
             </div>
             <p class="size" data-size="macArm"></p>
             <p class="first-run">
-              Arrastra <code>Hakufu.app</code> a Aplicaciones. La primera vez, ve a Ajustes del
-              Sistema → Privacidad y seguridad y pulsa <em>Abrir igualmente</em>.
+              Arrastra <code>Hakufu.app</code> a Aplicaciones. La primera vez macOS la bloquea
+              porque no viene de la App Store: ve a Ajustes del Sistema → Privacidad y seguridad
+              y pulsa <em>Abrir igualmente</em>.
             </p>
           </article>
 
-          <article class="platform" data-os="linux">
-            <h3 class="title">Linux</h3>
+          <article class="platform" data-os="linux" data-reveal style="--d:200ms">
+            <span class="yours">Tu sistema</span>
+            <h3 class="display">Linux</h3>
             <p class="req">x64, cualquier distro de escritorio reciente.</p>
             <div class="buttons">
-              <a class="btn" data-asset="linux">Descargar .tar.gz</a>
+              <a class="tab" data-asset="linux" data-os-dl="linux"><span>Descargar .tar.gz</span></a>
             </div>
             <p class="size" data-size="linux"></p>
             <p class="first-run">
-              Descomprime y ejecuta <code>./Hakufu</code>. Si no arranca:
-              <code>sudo apt install libfontconfig1 libice6 libsm6</code>.
+              Descomprime y ejecuta <code>./Hakufu</code>. Si no arranca, instala las librerías
+              de Avalonia: <code>sudo apt install libfontconfig1 libice6 libsm6</code>.
             </p>
           </article>
         </div>
 
-        <p class="note">
-          ¿Usabas la 0.9 en Windows? Abre la versión nueva: lee la misma carpeta de datos y tu
-          progreso sigue ahí. <span id="version-line">Todas las versiones en
-          <a href="https://github.com/dap0ry/Hakufu/releases">GitHub</a>.</span>
+        <p class="version-line" id="version-line">
+          Todas las versiones y novedades en <a href="https://github.com/dap0ry/Hakufu/releases">GitHub</a>.
         </p>
+      </div>
+    </section>
+
+    <section class="upgrade">
+      <div class="wrap">
+        <h2 class="display" data-reveal>¿Usabas la 0.9 en Windows?</h2>
+        <div data-reveal style="--d:100ms">
+          <p>
+            Descarga la versión nueva y ábrela: lee la misma carpeta de datos, así que tus
+            colecciones y tu progreso siguen ahí.
+          </p>
+          <p>
+            Las cuentas y los amigos ya no existen: Hakufu funciona sin internet. Para pasar tu
+            biblioteca a otro ordenador, usa la copia de seguridad en .zip.
+          </p>
+        </div>
       </div>
     </section>
   </main>
 
   <footer>
     <div class="wrap">
-      <span>© 2026 Daniel Poza Rivera</span>
-      <nav>
-        <a href="https://github.com/dap0ry/Hakufu/releases">Versiones</a>
-        <a href="https://danielpozarivera.es/">Autor</a>
-      </nav>
+      <p class="display footer-title" aria-hidden="true">Hakufu</p>
+      <div class="row">
+        <span>© 2026 Daniel Poza Rivera</span>
+        <nav>
+          <a href="https://github.com/dap0ry/Hakufu/releases">Versiones</a>
+          <a href="https://danielpozarivera.es/">Autor</a>
+        </nav>
+      </div>
     </div>
   </footer>
+
+  <dialog class="lightbox" id="lightbox" aria-label="Captura ampliada">
+    <button class="tab small lightbox-close" type="button" id="lightbox-close"><span>Cerrar</span></button>
+    <img id="lightbox-img" alt="">
+    <p id="lightbox-caption"></p>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <button class="toast-close" type="button" id="toast-close" aria-label="Cerrar aviso">×</button>
+    <strong id="toast-title">Descargando Hakufu</strong>
+    <p id="toast-body"></p>
+    <span class="toast-timer"></span>
+  </div>
 
   <script>
     const REPO = 'dap0ry/Hakufu';
     const RELEASES = `https://github.com/${REPO}/releases`;
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Nombre del archivo de cada plataforma en la release (lo genera
     // .github/workflows/build.yml). En Windows, el .exe es la 0.9.7.
@@ -326,8 +931,10 @@
 
       if (os) {
         heroKey = os === 'mac' ? await macAsset() : HERO_ASSET[os];
-        hero.textContent = `Descargar para ${LABELS[os]}`;
+        hero.querySelector('span').textContent = `Descargar para ${LABELS[os]}`;
         hero.href = links(heroKey)[0].href;
+        hero.dataset.osDl = os;
+        document.getElementById('hero-others').hidden = false;
         document.querySelector(`.platform[data-os="${os}"]`).classList.add('is-yours');
       }
 
@@ -360,6 +967,139 @@
     }
 
     init();
+
+    // ── Entrada y salida con el scroll ──────────────────────
+    const revealer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const el = e.target;
+        if (e.isIntersecting) {
+          el.classList.add('is-in');
+          el.classList.remove('is-gone');
+        } else {
+          el.classList.remove('is-in');
+          // Si se ha ido por arriba sale hacia arriba; si por abajo, vuelve a su sitio de entrada.
+          el.classList.toggle('is-gone', e.boundingClientRect.top < 0);
+        }
+      }
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.12 });
+    document.querySelectorAll('[data-reveal]').forEach((el) => revealer.observe(el));
+
+    // ── Cifras que cuentan ──────────────────────────────────
+    const fmt = new Intl.NumberFormat('es-ES', { useGrouping: 'always' });
+    const counter = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.querySelectorAll('[data-count]').forEach((b) => {
+          const end = Number(b.dataset.count);
+          if (reduceMotion) { b.textContent = fmt.format(end); return; }
+          const t0 = performance.now();
+          const tick = (now) => {
+            const k = Math.min(1, (now - t0) / 1400);
+            b.textContent = fmt.format(Math.round(end * (1 - Math.pow(1 - k, 3))));
+            if (k < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+        counter.unobserve(e.target);
+      }
+    }, { threshold: 0.6 });
+    document.querySelectorAll('[data-counters]').forEach((el) => counter.observe(el));
+
+    // ── Scroll: barra de progreso, portada y recorrido horizontal ──
+    const root = document.documentElement;
+    const heroEl = document.querySelector('.hero');
+    const rail = document.getElementById('recorrido');
+    const track = document.getElementById('rail-track');
+    const panels = [...track.children];
+    const railNow = document.getElementById('rail-now');
+    let ticking = false;
+
+    function onScroll() {
+      ticking = false;
+      const y = scrollY;
+      root.style.setProperty('--p', (y / (root.scrollHeight - innerHeight)).toFixed(4));
+
+      if (!reduceMotion) heroEl.style.setProperty('--scroll', Math.min(1, y / innerHeight).toFixed(3));
+
+      // El recorrido: el scroll vertical mueve la fila de capturas en horizontal.
+      const r = rail.getBoundingClientRect();
+      const span = rail.offsetHeight - innerHeight;
+      const p = Math.min(1, Math.max(0, -r.top / span));
+      // Centra cada captura: interpola entre los centros de dos paneles seguidos.
+      const f = p * (panels.length - 1);
+      const i = Math.min(panels.length - 2, Math.floor(f));
+      const center = (el) => el.offsetLeft + el.offsetWidth / 2;
+      const c = center(panels[i]) + (center(panels[i + 1]) - center(panels[i])) * (f - i);
+      track.style.setProperty('--x', `${(innerWidth / 2 - c).toFixed(1)}px`);
+      rail.style.setProperty('--rp', p.toFixed(4));
+
+      const active = Math.min(panels.length - 1, Math.round(p * (panels.length - 1)));
+      panels.forEach((el, i) => el.classList.toggle('is-active', i === active));
+      railNow.textContent = active + 1;
+    }
+
+    addEventListener('scroll', () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+    addEventListener('resize', onScroll);
+    onScroll();
+
+    // ── Ventana para ampliar capturas ───────────────────────
+    const box = document.getElementById('lightbox');
+    const boxImg = document.getElementById('lightbox-img');
+    const boxCaption = document.getElementById('lightbox-caption');
+
+    function openShot(img) {
+      boxImg.src = img.currentSrc || img.src;
+      boxImg.alt = img.alt;
+      boxCaption.textContent = img.alt;
+      box.showModal();
+    }
+
+    function closeShot() {
+      if (!box.open) return;
+      if (reduceMotion) { box.close(); return; }
+      box.classList.add('closing');
+      box.addEventListener('animationend', () => { box.classList.remove('closing'); box.close(); }, { once: true });
+    }
+
+    document.querySelectorAll('.zoomable').forEach((img) => {
+      img.addEventListener('click', () => openShot(img));
+      img.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openShot(img); }
+      });
+    });
+    box.addEventListener('click', (e) => { if (e.target === box || e.target === boxImg) closeShot(); });
+    document.getElementById('lightbox-close').addEventListener('click', closeShot);
+    box.addEventListener('cancel', (e) => { e.preventDefault(); closeShot(); });
+
+    // ── Aviso al descargar: qué hacer la primera vez ────────
+    const FIRST_RUN = {
+      windows: 'Descomprime el .zip y abre <code>Hakufu.exe</code>. Si Windows avisa de un editor desconocido, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>.',
+      mac: 'Arrastra <code>Hakufu.app</code> a Aplicaciones. La primera vez, ve a Ajustes del Sistema → Privacidad y seguridad y pulsa <em>Abrir igualmente</em>.',
+      linux: 'Descomprime y ejecuta <code>./Hakufu</code>. Si no arranca: <code>sudo apt install libfontconfig1 libice6 libsm6</code>.',
+    };
+    const toast = document.getElementById('toast');
+    let toastTimer;
+
+    function showToast(os) {
+      document.getElementById('toast-title').textContent = `Descargando Hakufu para ${LABELS[os]}`;
+      document.getElementById('toast-body').innerHTML = FIRST_RUN[os];
+      toast.classList.remove('is-open');
+      void toast.offsetWidth; // reinicia la barra de tiempo
+      toast.classList.add('is-open');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('is-open'), 9000);
+    }
+
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-os-dl]');
+      if (a && a.getAttribute('href') !== '#descargas') showToast(a.dataset.osDl);
+    });
+    document.getElementById('toast-close').addEventListener('click', () => {
+      clearTimeout(toastTimer);
+      toast.classList.remove('is-open');
+    });
 
     // Da de baja el service worker del antiguo lector web (ver sw.js).
     navigator.serviceWorker?.getRegistrations().then((regs) => regs.forEach((r) => r.update()));

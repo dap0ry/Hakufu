@@ -8,14 +8,14 @@
   <meta name="theme-color" content="#0E0E0F">
   <meta property="og:title" content="Hakufu — Gestor de manga offline">
   <meta property="og:description" content="Organiza y lee tu manga sin conexión. Gratis para Windows, macOS y Linux.">
-  <meta property="og:image" content="https://hakufuweb.vercel.app/img/app-library-dark.webp">
+  <meta property="og:image" content="https://hakufuweb.vercel.app/img/real-library.webp">
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Inter: la letra de la app (WithInterFont) y de su título de Inicio. -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="preload" as="image" href="/img/app-library-dark.webp">
+  <link rel="preload" as="image" href="/img/real-home.webp">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -130,7 +130,7 @@
     .hero-stage .shot { position: relative; }
 
     /* ── Colecciones: la Biblioteca de la app se desplaza dentro de su ventana ── */
-    .shelf { padding: 0; background: var(--mist); height: 260vh; }
+    .shelf { padding: 0; background: var(--mist); height: 240vh; }
 
     .shelf-sticky {
       position: sticky;
@@ -147,15 +147,24 @@
     .shelf-count span { font-size: 15px; color: var(--muted); }
 
     .app-window {
-      aspect-ratio: 16 / 10;
-      max-height: calc(100svh - 120px);
+      position: relative;
+      aspect-ratio: 1600 / 974;
+      max-height: calc(100svh - 160px);
       overflow: hidden;
       border-radius: 12px;
       background: #0A0A0B;
       border: 1px solid var(--line);
       box-shadow: 0 30px 60px -24px rgba(17,17,19,.4);
     }
-    .app-window img { width: 100%; transform: translateY(var(--y, 0)); will-change: transform; }
+    .app-window img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 450ms var(--ease), transform 600ms var(--ease); }
+    .app-window img + img { opacity: 0; transform: translateY(24px); pointer-events: none; }
+    .app-window[data-step="2"] img:first-child { opacity: 0; transform: scale(.98); pointer-events: none; }
+    .app-window[data-step="2"] img + img { opacity: 1; transform: none; pointer-events: auto; }
+
+    .steps { margin-top: 32px; list-style: none; display: grid; gap: 4px; }
+    .steps li { padding: 10px 0 10px 18px; border-left: 2px solid var(--line); color: var(--muted); transition: color 250ms, border-color 250ms; }
+    .steps li b { display: block; color: inherit; font-weight: 700; }
+    .steps li.on { border-color: var(--ink); color: var(--ink); }
 
     /* ── Perfil ──────────────────────────────────────────── */
     .dark { background: var(--night); color: var(--paper); }
@@ -207,45 +216,18 @@
     }
     .modes button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 
-    /* Maqueta del lector: fondo oscuro, barra arriba y abajo como en la app. */
+    /* Capturas reales del lector: una y dos páginas, con fundido entre ellas. */
     .reader {
-      --h: clamp(300px, 38vw, 470px);
-      background: #0A0A0B;
+      position: relative;
+      aspect-ratio: 1600 / 974;
       border-radius: 12px;
+      overflow: hidden;
+      background: #0A0A0B;
       border: 1px solid var(--line);
       box-shadow: 0 24px 48px -24px rgba(17,17,19,.35);
-      overflow: hidden;
-      color: var(--paper);
     }
-    .reader-top, .reader-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 18px;
-      background: #111113;
-      font-size: 13px;
-    }
-    .reader-bottom span:last-child { display: flex; gap: 8px; }
-    .reader-bottom em { font-style: normal; border: 1px solid #3A3A3F; border-radius: 5px; padding: 1px 8px; font-size: 12px; transition: background-color 200ms, color 200ms; }
-    .reader-bottom em.on { background: var(--paper); color: var(--ink); border-color: var(--paper); }
-
-    .spread {
-      height: calc(var(--h) + 40px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      perspective: 1600px;
-    }
-    .leaf {
-      height: var(--h);
-      width: calc(var(--h) * 2 / 3);
-      overflow: hidden;
-      transition: width 520ms var(--ease), opacity 360ms ease-out;
-    }
-    .leaf img { height: 100%; width: calc(var(--h) * 2 / 3); max-width: none; transition: opacity 260ms ease-out; }
-    .leaf img.fading { opacity: 0; }
-    .reader[data-mode="1"] .leaf.left { width: 0; opacity: 0; }
-    .reader[data-mode="2"] .leaf.left { box-shadow: inset -12px 0 16px -12px rgba(0,0,0,.4); }
+    .reader img { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 450ms var(--ease); }
+    .reader[data-mode="1"] .two, .reader[data-mode="2"] .one { opacity: 0; pointer-events: none; }
 
     /* ── Descargas ───────────────────────────────────────── */
     .downloads { border-top: 1px solid var(--line); }
@@ -332,7 +314,6 @@
       .upgrade { grid-template-columns: 1fr; }
       .foot-grid { grid-template-columns: 1fr; }
       section { padding-block: 88px; }
-      .reader { --h: clamp(200px, 60vw, 380px); }
     }
 
     @media (max-width: 560px) {
@@ -372,25 +353,30 @@
 
       <div class="hero-stage">
         <div class="glow" aria-hidden="true"></div>
-        <img class="shot zoomable" src="/img/app-library-dark.webp" width="1280" height="800" tabindex="0" fetchpriority="high"
-             alt="La biblioteca de Hakufu: cada colección como un montón de portadas, con su progreso debajo.">
+        <img class="shot zoomable" src="/img/real-home.webp" width="1600" height="974" tabindex="0" fetchpriority="high"
+             alt="Inicio de Hakufu: el menú a la izquierda y, a la derecha, el manga que estabas leyendo para seguir donde lo dejaste.">
       </div>
     </div>
   </header>
 
   <main>
-    <!-- Colecciones: al bajar, la Biblioteca de la app se desplaza como si hicieras scroll en ella. -->
+    <!-- Colecciones: al bajar, de la Biblioteca se entra en una colección. -->
     <section class="shelf" id="colecciones">
       <div class="shelf-sticky">
         <div class="wrap shelf-grid">
           <div>
             <h2 class="display">Todas tus colecciones</h2>
             <p class="lead">Elige una carpeta y Hakufu la convierte en tu estantería: cada subcarpeta es una colección, con sus portadas apiladas y lo que llevas leído.</p>
-            <div class="shelf-count"><b>18</b><span>colecciones en esta biblioteca de ejemplo</span></div>
+            <ol class="steps" id="shelf-steps">
+              <li class="on"><b>Biblioteca</b>17 colecciones y 167 tomos, cada serie con su montón de portadas.</li>
+              <li><b>Colección</b>Ábrela y verás todos sus tomos en orden, con sus páginas.</li>
+            </ol>
           </div>
-          <div class="app-window">
-            <img id="shelf-img" src="/img/app-library-all.webp" width="1280" height="1620"
-                 alt="La Biblioteca de Hakufu con 18 colecciones, cada una como un montón de portadas con su progreso.">
+          <div class="app-window" id="shelf-window" data-step="1">
+            <img class="zoomable" tabindex="0" src="/img/real-library.webp" width="1600" height="974"
+                 alt="La Biblioteca de Hakufu con 17 colecciones y 167 tomos, cada serie como un montón de portadas.">
+            <img class="zoomable" tabindex="0" src="/img/real-collection.webp" width="1600" height="974"
+                 alt="La colección de Chainsaw Man abierta, con sus tomos en orden y las páginas de cada uno.">
           </div>
         </div>
       </div>
@@ -412,7 +398,7 @@
         </div>
         <div class="profile-card" data-reveal>
           <div class="glow" aria-hidden="true"></div>
-          <img class="shot zoomable" src="/img/app-profile-horizontal.webp" width="1600" height="876" loading="lazy" tabindex="0"
+          <img class="shot zoomable" src="/img/real-profile-card.webp" width="1600" height="884" loading="lazy" tabindex="0"
                alt="Tarjeta de perfil de Hakufu en horizontal: nombre, horas, páginas, gráfica de 12 semanas, manga favorito y los que estás leyendo.">
         </div>
       </div>
@@ -434,13 +420,11 @@
           </ul>
         </div>
 
-        <div class="reader" id="reader" data-mode="1" data-reveal aria-label="Maqueta del lector de Hakufu" role="img">
-          <div class="reader-top"><span>Ciudad Sin Luna 1</span><span>Cerrar</span></div>
-          <div class="spread">
-            <div class="leaf left"><img alt="" src="/img/pages/p1.webp" width="600" height="900"></div>
-            <div class="leaf right"><img alt="" src="/img/pages/p2.webp" width="600" height="900"></div>
-          </div>
-          <div class="reader-bottom"><span id="reader-page">2 / 7</span><span><em id="reader-badge">2 págs.</em><em>Zen</em></span></div>
+        <div class="reader" id="reader" data-mode="1" data-reveal>
+          <img class="one zoomable" tabindex="0" src="/img/real-reader-1.webp" width="1600" height="974" loading="lazy"
+               alt="El lector de Hakufu a una página, con el número de página abajo.">
+          <img class="two zoomable" tabindex="0" src="/img/real-reader-2.webp" width="1600" height="974" loading="lazy"
+               alt="El lector de Hakufu a dos páginas, con el tomo abierto como en papel.">
         </div>
       </div>
     </section>
@@ -617,24 +601,26 @@
 
     init();
 
-    // ── Colecciones: al bajar, la captura se desplaza dentro de la ventana ──
+    // ── Colecciones: al bajar, de la Biblioteca se pasa a una colección ──
     const shelf = document.getElementById('colecciones');
-    const shelfImg = document.getElementById('shelf-img');
+    const shelfWindow = document.getElementById('shelf-window');
+    const shelfSteps = document.querySelectorAll('#shelf-steps li');
     let ticking = false;
 
     function onScroll() {
       ticking = false;
       const span = shelf.offsetHeight - innerHeight;
       const p = Math.min(1, Math.max(0, -shelf.getBoundingClientRect().top / span));
-      const max = shelfImg.offsetHeight - shelfImg.parentElement.clientHeight;
-      shelfImg.style.setProperty('--y', `${(-p * Math.max(0, max)).toFixed(1)}px`);
+      const step = p < 0.5 ? 1 : 2;
+      if (shelfWindow.dataset.step !== String(step)) {
+        shelfWindow.dataset.step = step;
+        shelfSteps.forEach((li, i) => li.classList.toggle('on', i === step - 1));
+      }
     }
 
     addEventListener('scroll', () => {
       if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
     }, { passive: true });
-    addEventListener('resize', onScroll);
-    shelfImg.addEventListener('load', onScroll);
     onScroll();
 
     // ── Entrada suave, una sola vez ─────────────────────────
@@ -647,50 +633,21 @@
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
     document.querySelectorAll('[data-reveal]').forEach((el) => revealer.observe(el));
 
-    // ── Maqueta del lector: una o dos páginas ───────────────
+    // ── Lector: una o dos páginas ───────────────────────────
     const reader = document.getElementById('reader');
-    const leftImg = reader.querySelector('.leaf.left img');
-    const rightImg = reader.querySelector('.leaf.right img');
     const modeButtons = document.querySelectorAll('.modes button');
-    let mode = 1;
-    let page = 2; // página de la derecha (la que se ve en modo una página)
     let autoplay = !reduceMotion;
     let timer;
 
-    function setPages(next) {
-      page = next;
-      const swap = (img, n) => {
-        img.classList.add('fading');
-        setTimeout(() => { img.src = `/img/pages/p${n}.webp`; img.classList.remove('fading'); }, 240);
-      };
-      if (mode === 2) swap(leftImg, page - 1);
-      swap(rightImg, page);
-      document.getElementById('reader-page').textContent = mode === 2 ? `${page - 1}-${page} / 7` : `${page} / 7`;
-    }
-
     function setMode(m) {
-      mode = m;
       reader.dataset.mode = m;
-      if (m === 2 && page < 2) page = 2;
-      leftImg.src = `/img/pages/p${page - 1}.webp`;
-      document.getElementById('reader-badge').classList.toggle('on', m === 2);
-      document.getElementById('reader-page').textContent = m === 2 ? `${page - 1}-${page} / 7` : `${page} / 7`;
       modeButtons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.mode) === m)));
     }
 
-    // Demostración: pasa unas páginas en un modo y cambia al otro.
-    const STEPS = [[1, 2], [1, 3], [2, 4], [2, 6], [1, 6], [1, 5]];
-    let step = 0;
-    function tick() {
-      step = (step + 1) % STEPS.length;
-      const [m, p] = STEPS[step];
-      if (m !== mode) setMode(m);
-      if (p !== page) setPages(p);
-    }
-
+    // Mientras se ve, alterna sola hasta que eliges un modo.
     new IntersectionObserver(([e]) => {
       clearInterval(timer);
-      if (e.isIntersecting && autoplay) timer = setInterval(tick, 2600);
+      if (e.isIntersecting && autoplay) timer = setInterval(() => setMode(reader.dataset.mode === '1' ? 2 : 1), 3000);
     }, { threshold: 0.4 }).observe(reader);
 
     modeButtons.forEach((b) => b.addEventListener('click', () => {

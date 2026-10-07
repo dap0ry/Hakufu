@@ -131,7 +131,8 @@ public class LibraryScanner
             if (!dir.Exists) return null;
 
             var groups = dir.EnumerateDirectories()
-                .Where(d => !d.Name.StartsWith('.'))
+                // "." = ocultas; "_" = datos o copias (p. ej. _Hakufu), no colecciones.
+                .Where(d => !d.Name.StartsWith('.') && !d.Name.StartsWith('_'))
                 .OrderBy(d => d.Name, NaturalComparer.Instance)
                 .Select(d => new FolderGroup(d.Name, d.Name, Volumes(d, d.Name + "/")))
                 .ToList();

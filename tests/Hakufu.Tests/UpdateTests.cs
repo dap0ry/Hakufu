@@ -1,5 +1,6 @@
 using Hakufu.Data;
 using Hakufu.MVVM.Model;
+using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
 
 namespace Hakufu.Tests;
@@ -82,5 +83,138 @@ public class UpdateServicePortableTests
         await new UpdateService(new FakeHttp(r => { seen = r; return Json("v0.0.1"); })).CheckAsync();
         Assert.Equal("https://api.github.com/repos/dap0ry/Hakufu/releases/latest", seen!.RequestUri!.ToString());
         Assert.NotEmpty(seen.Headers.UserAgent);
+    }
+}
+
+public sealed class FakeUpdateService : IUpdateService
+{
+    public UpdateCheckResult Result = new(UpdateCheckStatus.UpToDate);
+    public bool FailDownload;
+    public int Checks, Downloads;
+    public List<string> Log = [];
+    public string CurrentVersion => "0.10.1";
+
+    public Task<UpdateCheckResult> CheckAsync(CancellationToken ct = default) { Checks++; return Task.FromResult(Result); }
+
+    public Task DownloadAsync(Action<int> progress, CancellationToken ct = default)
+    {
+        Downloads++;
+        progress(50);
+        if (FailDownload) throw new HttpRequestException("cortado");
+        progress(100);
+        return Task.CompletedTask;
+    }
+
+    public void ApplyAndRestart() => Log.Add("apply");
+}
+
+public class UpdateBannerTests
+{
+    private static (UpdateBannerViewModel vm, FakeUpdateService svc, List<string> urls)
+        Make(UpdateCheckResult result, bool checkOnStartup = true)
+    {
+        var svc = new FakeUpdateService { Result = result };
+        var set = new UpdateSettings { CheckOnStartup = checkOnStartup };
+        var urls = new List<string>();
+        var vm = new UpdateBannerViewModel(svc, set, () => svc.Log.Add("save"), urls.Add, TimeSpan.Zero);
+        return (vm, svc, urls);
+    }
+
+    [Fact]
+    public async Task Up_to_date_or_failed_keeps_the_banner_hidden()
+    {
+        foreach (var s in new[] { UpdateCheckStatus.UpToDate, UpdateCheckStatus.Failed })
+        {
+            var (vm, _, _) = Make(new(s));
+            await vm.StartAsync();
+            Assert.Equal(UpdateBannerState.Hidden, vm.State);
+            Assert.False(vm.IsVisible);
+        }
+    }
+
+    [Fact]
+    public async Task Startup_check_is_skipped_when_disabled()
+    {
+        var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true), checkOnStartup: false);
+        await vm.StartAsync();
+        Assert.Equal(0, svc.Checks);
+        Assert.False(vm.IsVisible);
+    }
+
+    [Fact]
+    public async Task Available_update_downloads_then_restarts_saving_first()
+    {
+        var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
+        await vm.StartAsync();
+        Assert.Equal(UpdateBannerState.Available, vm.State);
+        Assert.Contains("0.11.0", vm.Message);
+        Assert.Equal("Actualizar", vm.PrimaryText);
+
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation;
+        Assert.Equal(UpdateBannerState.Ready, vm.State);
+        Assert.Equal(100, vm.Progress);
+        Assert.Equal("Reiniciar", vm.PrimaryText);
+
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation;
+        Assert.Equal(["save", "apply"], svc.Log);
+    }
+
+    [Fact]
+    public async Task Failed_download_goes_back_to_available_with_retry()
+    {
+        var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
+        svc.FailDownload = true;
+        await vm.StartAsync();
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation;
+        Assert.Equal(UpdateBannerState.Available, vm.State);
+        Assert.Equal("Reintentar", vm.PrimaryText);
+    }
+
+    [Fact]
+    public async Task Cannot_start_a_second_download_while_downloading()
+    {
+        var (vm, _, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
+        await vm.StartAsync();
+        Assert.True(vm.PrimaryCommand.CanExecute(null));
+        vm.SetStateForTest(UpdateBannerState.Downloading);
+        Assert.False(vm.PrimaryCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task Portable_copy_offers_the_download_page()
+    {
+        var (vm, svc, urls) = Make(new(UpdateCheckStatus.Available, "0.11.0", CanSelfUpdate: false));
+        await vm.StartAsync();
+        Assert.Equal(UpdateBannerState.Portable, vm.State);
+        Assert.Equal("Descargar", vm.PrimaryText);
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation;
+        Assert.Equal([UpdateBannerViewModel.DownloadPage], urls);
+        Assert.Equal(0, svc.Downloads);
+    }
+
+    [Fact]
+    public async Task Later_hides_and_check_now_reports_in_words()
+    {
+        var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
+        await vm.StartAsync();
+        vm.LaterCommand.Execute(null);
+        Assert.False(vm.IsVisible);
+
+        svc.Result = new(UpdateCheckStatus.UpToDate);
+        await vm.CheckNowAsync();
+        Assert.Equal("Ya tienes la última versión.", vm.CheckStatus);
+
+        svc.Result = new(UpdateCheckStatus.Failed);
+        await vm.CheckNowAsync();
+        Assert.Equal("No se pudo comprobar. ¿Hay conexión a internet?", vm.CheckStatus);
+
+        svc.Result = new(UpdateCheckStatus.Available, "0.12.0", true);
+        await vm.CheckNowAsync();
+        Assert.Equal("Hay una versión nueva: 0.12.0.", vm.CheckStatus);
+        Assert.True(vm.IsVisible);
     }
 }

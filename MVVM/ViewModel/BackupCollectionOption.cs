@@ -5,7 +5,7 @@ public class BackupCollectionOption(Guid id, string name, int volumes) : BaseVie
 {
     public Guid   Id     { get; } = id;
     public string Name   { get; } = name;
-    public string Detail { get; } = volumes == 1 ? "1 tomo" : $"{volumes} tomos";
+    public string Detail { get; } = BackupViewModel.Volumes(volumes);
 
     private bool _isSelected = true;
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }

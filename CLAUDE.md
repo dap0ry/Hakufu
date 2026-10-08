@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Hakufu** is an offline manga manager/reader built with **Avalonia 11.3** on **.NET 10**, running on
 Windows, macOS and Linux. Built by Daniel Poza and friends. It manages PDF and CBR/CBZ files locally —
-**no backend, no accounts, no network access at all** (don't add any: it's a product decision).
+**no backend, no accounts, no network access** — the only exception is `Services/UpdateService`, which
+checks/downloads updates from GitHub Releases (Velopack; opt-out in Ajustes → Acerca de). Don't add any other
+network use: it's a product decision.
 Migrated from WPF in October 2026 (spec: `docs/superpowers/specs/2026-10-01-avalonia-offline-design.md`).
 
 ## Commands
@@ -61,6 +63,8 @@ Services/
   BackupService              ← local .zip export/import (data.json + covers + profile, no mangas); rebases paths, keeps the local LibraryRoot
   FilePickerService          ← Avalonia StorageProvider (files, folder, save) + OpenFolder (explorer/open/xdg-open)
   ProfileService             ← profile (name, photo in DataDir/profile), reading log per day (ReadingLog) for the profile charts
+  UpdateService              ← the ONLY network code: Velopack UpdateManager + GithubSource(dap0ry/Hakufu); not installed
+                               (zip / dotnet run) → asks the GitHub API for releases/latest and only notifies
 Assets/
   Themes/LightTheme.axaml, DarkTheme.axaml  ← all brushes; always use DynamicResource
   Styles/GlobalStyles.axaml   ← shared styles as CLASSES (Classes="primary", "ghost", "icon", "card", "caption"…)

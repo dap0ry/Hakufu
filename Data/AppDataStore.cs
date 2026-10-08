@@ -23,4 +23,6 @@ public class AppDataStore
     public List<ReadingDay>          ReadingLog      { get; set; } = [];
 
     public ReaderSettings            Reader          { get; set; } = new();
+
+    public UpdateSettings            Updates         { get; set; } = new();
 }

@@ -39,6 +39,7 @@
     <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="SharpCompress" Version="0.50.4" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
   </ItemGroup>
 
   <ItemGroup>

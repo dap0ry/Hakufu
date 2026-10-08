@@ -1,4 +1,5 @@
 using Avalonia.Media.Imaging;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -30,7 +31,7 @@ public class EditProfileViewModel : BaseViewModel
         _name   = p.Name;
         _avatar = BitmapHelper.TryLoad(p.AvatarPath);
 
-        FavoriteOptions = [new FavoriteOption(null, "Ninguno"),
+        FavoriteOptions = [new FavoriteOption(null, L.Get("profile.edit.no_favorite")),
                            .. library.GetAllMangas().OrderBy(m => m.Title, StringComparer.CurrentCultureIgnoreCase)
                                      .Select(m => new FavoriteOption(m.Id, m.Title))];
         _favorite = FavoriteOptions.FirstOrDefault(o => o.Id == p.FavoriteMangaId) ?? FavoriteOptions[0];
@@ -58,7 +59,7 @@ public class EditProfileViewModel : BaseViewModel
 
     public RelayCommand ChooseAvatarCommand => new(async () =>
     {
-        var picked = await _files.PickFilesAsync("Elige tu foto de perfil", FileFilter.Images, multiSelect: false);
+        var picked = await _files.PickFilesAsync(L.Get("profile.edit.pick_photo_title"), FileFilter.Images, multiSelect: false);
         if (picked.Length == 0) return;
         var bmp = BitmapHelper.TryLoad(picked[0]);
         if (bmp is null) return;

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
 using Avalonia.Media.Imaging;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -15,7 +15,6 @@ public class ProfileViewModel : BaseViewModel
 {
     public const int Weeks = 12;
     private const double MaxBarHeight = 120;
-    private static readonly CultureInfo Es = CultureInfo.GetCultureInfo("es-ES");
 
     private readonly ProfileService     _profile;
     private readonly LibraryService     _library;
@@ -70,23 +69,24 @@ public class ProfileViewModel : BaseViewModel
     {
         var p = _profile.GetProfile();
         HasName     = !string.IsNullOrWhiteSpace(p.Name);
-        DisplayName = HasName ? p.Name : "Tu nombre";
-        Initial     = HasName ? p.Name.Trim()[..1].ToUpper(Es) : "?";
+        DisplayName = HasName ? p.Name : L.Get("profile.your_name");
+        Initial     = HasName ? p.Name.Trim()[..1].ToUpper(L.Culture) : "?";
         Avatar      = BitmapHelper.TryLoad(p.AvatarPath);
         MemberSinceText = p.MemberSince is { } since
-            ? $"En Hakufu desde {since.ToString("MMMM 'de' yyyy", Es)}"
+            ? L.Format("profile.since", since)
             : "";
 
         var time = _profile.GetTotalReadingTime();
+        var c    = L.Culture;
         (ReadingTimeValue, ReadingTimeUnit) = time.TotalHours >= 1
-            ? (time.TotalHours < 10 ? time.TotalHours.ToString("0.#", Es) : time.TotalHours.ToString("N0", Es), "h")
-            : (((int)time.TotalMinutes).ToString(Es), "min");
-        PagesText    = _profile.GetTotalPagesRead().ToString("N0", Es);
-        FinishedText = _profile.GetFinishedCount().ToString("N0", Es);
+            ? (time.TotalHours < 10 ? time.TotalHours.ToString("0.#", c) : time.TotalHours.ToString("N0", c), L.Get("profile.unit_hours"))
+            : (((int)time.TotalMinutes).ToString(c), L.Get("profile.unit_minutes"));
+        PagesText    = _profile.GetTotalPagesRead().ToString("N0", c);
+        FinishedText = _profile.GetFinishedCount().ToString("N0", c);
 
         var streak = _profile.GetStreakDays();
         HasStreak  = streak > 0;
-        StreakText = streak == 1 ? "1 día seguido leyendo" : $"{streak} días seguidos leyendo";
+        StreakText = streak == 1 ? L.Get("profile.streak_one") : L.Format("profile.streak_many", streak);
 
         // Barras: altura relativa a la mejor semana del periodo.
         var weeks = _profile.GetWeeklyReading(Weeks);
@@ -99,12 +99,12 @@ public class ProfileViewModel : BaseViewModel
                 hours > 0 ? Math.Max(4, hours / best * MaxBarHeight) : 3,
                 hours > 0,
                 i == weeks.Count - 1,
-                $"Semana del {start.ToString("d 'de' MMMM", Es)}: {FormatDuration(hours)} · {pages} págs."));
+                L.Format("profile.week_tooltip", start, FormatDuration(hours), pages)));
         }
         HasReadingLog  = weeks.Any(w => w.Hours > 0);
-        FirstWeekLabel = weeks[0].WeekStart.ToString("d MMM", Es).TrimEnd('.');
+        FirstWeekLabel = L.Format("profile.week_label", weeks[0].WeekStart).TrimEnd('.');
         var (_, thisHours, thisPages) = weeks[^1];
-        ThisWeekText = $"Esta semana: {FormatDuration(thisHours)} · {thisPages} págs.";
+        ThisWeekText = L.Format("profile.this_week_summary", FormatDuration(thisHours), thisPages);
 
         var fav = _profile.GetFavoriteManga();
         FavoriteManga = fav is null ? null : new MangaCardViewModel(fav, _library.GetProgress(fav.Id));
@@ -124,8 +124,8 @@ public class ProfileViewModel : BaseViewModel
     private static string FormatDuration(double hours)
     {
         var t = TimeSpan.FromHours(hours);
-        if (t.TotalHours >= 1) return $"{(int)t.TotalHours} h {t.Minutes:D2} min";
-        return $"{(int)t.TotalMinutes} min";
+        if (t.TotalHours >= 1) return L.Format("profile.duration_hours", (int)t.TotalHours, t.Minutes);
+        return L.Format("profile.duration_minutes", (int)t.TotalMinutes);
     }
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
@@ -148,8 +148,9 @@ public class ProfileViewModel : BaseViewModel
 
     /// <summary>Ruta donde guardar la tarjeta en PNG (la imagen la genera la vista).</summary>
     public Task<string?> PickImagePathAsync(string orientation)
-        => _files.SaveFileAsync("Guardar perfil como imagen",
-                                $"hakufu-{(HasName ? DisplayName : "perfil")}-{orientation}.png", FileFilter.Png);
+        => _files.SaveFileAsync(L.Get("profile.save_dialog_title"),
+                                $"hakufu-{(HasName ? DisplayName : L.Get("profile.file_default_name"))}-{orientation}.png",
+                                FileFilter.Png);
 }
 
 /// <summary>Una colección de "Leyendo ahora": portada del último tomo leído y progreso de toda la colección.</summary>

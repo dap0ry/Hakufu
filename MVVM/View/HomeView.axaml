@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i18n="using:Hakufu.I18n"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
              x:Class="Hakufu.MVVM.View.HomeView"
              x:DataType="vm:HomeViewModel">
@@ -112,13 +113,13 @@
                     <!-- Biblioteca -->
                     <Button Classes="menuItem big" Command="{Binding NavLibraryCommand}">
                         <StackPanel>
-                            <TextBlock Classes="menuLabel" Text="Biblioteca"/>
+                            <TextBlock Classes="menuLabel" Text="{i18n:T home.library}"/>
                         </StackPanel>
                     </Button>
                     <!-- Perfil -->
                     <Button Classes="menuItem" Command="{Binding NavProfileCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="16">
-                            <TextBlock Classes="menuLabel" Text="Perfil"/>
+                            <TextBlock Classes="menuLabel" Text="{i18n:T home.profile}"/>
                             <!-- Tu foto, en círculo; con la inicial si no hay foto -->
                             <Border Classes="menuAvatar"
                                     IsVisible="{Binding HasProfileAvatar}">
@@ -136,30 +137,30 @@
                     <!-- Copia de seguridad -->
                     <Button Classes="menuItem" Command="{Binding NavBackupCommand}">
                         <StackPanel>
-                            <TextBlock Classes="menuLabel" Text="Copia de seguridad"/>
+                            <TextBlock Classes="menuLabel" Text="{i18n:T home.backup}"/>
                         </StackPanel>
                     </Button>
                     <!-- Ajustes -->
                     <Button Classes="menuItem" Command="{Binding NavSettingsCommand}">
                         <StackPanel>
-                            <TextBlock Classes="menuLabel" Text="Ajustes"/>
+                            <TextBlock Classes="menuLabel" Text="{i18n:T home.settings}"/>
                         </StackPanel>
                     </Button>
                     <!-- Ayuda -->
                     <Button Classes="menuItem" Command="{Binding NavHelpCommand}">
                         <StackPanel>
-                            <TextBlock Classes="menuLabel" Text="Ayuda"/>
+                            <TextBlock Classes="menuLabel" Text="{i18n:T home.help}"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
 
                 <!-- Sin enlace: la app no abre URLs de red -->
                 <StackPanel Grid.Row="2" Spacing="2">
-                    <TextBlock Text="Desarrollado por @dp0r1"
+                    <TextBlock Text="{i18n:T home.credit_dev}"
                                FontFamily="{DynamicResource DisplayFont}"
                                FontSize="16"
                                Foreground="{DynamicResource TextMuted}"/>
-                    <TextBlock Text="Diseño con la ayuda de @_.riscooo"
+                    <TextBlock Text="{i18n:T home.credit_design}"
                                FontFamily="{DynamicResource DisplayFont}"
                                FontSize="16"
                                Foreground="{DynamicResource TextMuted}"/>
@@ -174,15 +175,15 @@
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         MaxWidth="340" Spacing="12"
                         IsVisible="{Binding !HasLastManga}">
-                <TextBlock Text="Nada a medias"
+                <TextBlock Text="{i18n:T home.empty_title}"
                            FontFamily="{DynamicResource DisplayFont}"
                            FontSize="64" LineHeight="62"
                            Foreground="{DynamicResource TextPrimary}"/>
-                <TextBlock Text="Abre la biblioteca, añade tus tomos y aquí te esperará el último que estés leyendo."
+                <TextBlock Text="{i18n:T home.empty_body}"
                            TextWrapping="Wrap" FontSize="14"
                            Foreground="{DynamicResource TextSecondary}"/>
                 <Button Classes="primary"
-                        Content="Ir a la biblioteca"
+                        Content="{i18n:T home.go_library}"
                         HorizontalAlignment="Left"
                         Padding="24,11" Margin="0,12,0,0"
                         Command="{Binding NavLibraryCommand}"/>
@@ -220,7 +221,7 @@
                         </Border>
                     </Border>
 
-                    <TextBlock Text="Continuar leyendo"
+                    <TextBlock Text="{i18n:T home.continue_label}"
                                FontFamily="{DynamicResource DisplayFontSemi}"
                                FontSize="15"
                                Foreground="{DynamicResource TextSecondary}"/>
@@ -244,7 +245,7 @@
                     </StackPanel>
 
                     <Button Classes="primary"
-                            Content="Seguir leyendo"
+                            Content="{i18n:T home.continue_button}"
                             HorizontalAlignment="Left"
                             Padding="26,11" Margin="0,22,0,0"
                             Command="{Binding ContinueReadingCommand}"/>

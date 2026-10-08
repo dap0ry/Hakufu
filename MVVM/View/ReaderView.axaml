@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i18n="using:Hakufu.I18n"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
              x:Class="Hakufu.MVVM.View.ReaderView"
              x:DataType="vm:ReaderViewModel"
@@ -51,7 +52,7 @@
                            VerticalAlignment="Center"/>
                 <Button Grid.Column="1"
                         Classes="ghost reader"
-                        Content="Cerrar"
+                        Content="{i18n:T reader.close}"
                         Command="{Binding CloseReaderCommand}"/>
             </Grid>
         </Border>
@@ -106,7 +107,7 @@
                     CornerRadius="20"
                     IsHitTestVisible="False"
                     IsVisible="{Binding ShowZenHint}">
-                <TextBlock Text="Pulsa ESC para salir del modo zen"
+                <TextBlock Text="{i18n:T reader.zen_hint}"
                            Foreground="{DynamicResource ReaderForeground}"
                            FontSize="13"/>
             </Border>
@@ -123,7 +124,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                     <Button Classes="icon reader"
                             Command="{Binding PrevPageCommand}"
-                            ToolTip.Tip="Página anterior">
+                            ToolTip.Tip="{i18n:T reader.prev_page}">
                         <Path Data="M 10,2 L 2,8 L 10,14"
                               Stroke="{DynamicResource ReaderForeground}"
                               StrokeThickness="1.5" Width="12" Height="16"/>
@@ -134,7 +135,7 @@
                                MinWidth="80" TextAlignment="Center"/>
                     <Button Classes="icon reader"
                             Command="{Binding NextPageCommand}"
-                            ToolTip.Tip="Página siguiente">
+                            ToolTip.Tip="{i18n:T reader.next_page}">
                         <Path Data="M 2,2 L 10,8 L 2,14"
                               Stroke="{DynamicResource ReaderForeground}"
                               StrokeThickness="1.5" Width="12" Height="16"/>
@@ -145,17 +146,17 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                     <Button Classes="ghost reader"
                             FontSize="12" Padding="12,6"
-                            Content="1 pág."
+                            Content="{i18n:T reader.one_page}"
                             Command="{Binding ToggleTwoPageCommand}"
                             IsVisible="{Binding IsTwoPageMode}"/>
                     <Button Classes="ghost reader"
                             FontSize="12" Padding="12,6"
-                            Content="2 págs."
+                            Content="{i18n:T reader.two_pages}"
                             Command="{Binding ToggleTwoPageCommand}"
                             IsVisible="{Binding !IsTwoPageMode}"/>
                     <Button Classes="ghost reader"
                             FontSize="12" Padding="12,6"
-                            Content="Zen"
+                            Content="{i18n:T reader.zen}"
                             Command="{Binding ToggleZenModeCommand}"/>
                 </StackPanel>
             </Grid>

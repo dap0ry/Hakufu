@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i18n="using:Hakufu.I18n"
         xmlns:vm="using:Hakufu.MVVM.ViewModel"
         xmlns:ctl="using:Hakufu.Controls"
         x:Class="Hakufu.MainWindow"
@@ -101,18 +102,19 @@
                            IsHitTestVisible="False"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Name="MinimizeButton" Classes="caption"
-                            ToolTip.Tip="Minimizar" Click="Minimize_Click">
+                            ToolTip.Tip="{i18n:T shell.minimize}" Click="Minimize_Click">
                         <Path Data="M0,5.5 L10,5.5"/>
                     </Button>
                     <!-- Pantalla completa y no maximizar: en niri y otros gestores
                          en mosaico maximizar no hace nada; pantalla completa sí.
                          Maximizar sigue con doble clic en la barra. -->
+                    <!-- Su ToolTip lo pone el code-behind (cambia al entrar/salir y con el idioma) -->
                     <Button Name="FullScreenButton" Classes="caption"
-                            ToolTip.Tip="Pantalla completa" Click="FullScreen_Click">
+                            Click="FullScreen_Click">
                         <Path Name="FullScreenGlyph"/>
                     </Button>
                     <Button Name="CloseButton" Classes="caption close"
-                            ToolTip.Tip="Cerrar" Click="Close_Click">
+                            ToolTip.Tip="{i18n:T shell.close}" Click="Close_Click">
                         <Path Data="M0,0 L10,10 M10,0 L0,10"/>
                     </Button>
                 </StackPanel>
@@ -140,7 +142,7 @@
                         Content="{Binding UpdateBanner.PrimaryText, FallbackValue=''}"
                         Command="{Binding UpdateBanner.PrimaryCommand}"/>
                 <Button Grid.Column="2" Classes="ghost" Padding="12,8" Margin="8,0,0,0"
-                        Content="Más tarde"
+                        Content="{i18n:T updates.later}"
                         Command="{Binding UpdateBanner.LaterCommand}"
                         IsVisible="{Binding !UpdateBanner.IsDownloading, FallbackValue=False}"/>
             </Grid>

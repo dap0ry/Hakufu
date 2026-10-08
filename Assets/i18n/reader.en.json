@@ -1,0 +1,9 @@
+{
+  "reader.close": "Close",
+  "reader.zen_hint": "Press ESC to exit zen mode",
+  "reader.prev_page": "Previous page",
+  "reader.next_page": "Next page",
+  "reader.one_page": "1 page",
+  "reader.two_pages": "2 pages",
+  "reader.zen": "Zen"
+}

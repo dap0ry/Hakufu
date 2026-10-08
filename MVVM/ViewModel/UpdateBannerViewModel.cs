@@ -26,7 +26,8 @@ public class UpdateBannerViewModel : BaseViewModel
     private string _version = "";
     private bool _retry;
     private int _progress;
-    private string _checkStatus = "";
+    // Se guarda cómo escribirlo, no el texto: así sigue al idioma si se cambia después.
+    private Func<string> _checkStatus = () => "";
 
     /// <param name="prepareRestart">Guarda los datos: aplicar la actualización cierra el proceso sin pasar por la salida normal.</param>
     public UpdateBannerViewModel(IUpdateService updates, UpdateSettings settings,
@@ -48,6 +49,7 @@ public class UpdateBannerViewModel : BaseViewModel
             OnPropertyChanged(nameof(Message));
             OnPropertyChanged(nameof(PrimaryText));
             OnPropertyChanged(nameof(CurrentVersion));
+            OnPropertyChanged(nameof(CheckStatus));
         };
     }
 
@@ -67,23 +69,23 @@ public class UpdateBannerViewModel : BaseViewModel
     public bool   IsVisible      => _state != UpdateBannerState.Hidden;
     public bool   IsDownloading  => _state == UpdateBannerState.Downloading;
     public int    Progress       { get => _progress; private set => SetProperty(ref _progress, value); }
-    public string CurrentVersion => $"Versión {_updates.CurrentVersion}";
+    public string CurrentVersion => L.Format("common.version", _updates.CurrentVersion);
     /// <summary>Resultado de «Buscar actualizaciones» en Ajustes.</summary>
-    public string CheckStatus    { get => _checkStatus; private set => SetProperty(ref _checkStatus, value); }
+    public string CheckStatus    => _checkStatus();
 
     public string Message => _state switch
     {
-        UpdateBannerState.Downloading => $"Descargando Hakufu {_version}…",
-        UpdateBannerState.Ready       => $"Hakufu {_version} está lista. Reinicia para terminar.",
-        _                             => $"Hakufu {_version} disponible",
+        UpdateBannerState.Downloading => L.Format("updates.downloading", _version),
+        UpdateBannerState.Ready       => L.Format("updates.ready", _version),
+        _                             => L.Format("updates.available", _version),
     };
 
     public string PrimaryText => _state switch
     {
-        UpdateBannerState.Ready    => "Reiniciar",
-        UpdateBannerState.Portable => "Descargar",
-        _ when _retry              => "Reintentar",
-        _                          => "Actualizar",
+        UpdateBannerState.Ready    => L.Get("updates.restart"),
+        UpdateBannerState.Portable => L.Get("updates.download"),
+        _ when _retry              => L.Get("updates.retry"),
+        _                          => L.Get("updates.update"),
     };
 
     /// <summary>Escribe en los ajustes; guardarlos es cosa de quien lo cambie.</summary>
@@ -119,18 +121,25 @@ public class UpdateBannerViewModel : BaseViewModel
         // Ya descargando o descargada: no se vuelve a preguntar (no se cambia lo que se va a aplicar).
         if (_state is UpdateBannerState.Downloading or UpdateBannerState.Ready)
         {
-            CheckStatus = $"Hakufu {_version} se está descargando o ya está lista para reiniciar.";
+            var busy = _version;
+            SetCheckStatus(() => L.Format("updates.busy", busy));
             return;
         }
-        CheckStatus = "Buscando…";
+        SetCheckStatus(() => L.Get("updates.checking"));
         var r = await _updates.CheckAsync();
-        CheckStatus = r.Status switch
+        SetCheckStatus(r.Status switch
         {
-            UpdateCheckStatus.UpToDate  => "Ya tienes la última versión.",
-            UpdateCheckStatus.Available => $"Hay una versión nueva: {r.Version}.",
-            _                           => "No se pudo comprobar. ¿Hay conexión a internet?",
-        };
+            UpdateCheckStatus.UpToDate  => () => L.Get("updates.up_to_date"),
+            UpdateCheckStatus.Available => () => L.Format("updates.new_version", r.Version),
+            _                           => () => L.Get("updates.check_failed"),
+        });
         Apply(r);
+    }
+
+    private void SetCheckStatus(Func<string> text)
+    {
+        _checkStatus = text;
+        OnPropertyChanged(nameof(CheckStatus));
     }
 
     internal void SetStateForTest(UpdateBannerState s) => State = s;

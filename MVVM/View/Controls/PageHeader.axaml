@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i18n="using:Hakufu.I18n"
              xmlns:c="using:Hakufu.MVVM.View.Controls"
              x:Class="Hakufu.MVVM.View.Controls.PageHeader"
              x:DataType="c:PageHeader">

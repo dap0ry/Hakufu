@@ -1,0 +1,15 @@
+{
+  "updates.available": "Hakufu {0} disponible",
+  "updates.downloading": "Descargando Hakufu {0}…",
+  "updates.ready": "Hakufu {0} está lista. Reinicia para terminar.",
+  "updates.update": "Actualizar",
+  "updates.retry": "Reintentar",
+  "updates.restart": "Reiniciar",
+  "updates.download": "Descargar",
+  "updates.later": "Más tarde",
+  "updates.busy": "Hakufu {0} se está descargando o ya está lista para reiniciar.",
+  "updates.checking": "Buscando…",
+  "updates.up_to_date": "Ya tienes la última versión.",
+  "updates.new_version": "Hay una versión nueva: {0}.",
+  "updates.check_failed": "No se pudo comprobar. ¿Hay conexión a internet?"
+}

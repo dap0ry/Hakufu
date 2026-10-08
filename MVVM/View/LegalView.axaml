@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
              xmlns:c="using:Hakufu.MVVM.View.Controls"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.LegalView"
              x:DataType="vm:LegalViewModel">
 
@@ -9,9 +10,9 @@
 
         <!-- ═══ CABECERA ═══ -->
         <c:PageHeader Grid.Row="0"
-                      Title="Aviso legal"
-                      Subtitle="Términos, condiciones y privacidad"
-                      BackText="← Ajustes"
+                      Title="{i18n:T legal.title}"
+                      Subtitle="{i18n:T legal.subtitle}"
+                      BackText="{i18n:T legal.back}"
                       BackCommand="{Binding GoBackCommand}">
         </c:PageHeader>
 
@@ -19,7 +20,7 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel MaxWidth="720" Margin="40,48,40,64" HorizontalAlignment="Center">
 
-                <TextBlock Text="Usar Hakufu implica aceptar estos términos. Léelos con calma."
+                <TextBlock Text="{i18n:T legal.intro}"
                            FontSize="14" LineHeight="22" TextWrapping="Wrap"
                            Foreground="{DynamicResource TextSecondary}"
                            Margin="0,0,0,28"/>
@@ -46,7 +47,7 @@
                 </ItemsControl>
 
                 <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="0,20,0,0">
-                    <TextBlock Text="Este texto tiene fines informativos y de protección razonable, no constituye asesoramiento jurídico profesional."
+                    <TextBlock Text="{i18n:T legal.disclaimer}"
                                FontSize="11" FontStyle="Italic" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextMuted}"/>
                 </Border>

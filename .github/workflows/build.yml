@@ -1,6 +1,7 @@
 name: build
 
-# Compila, pasa los tests y genera la app en los tres sistemas en cada push o PR.
+# Compila, pasa los tests y genera la app en los tres sistemas en cada push o PR,
+# y la de iPhone/iPad (job ios: .ipa sin firmar y capturas en el simulador).
 # Los paquetes quedan como "artifacts" de la ejecución (pestaña Actions).
 # Al subir un tag vX.Y.Z además publica la release en GitHub con los cuatro
 # paquetes portables, los instaladores de Velopack y sus archivos de
@@ -78,9 +79,53 @@ jobs:
             publish/velopack/*
           if-no-files-found: error
 
+  # iPhone/iPad (ver docs/superpowers/specs/2026-10-08-ios-design.md): capturas en el
+  # simulador (la prueba de que arranca y pinta en iOS) y el .ipa sin firmar.
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Workload de iOS
+        run: dotnet workload install ios
+
+      - name: Xcode
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes
+
+      - name: Compilar para el simulador
+        run: dotnet build Hakufu.csproj -p:HakufuIos=true -r iossimulator-arm64
+
+      - name: Capturas en el simulador
+        run: |
+          python3 -m venv /tmp/py && /tmp/py/bin/pip install -q pillow
+          PATH="/tmp/py/bin:$PATH" bash scripts/ios-simulator-shots.sh \
+            bin/Debug/net10.0-ios/iossimulator-arm64/Hakufu.app publish/ios-shots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capturas-ios
+          path: publish/ios-shots
+          if-no-files-found: ignore
+
+      - name: .ipa sin firmar
+        run: bash scripts/package-ipa.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hakufu-ios
+          path: publish/Hakufu-ios.ipa
+          if-no-files-found: error
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [build, ios]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -98,6 +143,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
+          pattern: Hakufu-*   # los paquetes; no las capturas del simulador
           merge-multiple: true
 
       - name: Crear la release

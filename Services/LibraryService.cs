@@ -1,4 +1,5 @@
 using Hakufu.Data;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 
 namespace Hakufu.Services;
@@ -10,6 +11,16 @@ public class LibraryService
     public LibraryService(IDataRepository repo) => _repo = repo;
 
     public IReadOnlyList<Collection> GetCollections() => _repo.Current.Collections;
+
+    /// <summary>
+    /// Nombre de la colección para mostrar. La de tomos sueltos en la raíz se guarda como
+    /// LibraryScanner.LooseCollectionName («Sin colección», dato usado al emparejar carpetas)
+    /// y se traduce solo al pintarla; las demás muestran el nombre de su carpeta.
+    /// </summary>
+    public static string DisplayName(Collection collection)
+        => string.IsNullOrEmpty(collection.RelativePath) && collection.Name == LibraryScanner.LooseCollectionName
+            ? L.Get("library.loose_collection")
+            : collection.Name;
 
     public Collection? GetCollection(Guid id)
         => _repo.Current.Collections.FirstOrDefault(c => c.Id == id);

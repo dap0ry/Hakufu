@@ -197,7 +197,8 @@ public class LibraryScannerTests
     }
 
     // Un disco externo sin conectar no puede borrar el progreso de toda la biblioteca.
-    [Fact]
+    // AvaloniaFact: el mensaje sale de Assets/i18n (recursos de la app).
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Unreadable_folder_gives_a_message_and_keeps_the_data()
     {
         using var tmp = new TempDataDir();

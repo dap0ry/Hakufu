@@ -1,0 +1,23 @@
+{
+  "collection.back": "← Biblioteca",
+  "collection.open_folder": "Abrir carpeta",
+  "collection.open_folder_tip": "Añade o quita tomos en su carpeta",
+  "collection.sort": "Ordenar",
+  "collection.sort_name": "Nombre",
+  "collection.sort_date": "Fecha",
+  "collection.sort_custom": "A mano",
+  "collection.size": "Tamaño",
+  "collection.favorite_tip": "Manga favorito",
+  "collection.summary": "{0} · {1}",
+  "collection.finished_one": "{0} terminado",
+  "collection.finished_many": "{0} terminados",
+  "collection.page_finished": "Terminado",
+  "collection.not_started": "Sin empezar",
+  "collection.pages": "{0} págs.",
+  "collection.page_of": "Pág. {0} de {1}",
+  "collection.page": "Pág. {0}",
+  "collection.reorder_title": "Orden personalizado",
+  "collection.reorder_hint": "Usa las flechas para mover cada manga. Se guarda al pulsar \"Guardar orden\".",
+  "collection.cancel": "Cancelar",
+  "collection.save_order": "Guardar orden"
+}

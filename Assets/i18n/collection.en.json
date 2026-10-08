@@ -1,0 +1,23 @@
+{
+  "collection.back": "← Library",
+  "collection.open_folder": "Open folder",
+  "collection.open_folder_tip": "Add or remove volumes in its folder",
+  "collection.sort": "Sort",
+  "collection.sort_name": "Name",
+  "collection.sort_date": "Date",
+  "collection.sort_custom": "Custom",
+  "collection.size": "Size",
+  "collection.favorite_tip": "Favorite manga",
+  "collection.summary": "{0} · {1}",
+  "collection.finished_one": "{0} finished",
+  "collection.finished_many": "{0} finished",
+  "collection.page_finished": "Finished",
+  "collection.not_started": "Not started",
+  "collection.pages": "{0} pages",
+  "collection.page_of": "Page {0} of {1}",
+  "collection.page": "Page {0}",
+  "collection.reorder_title": "Custom order",
+  "collection.reorder_hint": "Use the arrows to move each manga. It's saved when you click \"Save order\".",
+  "collection.cancel": "Cancel",
+  "collection.save_order": "Save order"
+}

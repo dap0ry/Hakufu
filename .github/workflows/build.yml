@@ -90,13 +90,13 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      # Workload de iOS fijo a la versión que va con el Xcode del runner: la última
-      # (27.x) pide Xcode 27 y macos-latest trae hasta la 26.6. Al subir Xcode en el
+      # Workload de iOS fijo a la versión que va con el Xcode del runner (26.5.10318 pide
+      # Xcode 26.6): la última (27.x) pide Xcode 27 y macos-latest trae hasta la 26.6. Al subir Xcode en el
       # runner, subir las dos a la vez (versiones en nuget.org:
       # microsoft.net.sdk.ios.manifest-10.0.100).
       - name: Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.5.app
+          sudo xcode-select -s /Applications/Xcode_26.6.app
           xcodebuild -version
           xcrun simctl list runtimes
 

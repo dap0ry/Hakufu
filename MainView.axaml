@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i18n="using:Hakufu.I18n"
+             xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:ctl="using:Hakufu.Controls"
+             x:Class="Hakufu.MainView"
+             x:DataType="vm:MainWindowViewModel"
+             Background="{DynamicResource AppBackground}"
+             Foreground="{DynamicResource TextPrimary}"
+             FontSize="13">
+
+    <!-- Todo lo que se ve dentro de Hakufu: la pantalla actual, la barra de versión
+         nueva y el modal. En escritorio va dentro de MainWindow (con su barra de
+         título en Linux); en iPhone/iPad es la vista única. Por debajo de 700 px de
+         ancho lleva la clase "compact" y las vistas se reordenan (estilos .compact). -->
+    <Grid Name="Root">
+
+        <!-- Page content -->
+        <Border Background="{DynamicResource AppBackground}" ClipToBounds="True">
+            <ContentControl Content="{Binding CurrentView}"/>
+        </Border>
+
+        <!-- Versión nueva: abajo y centrada, encima de la página (debajo del modal) -->
+        <Border Name="UpdateBar" ZIndex="50"
+                IsVisible="{Binding UpdateBanner.IsVisible, FallbackValue=False}"
+                Classes="card" Padding="16,10" Margin="0,0,0,20"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom">
+            <Grid ColumnDefinitions="Auto,Auto,Auto">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock Text="{Binding UpdateBanner.Message, FallbackValue=''}" FontWeight="SemiBold"/>
+                    <ProgressBar IsVisible="{Binding UpdateBanner.IsDownloading, FallbackValue=False}"
+                                 Value="{Binding UpdateBanner.Progress, FallbackValue=0}" Maximum="100"
+                                 Height="3" MinHeight="3" MinWidth="200" Margin="0,6,0,0"/>
+                </StackPanel>
+                <Button Grid.Column="1" Classes="primary" Padding="16,8"
+                        Content="{Binding UpdateBanner.PrimaryText, FallbackValue=''}"
+                        Command="{Binding UpdateBanner.PrimaryCommand}"/>
+                <Button Grid.Column="2" Classes="ghost" Padding="12,8" Margin="8,0,0,0"
+                        Content="{i18n:T updates.later}"
+                        Command="{Binding UpdateBanner.LaterCommand}"
+                        IsVisible="{Binding !UpdateBanner.IsDownloading, FallbackValue=False}"/>
+            </Grid>
+        </Border>
+
+        <!-- Modal overlay -->
+        <Grid IsVisible="{Binding IsModalOpen}" ZIndex="100">
+            <Rectangle Fill="{DynamicResource OverlayBackground}"
+                       PointerPressed="Overlay_PointerPressed"/>
+            <Border Name="ModalCard" Classes="card"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MinWidth="420" MaxWidth="560"
+                    Padding="32">
+                <ContentControl Content="{Binding ModalContent}"/>
+            </Border>
+        </Grid>
+
+        <!-- Transición de tinta al cambiar de tema (iOS; en escritorio la pone MainWindow
+             encima de todo, también de su barra de título) -->
+        <ctl:InkTransition Name="ThemeInk" ZIndex="1000"/>
+    </Grid>
+</UserControl>

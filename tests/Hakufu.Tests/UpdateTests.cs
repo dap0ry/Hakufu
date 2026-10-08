@@ -276,7 +276,7 @@ public class UpdateViewTests
     {
         using var app = ViewSmoke.Start();
         var fake = (FakeUpdateService)app.Root.Updates;
-        var bar = app.Window.FindControl<Avalonia.Controls.Border>("UpdateBar")!;
+        var bar = app.View.FindControl<Avalonia.Controls.Border>("UpdateBar")!;
         Assert.False(bar.IsVisible);
 
         fake.Result = new(UpdateCheckStatus.Available, "0.11.0", true);

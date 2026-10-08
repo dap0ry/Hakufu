@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -19,27 +20,52 @@ namespace Hakufu.Tests;
 public sealed class ViewSmoke : IDisposable
 {
     private readonly TempDataDir _tmp;
+    private readonly MobileMode? _mobile;
 
     public CompositionRoot Root   { get; }
-    public MainWindow      Window { get; }
+    /// <summary>La ventana de escritorio (solo con Start, no con StartMobile).</summary>
+    public MainWindow      Window => (MainWindow)Host;
+    /// <summary>Lo que hay en pantalla: MainWindow, o en StartMobile una ventana sin marco con MainView dentro (como iOS).</summary>
+    public Window          Host   { get; }
+    public MainView        View   { get; }
     /// <summary>Colección de ejemplo (subcarpeta de la biblioteca) con dos tomos CBZ (uno leído a medias).</summary>
     public Collection      SampleCollection { get; }
     public Manga           SampleManga      { get; }
 
-    private ViewSmoke(TempDataDir tmp, CompositionRoot root, Collection col, Manga manga)
+    private ViewSmoke(TempDataDir tmp, CompositionRoot root, Collection col, Manga manga,
+                      Size? mobile = null, MobileMode? mobileMode = null)
     {
         _tmp = tmp;
+        _mobile = mobileMode;
         Root = root;
         SampleCollection = col;
         SampleManga = manga;
         root.ApplySavedAppearance();
-        Window = new MainWindow { DataContext = root.CreateMainViewModel(), Width = 1280, Height = 780 };
-        Window.Show();
+        if (mobile is { } size)
+        {
+            View = new MainView { DataContext = root.CreateMainViewModel() };
+            Host = new Window { Content = View, Width = size.Width, Height = size.Height,
+                                SystemDecorations = SystemDecorations.None };
+        }
+        else
+        {
+            var window = new MainWindow { DataContext = root.CreateMainViewModel(), Width = 1280, Height = 780 };
+            View = window.MainView;
+            Host = window;
+        }
+        Host.Show();
         Pump();
     }
 
+    /// <summary>
+    /// Como en iPhone/iPad: MainView sola ocupando una pantalla de width×height, con
+    /// AppPlatform.IsMobile y la biblioteca de ejemplo como carpeta fija.
+    /// </summary>
+    public static ViewSmoke StartMobile(double width, double height, bool darkTheme = false)
+        => Start(darkTheme, withLibrary: true, mobile: new Size(width, height));
+
     /// <param name="withLibrary">false: sin carpeta de biblioteca elegida (instalación nueva).</param>
-    public static ViewSmoke Start(bool darkTheme = false, bool withLibrary = true)
+    public static ViewSmoke Start(bool darkTheme = false, bool withLibrary = true, Size? mobile = null)
     {
         var tmp  = new TempDataDir();
         var repo = new JsonDataRepository();
@@ -65,7 +91,8 @@ public sealed class ViewSmoke : IDisposable
         repo.Current.Progress.Add(new ReadingProgress { MangaId = m1.Id, CurrentPage = 2 });
         repo.Current.History.Add(new ReadingHistoryEntry { MangaId = m1.Id });
 
-        return new ViewSmoke(tmp, new CompositionRoot(repo, new FakeUpdateService()), col, m1);
+        var mobileMode = mobile is null ? null : new MobileMode(root);
+        return new ViewSmoke(tmp, new CompositionRoot(repo, new FakeUpdateService()), col, m1, mobile, mobileMode);
     }
 
     /// <summary>Procesa la cola del hilo de UI (carga async de portadas, layout…).</summary>
@@ -83,7 +110,7 @@ public sealed class ViewSmoke : IDisposable
     public TView AssertShows<TView>() where TView : Control
     {
         Pump();
-        var view = Window.GetVisualDescendants().OfType<TView>().FirstOrDefault();
+        var view = Host.GetVisualDescendants().OfType<TView>().FirstOrDefault();
         Assert.True(view is not null,
             $"La ventana no muestra {typeof(TView).Name}. ¿Falta la vista o falla el ViewLocator?");
         Assert.True(view!.Bounds.Width > 0, $"{typeof(TView).Name} no tiene tamaño tras el layout.");
@@ -99,7 +126,8 @@ public sealed class ViewSmoke : IDisposable
 
     public void Dispose()
     {
-        Window.Close();
+        Host.Close();
+        _mobile?.Dispose();
         _tmp.Dispose();
     }
 }

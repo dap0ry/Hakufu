@@ -237,6 +237,8 @@
     .platform .req { font-size: 14px; color: var(--muted-d); }
     .platform .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
     .platform .size { font-size: 13px; color: var(--muted-d); min-height: 1.4em; }
+    .platform .portable { font-size: 13px; color: var(--muted-d); }
+    .platform .portable a:hover { color: var(--paper); }
     .platform .first-run { font-size: 14px; color: var(--muted-d); margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line-d); }
 
     .yours { position: absolute; top: 30px; right: 28px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--paper); color: var(--ink); }
@@ -479,16 +481,17 @@
     <section class="downloads" id="descargas">
       <div class="wrap">
         <h2 class="display" data-reveal>Descargar</h2>
-        <p class="lead" data-reveal>La app viene completa: descomprime y ábrela, no hace falta instalar nada más. Si te pierdes entre tantos archivos, abre la guía paso a paso de tu sistema.</p>
+        <p class="lead" data-reveal>Se instala con un doble clic y <b>se actualiza sola</b>: cuando haya versión nueva, Hakufu te avisa y se pone al día con un clic. Si te pierdes, abre la guía paso a paso de tu sistema.</p>
 
         <div class="platforms">
           <article class="platform" data-os="windows">
             <span class="yours">Tu sistema</span>
             <h3>Windows</h3>
             <p class="req">Windows 10 u 11, 64 bits.</p>
-            <div class="buttons"><a class="btn" data-asset="win" data-os-dl="windows">Descargar .zip</a></div>
+            <div class="buttons"><a class="btn" data-asset="win" data-os-dl="windows">Descargar instalador</a></div>
             <p class="size" data-size="win"></p>
-            <p class="first-run">Ábrela con <code>Hakufu.exe</code>. Si Windows avisa de un editor desconocido, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>.</p>
+            <p class="portable">¿Sin instalar? <a data-asset="winZip">Versión portable (.zip)</a>, no se actualiza sola.</p>
+            <p class="first-run">Abre <code>Hakufu-win-Setup.exe</code>: se instala y se abre sola. Si Windows avisa de un editor desconocido, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>.</p>
             <button class="btn outline small guide-open" type="button" data-guide="windows">Cómo instalarlo, paso a paso</button>
           </article>
 
@@ -501,7 +504,8 @@
               <a class="btn outline" data-asset="macIntel" data-os-dl="mac">Intel</a>
             </div>
             <p class="size" data-size="macArm"></p>
-            <p class="first-run">Arrastra <code>Hakufu.app</code> a Aplicaciones. La primera vez, ve a Ajustes del Sistema → Privacidad y seguridad y pulsa <em>Abrir igualmente</em>.</p>
+            <p class="portable">¿Sin instalar? Versión portable para <a data-asset="macArmZip">chip Apple</a> o <a data-asset="macIntelZip">Intel</a>, no se actualiza sola.</p>
+            <p class="first-run">Abre el <code>.pkg</code> y sigue los pasos: Hakufu queda en Aplicaciones. Si macOS no deja abrirlo, ve a Ajustes del Sistema → Privacidad y seguridad y pulsa <em>Abrir igualmente</em>. Solo la primera vez.</p>
             <button class="btn outline small guide-open" type="button" data-guide="mac">Cómo instalarlo, paso a paso</button>
           </article>
 
@@ -509,9 +513,10 @@
             <span class="yours">Tu sistema</span>
             <h3>Linux</h3>
             <p class="req">x64, cualquier distro de escritorio reciente.</p>
-            <div class="buttons"><a class="btn" data-asset="linux" data-os-dl="linux">Descargar .tar.gz</a></div>
+            <div class="buttons"><a class="btn" data-asset="linux" data-os-dl="linux">Descargar AppImage</a></div>
             <p class="size" data-size="linux"></p>
-            <p class="first-run">Descomprime y ejecuta <code>./Hakufu</code>. Si no arranca: <code>sudo apt install libfontconfig1 libice6 libsm6</code>.</p>
+            <p class="portable">¿Prefieres la carpeta? <a data-asset="linuxTar">Versión portable (.tar.gz)</a>, no se actualiza sola.</p>
+            <p class="first-run">Dale permiso para ejecutarse (<code>chmod +x Hakufu.AppImage</code>) y ábrelo. Si no arranca: <code>sudo apt install libfuse2t64 libfontconfig1 libice6 libsm6</code>.</p>
             <button class="btn outline small guide-open" type="button" data-guide="linux">Cómo instalarlo, paso a paso</button>
           </article>
         </div>
@@ -573,36 +578,33 @@
     <div class="guide-body">
       <section data-panel="windows">
         <ol>
-          <li><b>Descarga el .zip.</b> Se guarda en tu carpeta Descargas como <code>Hakufu-win-x64.zip</code>.</li>
-          <li><b>Descomprímelo, no lo abras con doble clic.</b> Haz clic derecho sobre el .zip → <em>Extraer todo…</em> → <em>Extraer</em>. Se crea la carpeta <code>Hakufu-win-x64</code>.</li>
-          <li><b>Entra en la carpeta.</b> Verás muchos archivos (<code>.dll</code> y otros): son piezas de la app, no hace falta tocarlos ni borrarlos.</li>
-          <li><b>Abre <code>Hakufu.exe</code>.</b> Es el que tiene el icono de Hakufu; si no ves las extensiones, es el que pone <em>Aplicación</em> en la columna Tipo.</li>
+          <li><b>Descarga el instalador.</b> Se guarda en tu carpeta Descargas como <code>Hakufu-win-Setup.exe</code>.</li>
+          <li><b>Ábrelo con doble clic.</b> No pide permisos de administrador: se instala en tu usuario y crea el acceso directo en el escritorio y en el menú Inicio.</li>
           <li><b>Si sale «Windows protegió su PC»</b>, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>. Solo pasa la primera vez.</li>
-          <li><b>Para tenerla a mano:</b> mueve la carpeta entera adonde quieras (por ejemplo, Documentos) y después clic derecho en <code>Hakufu.exe</code> → <em>Enviar a</em> → <em>Escritorio (crear acceso directo)</em>. No saques el .exe solo de su carpeta: necesita el resto de archivos.</li>
+          <li><b>Listo.</b> Hakufu se abre sola al terminar. Para desinstalarla: Configuración → Aplicaciones → Hakufu.</li>
         </ol>
-        <p class="tip"><b>Para actualizar</b>, descarga la versión nueva y sustituye la carpeta. Tu biblioteca y tu progreso se guardan aparte y no se pierden.</p>
+        <p class="tip"><b>Para actualizar</b> no tienes que hacer nada: cuando haya versión nueva, Hakufu te avisa abajo. Pulsa <em>Actualizar</em> y luego <em>Reiniciar</em>. Tu biblioteca y tu progreso no se tocan.</p>
       </section>
 
       <section data-panel="mac" hidden>
         <ol>
           <li><b>Elige tu versión.</b> Menú Apple (la manzana, arriba a la izquierda) → <em>Acerca de este Mac</em>: si pone <em>Chip Apple M1, M2, M3…</em> descarga <b>Chip Apple</b>; si pone <em>Procesador Intel</em>, descarga <b>Intel</b>.</li>
-          <li><b>Descomprime el .zip.</b> Abre Descargas y haz doble clic en <code>Hakufu-osx-…zip</code> (Safari a veces lo hace solo). Aparece <code>Hakufu.app</code>.</li>
-          <li><b>Arrastra <code>Hakufu.app</code> a Aplicaciones.</b></li>
-          <li><b>Ábrela desde Aplicaciones.</b> La primera vez macOS dirá que no puede comprobar quién la ha hecho: cierra el aviso, ve a <em>Ajustes del Sistema → Privacidad y seguridad</em>, baja hasta el final y pulsa <em>Abrir igualmente</em>. Confirma con tu contraseña.</li>
-          <li><b>Listo.</b> A partir de ahí se abre normal. Si quieres, déjala en el Dock.</li>
+          <li><b>Abre el instalador.</b> En Descargas, doble clic en <code>Hakufu-osx-…-Setup.pkg</code>.</li>
+          <li><b>Si macOS dice que no puede comprobar quién lo ha hecho</b>, cierra el aviso, ve a <em>Ajustes del Sistema → Privacidad y seguridad</em>, baja hasta el final y pulsa <em>Abrir igualmente</em>. Confirma con tu contraseña.</li>
+          <li><b>Sigue los pasos del instalador.</b> Hakufu queda en Aplicaciones.</li>
+          <li><b>Listo.</b> Ábrela desde Aplicaciones o el Launchpad. Si quieres, déjala en el Dock.</li>
         </ol>
-        <p class="tip"><b>Si dice que «está dañada»</b>, abre Terminal y escribe <code>xattr -cr /Applications/Hakufu.app</code>, pulsa Intro y vuelve a abrirla.</p>
+        <p class="tip"><b>Para actualizar</b> no tienes que hacer nada: cuando haya versión nueva, Hakufu te avisa abajo. Pulsa <em>Actualizar</em> y luego <em>Reiniciar</em>; ya no vuelve a salir el aviso de seguridad.</p>
       </section>
 
       <section data-panel="linux" hidden>
         <ol>
-          <li><b>Descarga el .tar.gz.</b> Se guarda como <code>Hakufu-linux-x64.tar.gz</code>.</li>
-          <li><b>Descomprímelo.</b> Clic derecho → <em>Extraer aquí</em>, o en una terminal: <code>tar xzf Hakufu-linux-x64.tar.gz</code>. Se crea la carpeta <code>Hakufu-linux-x64</code>.</li>
-          <li><b>Abre el archivo <code>Hakufu</code></b> (el que no tiene extensión). Si el doble clic no hace nada, clic derecho → <em>Ejecutar como programa</em>, o desde la terminal: <code>cd Hakufu-linux-x64 &amp;&amp; ./Hakufu</code>. Los <code>.dll</code> son parte de la app.</li>
-          <li><b>Si dice «permiso denegado»</b>: <code>chmod +x Hakufu</code> dentro de la carpeta.</li>
-          <li><b>Si no arranca</b>, instala las librerías gráficas. Ubuntu o Debian: <code>sudo apt install libfontconfig1 libice6 libsm6</code>. Fedora: <code>sudo dnf install fontconfig libICE libSM</code>.</li>
+          <li><b>Descarga el AppImage.</b> Se guarda como <code>Hakufu.AppImage</code>. Muévelo adonde quieras tenerlo (por ejemplo, <code>~/Aplicaciones</code>).</li>
+          <li><b>Dale permiso para ejecutarse.</b> Clic derecho → <em>Propiedades</em> → <em>Permitir ejecutar como programa</em>, o en una terminal: <code>chmod +x Hakufu.AppImage</code>.</li>
+          <li><b>Ábrelo con doble clic</b>, o desde la terminal: <code>./Hakufu.AppImage</code>.</li>
+          <li><b>Si no arranca</b>, instala FUSE y las librerías gráficas. Ubuntu o Debian: <code>sudo apt install libfuse2t64 libfontconfig1 libice6 libsm6</code> (en versiones antiguas, <code>libfuse2</code>). Fedora: <code>sudo dnf install fuse-libs fontconfig libICE libSM</code>.</li>
         </ol>
-        <p class="tip"><b>Para actualizar</b>, descarga la versión nueva y sustituye la carpeta. Tus datos se guardan aparte y no se pierden.</p>
+        <p class="tip"><b>Para actualizar</b> no tienes que hacer nada: cuando haya versión nueva, Hakufu te avisa abajo. Pulsa <em>Actualizar</em> y luego <em>Reiniciar</em>. Tus datos se guardan aparte y no se pierden.</p>
       </section>
     </div>
   </dialog>
@@ -619,13 +621,18 @@
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // ── Descargas ───────────────────────────────────────────
-    // Nombre del archivo de cada plataforma en la release (lo genera
-    // .github/workflows/build.yml). En Windows, el .exe es la 0.9.7.
+    // Nombre del archivo de cada plataforma en la release (lo generan
+    // .github/workflows/build.yml y scripts/pack-velopack.*). Gana el primero
+    // que exista: el instalador (se actualiza solo) y, si no, el portable.
     const ASSETS = {
-      win:      ['Hakufu-win-x64.zip', 'Hakufu-win-Setup.exe'],
-      macArm:   ['Hakufu-osx-arm64.zip'],
-      macIntel: ['Hakufu-osx-x64.zip'],
-      linux:    ['Hakufu-linux-x64.tar.gz'],
+      win:         ['Hakufu-win-Setup.exe', 'Hakufu-win-x64.zip'],
+      macArm:      ['Hakufu-osx-arm64-Setup.pkg', 'Hakufu-osx-arm64.zip'],
+      macIntel:    ['Hakufu-osx-x64-Setup.pkg', 'Hakufu-osx-x64.zip'],
+      linux:       ['Hakufu.AppImage', 'Hakufu-linux-x64.tar.gz'],
+      winZip:      ['Hakufu-win-x64.zip'],
+      macArmZip:   ['Hakufu-osx-arm64.zip'],
+      macIntelZip: ['Hakufu-osx-x64.zip'],
+      linuxTar:    ['Hakufu-linux-x64.tar.gz'],
     };
     const LABELS = { windows: 'Windows', mac: 'macOS', linux: 'Linux' };
     const HERO_ASSET = { windows: 'win', mac: 'macArm', linux: 'linux' };
@@ -757,9 +764,9 @@
 
     // ── Aviso al descargar: qué hacer la primera vez ────────
     const FIRST_RUN = {
-      windows: 'Descomprime el .zip y abre <code>Hakufu.exe</code>. Si Windows avisa de un editor desconocido, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>.',
-      mac: 'Arrastra <code>Hakufu.app</code> a Aplicaciones. La primera vez, ve a Ajustes del Sistema → Privacidad y seguridad y pulsa <em>Abrir igualmente</em>.',
-      linux: 'Descomprime y ejecuta <code>./Hakufu</code>. Si no arranca: <code>sudo apt install libfontconfig1 libice6 libsm6</code>.',
+      windows: 'Abre <code>Hakufu-win-Setup.exe</code>: se instala y se abre sola. Si Windows avisa de un editor desconocido, pulsa <em>Más información</em> y luego <em>Ejecutar de todas formas</em>.',
+      mac: 'Abre el <code>.pkg</code> y sigue los pasos. Si macOS no deja abrirlo, ve a Ajustes del Sistema → Privacidad y seguridad y pulsa <em>Abrir igualmente</em>.',
+      linux: 'Ejecuta <code>chmod +x Hakufu.AppImage</code> y ábrelo. Si no arranca: <code>sudo apt install libfuse2t64 libfontconfig1 libice6 libsm6</code>.',
     };
     const toast = document.getElementById('toast');
     let toastTimer;

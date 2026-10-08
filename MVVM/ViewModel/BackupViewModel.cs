@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Hakufu.Data;
+using Hakufu.I18n;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -41,8 +42,12 @@ public class BackupViewModel : BaseViewModel
 
     public int MangaCount      => _repo.Current.Mangas.Count;
     public int CollectionCount => _repo.Current.Collections.Count;
-    public string SummaryText  =>
-        $"{CollectionCount} colección{(CollectionCount != 1 ? "es" : "")} · {MangaCount} tomo{(MangaCount != 1 ? "s" : "")}";
+    public string SummaryText  => L.Format("backup.summary", Collections(CollectionCount), Volumes(MangaCount));
+
+    /// <summary>"1 colección" / "3 colecciones".</summary>
+    internal static string Collections(int n) => n == 1 ? L.Get("backup.collections_one") : L.Format("backup.collections_other", n);
+    /// <summary>"1 tomo" / "3 tomos".</summary>
+    internal static string Volumes(int n) => n == 1 ? L.Get("backup.volumes_one") : L.Format("backup.volumes_other", n);
 
     public bool IsConfirmingRestore
     {
@@ -59,7 +64,13 @@ public class BackupViewModel : BaseViewModel
     public bool IsIdle => !_isBusy && !_isConfirmingRestore;
 
     /// <summary>0–100.</summary>
-    public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
+    public double Progress
+    {
+        get => _progress;
+        private set { if (SetProperty(ref _progress, value)) OnPropertyChanged(nameof(ProgressText)); }
+    }
+    /// <summary>"Trabajando… 40 %".</summary>
+    public string ProgressText => L.Format("backup.working", Progress);
 
     public string? StatusMessage
     {
@@ -91,7 +102,9 @@ public class BackupViewModel : BaseViewModel
         get
         {
             var n = IncludeCollections ? CollectionOptions.Count(c => c.IsSelected) : 0;
-            return n == 0 ? "Solo tu perfil" : $"Tu perfil y {n} de {CollectionOptions.Count} {(CollectionOptions.Count == 1 ? "colección" : "colecciones")}";
+            if (n == 0) return L.Get("backup.export_summary_profile_only");
+            var total = CollectionOptions.Count;
+            return L.Format(total == 1 ? "backup.export_summary_one" : "backup.export_summary_other", n, total);
         }
     }
 
@@ -108,7 +121,7 @@ public class BackupViewModel : BaseViewModel
         CollectionOptions.Clear();
         foreach (var c in _repo.Current.Collections.OrderBy(c => c.Name, NaturalComparer.Instance))
         {
-            var option = new BackupCollectionOption(c.Id, c.Name, c.MangaIds.Count);
+            var option = new BackupCollectionOption(c.Id, LibraryService.DisplayName(c), c.MangaIds.Count);
             option.PropertyChanged += (_, _) => OnPropertyChanged(nameof(ExportSummary));
             CollectionOptions.Add(option);
         }
@@ -123,7 +136,7 @@ public class BackupViewModel : BaseViewModel
     public AsyncRelayCommand ExportCommand => new(async () =>
     {
         var path = await _files.SaveFileAsync(
-            "Guardar copia de seguridad",
+            L.Get("backup.save_dialog_title"),
             $"Hakufu-{DateTime.Now:yyyy-MM-dd}.zip",
             FileFilter.Backup);
         if (path is null) return;
@@ -133,13 +146,13 @@ public class BackupViewModel : BaseViewModel
         await RunAsync(async p =>
         {
             await _backup.ExportAsync(path, options, p);
-            return (true, $"Copia guardada ({what.ToLowerInvariant()}) en {path}");
-        }, "No se pudo crear la copia");
+            return (true, L.Format("backup.export_done", what.ToLower(L.Culture), path));
+        }, "backup.export_failed");
     }, () => IsIdle);
 
     public AsyncRelayCommand PickRestoreCommand => new(async () =>
     {
-        var files = await _files.PickFilesAsync("Restaurar copia de seguridad", FileFilter.Backup, multiSelect: false);
+        var files = await _files.PickFilesAsync(L.Get("backup.restore_dialog_title"), FileFilter.Backup, multiSelect: false);
         if (files.Length == 0) return;
         _pendingRestorePath = files[0];
         StatusMessage = null;
@@ -163,7 +176,7 @@ public class BackupViewModel : BaseViewModel
             // Primero la carpeta al día: los tomos de la copia se buscan en ella.
             await _scanner.ScanAsync();
             var result = await _backup.ImportAsync(path, p);
-            if (!result.Ok) return (false, "Ese archivo no es una copia de seguridad de Hakufu. No se ha cambiado nada.");
+            if (!result.Ok) return (false, L.Get("backup.restore_invalid"));
             await _scanner.ScanAsync();
             // El tema viene con la copia: aplicarlo ya.
             _theme.SetTheme(_repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
@@ -171,12 +184,12 @@ public class BackupViewModel : BaseViewModel
             OnPropertyChanged(nameof(CollectionCount));
             OnPropertyChanged(nameof(SummaryText));
             LoadCollectionOptions();
-            if (result.Legacy) return (true, "Copia restaurada.");
-            var text = result.Applied == 1 ? "1 tomo" : $"{result.Applied} tomos";
+            if (result.Legacy) return (true, L.Get("backup.restore_done_legacy"));
+            var text = Volumes(result.Applied);
             return (true, result.Missing == 0
-                ? $"Copia restaurada: tu perfil y el progreso de {text}."
-                : $"Copia restaurada: tu perfil y el progreso de {text}. {result.Missing} de la copia no están en tu carpeta de la biblioteca.");
-        }, "No se pudo restaurar la copia");
+                ? L.Format("backup.restore_done", text)
+                : L.Format("backup.restore_done_missing", text, result.Missing));
+        }, "backup.restore_failed");
     });
 
     public RelayCommand OpenDataFolderCommand => new(() =>
@@ -187,7 +200,7 @@ public class BackupViewModel : BaseViewModel
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 
-    private async Task RunAsync(Func<IProgress<double>, Task<(bool ok, string message)>> work, string errorPrefix)
+    private async Task RunAsync(Func<IProgress<double>, Task<(bool ok, string message)>> work, string errorKey)
     {
         IsBusy = true;
         Progress = 0;
@@ -202,7 +215,7 @@ public class BackupViewModel : BaseViewModel
         catch (Exception ex)
         {
             IsSuccess = false;
-            StatusMessage = $"{errorPrefix}: {ex.Message}";
+            StatusMessage = L.Format(errorKey, ex.Message);
         }
         finally
         {

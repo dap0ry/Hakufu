@@ -31,6 +31,8 @@ public class LibraryScannerTests
         await File.WriteAllTextAsync(Path.Combine(berserk, "notas.txt"), "x");
         Fixtures.MakeCbz(berserk, ".oculto.cbz", "1.png");
         Fixtures.MakeCbz(Path.Combine(root, ".Trash"), "x.cbz", "1.png");
+        // Carpetas con "_" delante = datos/copias (p. ej. _Hakufu en un USB), no colecciones.
+        Fixtures.MakeCbz(Path.Combine(root, "_Hakufu"), "x.cbz", "1.png");
         Directory.CreateDirectory(Path.Combine(root, "Vacía"));
         Fixtures.MakeCbz(root, "Suelto.cbz", "1.png");
         var before = Snapshot(root);
@@ -195,7 +197,8 @@ public class LibraryScannerTests
     }
 
     // Un disco externo sin conectar no puede borrar el progreso de toda la biblioteca.
-    [Fact]
+    // AvaloniaFact: el mensaje sale de Assets/i18n (recursos de la app).
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Unreadable_folder_gives_a_message_and_keeps_the_data()
     {
         using var tmp = new TempDataDir();

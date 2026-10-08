@@ -22,10 +22,17 @@ public sealed class CompositionRoot
     public ProfileService        Profile       { get; }
     public BackupService         Backup        { get; }
     public NavigationService     Navigation    { get; }
+    public IUpdateService        Updates       { get; }
+    public UpdateBannerViewModel UpdateBanner  { get; }
 
-    public CompositionRoot(IDataRepository repo)
+    /// <summary>Lo que hay que hacer antes de reiniciar para actualizar (App: guardar data.json).</summary>
+    public Action PrepareRestart { get; set; } = () => { };
+
+    public CompositionRoot(IDataRepository repo, IUpdateService? updates = null)
     {
         Repo    = repo;
+        Updates = updates ?? new UpdateService();
+        UpdateBanner = new UpdateBannerViewModel(Updates, repo.Current.Updates, BeforeRestart, UrlOpener.Open);
         Library = new LibraryService(repo);
         Scanner = new LibraryScanner(repo);
         Profile = new ProfileService(repo);
@@ -33,12 +40,20 @@ public sealed class CompositionRoot
         Navigation = new NavigationService(Create);
     }
 
+    // Reiniciar para actualizar no pasa por MainWindow.OnClosing: apuntar aquí el rato
+    // leído (si se está en el lector) antes de que App guarde.
+    private void BeforeRestart()
+    {
+        (Navigation.CurrentViewModel as ReaderViewModel)?.FlushReadingTime();
+        PrepareRestart();
+    }
+
     /// <summary>Aplica el tema guardado. Llamar antes de crear ninguna vista.</summary>
     public void ApplySavedAppearance()
         => Theme.SetTheme(Repo.Current.ActiveTheme == "Dark" ? AppTheme.Dark : AppTheme.Light);
 
     /// <summary>ViewModel de la ventana principal; navega a Inicio al crearse.</summary>
-    public MainWindowViewModel CreateMainViewModel() => new(Navigation, Dialog);
+    public MainWindowViewModel CreateMainViewModel() => new(Navigation, Dialog, UpdateBanner);
 
     private BaseViewModel Create(Type type, object? param) => type.Name switch
     {
@@ -55,7 +70,7 @@ public sealed class CompositionRoot
         nameof(ProfileViewModel) => new ProfileViewModel(Profile, Library, Cover, Dialog, Navigation, FilePicker),
 
         nameof(SettingsViewModel) => new SettingsViewModel(
-            Theme, Repo, Navigation, Scanner, FilePicker),
+            Theme, Repo, Navigation, Scanner, FilePicker, UpdateBanner),
 
         nameof(HelpViewModel) => new HelpViewModel(Navigation, Repo.Current.Reader),
 

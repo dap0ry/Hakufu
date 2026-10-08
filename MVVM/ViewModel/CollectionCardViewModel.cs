@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Avalonia.Media.Imaging;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -9,9 +10,13 @@ public class CollectionCardViewModel : BaseViewModel
 {
     public Collection Model { get; }
 
-    public string Name       => Model.Name;
+    public string Name       => LibraryService.DisplayName(Model);
     public int    MangaCount => Model.MangaIds.Count;
-    public string CountText  => MangaCount == 1 ? "1 tomo" : $"{MangaCount} tomos";
+    public string CountText  => VolumesText(MangaCount);
+
+    /// <summary>"1 tomo" / "12 tomos".</summary>
+    public static string VolumesText(int n)
+        => L.Format(n == 1 ? "library.volumes_one" : "library.volumes_many", n);
 
     private double _progressPct;
     /// <summary>Páginas leídas sobre el total de la colección (0–100).</summary>

@@ -1,10 +1,17 @@
 using Avalonia.Input;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 
 namespace Hakufu.Services;
 
-/// <summary>Una acción del lector que se puede lanzar con el teclado.</summary>
-public sealed record ShortcutAction(string Id, string Label, params string[] Defaults);
+/// <summary>
+/// Una acción del lector que se puede lanzar con el teclado. Id es lo que se guarda en data.json;
+/// el nombre visible sale de LabelKey en el idioma actual.
+/// </summary>
+public sealed record ShortcutAction(string Id, string LabelKey, params string[] Defaults)
+{
+    public string Label => L.Get(LabelKey);
+}
 
 /// <summary>
 /// Atajos del lector: los de fábrica y los que el usuario cambia en Ajustes
@@ -17,13 +24,13 @@ public static class ShortcutService
 
     public static IReadOnlyList<ShortcutAction> All { get; } =
     [
-        new("next",        "Página siguiente",        "Right", "Space"),
-        new("prev",        "Página anterior",         "Left"),
-        new("toggleZen",   "Activar / salir del modo zen", "F", "F11"),
-        new("exitZen",     "Salir del modo zen",      "Escape"),
-        new("singlePage",  "Ver una página",          "D1"),
-        new("twoPages",    "Ver dos páginas",         "D2"),
-        new("closeReader", "Cerrar el lector",        "Ctrl+W"),
+        new("next",        "shortcuts.action.next",         "Right", "Space"),
+        new("prev",        "shortcuts.action.prev",         "Left"),
+        new("toggleZen",   "shortcuts.action.toggle_zen",   "F", "F11"),
+        new("exitZen",     "shortcuts.action.exit_zen",     "Escape"),
+        new("singlePage",  "shortcuts.action.single_page",  "D1"),
+        new("twoPages",    "shortcuts.action.two_pages",    "D2"),
+        new("closeReader", "shortcuts.action.close_reader", "Ctrl+W"),
     ];
 
     public static IReadOnlyList<KeyGesture> GetGestures(ReaderSettings settings, string actionId)
@@ -55,32 +62,32 @@ public static class ShortcutService
         Key.LeftCtrl or Key.RightCtrl or Key.LeftShift or Key.RightShift or
         Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin or Key.System;
 
-    /// <summary>Cómo se enseña una tecla en pantalla ("→", "Espacio", "Ctrl + W"…).</summary>
+    /// <summary>Cómo se enseña una tecla en pantalla ("→", "Espacio", "Ctrl + W"…), en el idioma actual.</summary>
     public static string Display(KeyGesture g)
     {
         var parts = new List<string>();
         if (g.KeyModifiers.HasFlag(KeyModifiers.Control)) parts.Add("Ctrl");
         if (g.KeyModifiers.HasFlag(KeyModifiers.Meta))    parts.Add(OperatingSystem.IsMacOS() ? "⌘" : "Win");
         if (g.KeyModifiers.HasFlag(KeyModifiers.Alt))     parts.Add(OperatingSystem.IsMacOS() ? "⌥" : "Alt");
-        if (g.KeyModifiers.HasFlag(KeyModifiers.Shift))   parts.Add("Mayús");
+        if (g.KeyModifiers.HasFlag(KeyModifiers.Shift))   parts.Add(L.Get("shortcuts.key.shift"));
         parts.Add(g.Key switch
         {
             Key.Right    => "→",
             Key.Left     => "←",
             Key.Up       => "↑",
             Key.Down     => "↓",
-            Key.Space    => "Espacio",
+            Key.Space    => L.Get("shortcuts.key.space"),
             Key.Escape   => "Esc",
-            Key.Enter    => "Intro",
-            Key.Back     => "Retroceso",
+            Key.Enter    => L.Get("shortcuts.key.enter"),
+            Key.Back     => L.Get("shortcuts.key.backspace"),
             Key.Tab      => "Tab",
-            Key.PageUp   => "Re Pág",
-            Key.PageDown => "Av Pág",
-            Key.Home     => "Inicio",
-            Key.End      => "Fin",
-            Key.Delete   => "Supr",
-            >= Key.D0 and <= Key.D9 => ((int)(g.Key - Key.D0)).ToString(),
-            >= Key.NumPad0 and <= Key.NumPad9 => $"Num {(int)(g.Key - Key.NumPad0)}",
+            Key.PageUp   => L.Get("shortcuts.key.page_up"),
+            Key.PageDown => L.Get("shortcuts.key.page_down"),
+            Key.Home     => L.Get("shortcuts.key.home"),
+            Key.End      => L.Get("shortcuts.key.end"),
+            Key.Delete   => L.Get("shortcuts.key.delete"),
+            >= Key.D0 and <= Key.D9 => ((int)(g.Key - Key.D0)).ToString(L.Culture),
+            >= Key.NumPad0 and <= Key.NumPad9 => L.Format("shortcuts.key.numpad", (int)(g.Key - Key.NumPad0)),
             Key.OemComma  => ",",
             Key.OemPeriod => ".",
             Key.OemMinus  => "-",

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
              xmlns:c="using:Hakufu.MVVM.View.Controls"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.BackupView"
              x:DataType="vm:BackupViewModel">
 
@@ -71,15 +72,15 @@
 
         <!-- ═══ CABECERA ═══ -->
         <c:PageHeader Grid.Row="0"
-                      Title="Copia de seguridad"
-                      Subtitle="Guarda tu perfil y tu progreso en un .zip, y recupéralos aquí o en otro equipo"
-                      BackText="← Inicio"
+                      Title="{i18n:T backup.title}"
+                      Subtitle="{i18n:T backup.subtitle}"
+                      BackText="{i18n:T common.back_home}"
                       BackCommand="{Binding GoBackCommand}">
         </c:PageHeader>
 
         <!-- ═══ BODY ═══ -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="40,36,40,40" MaxWidth="620" HorizontalAlignment="Left">
+            <StackPanel Name="BackupContent" Margin="40,36,40,40" MaxWidth="620" HorizontalAlignment="Center">
 
                 <!-- Progreso -->
                 <Border Classes="card" Padding="16,14" Margin="0,0,0,24"
@@ -89,7 +90,7 @@
                                      Minimum="0" Maximum="100"
                                      Value="{Binding Progress}"/>
                         <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}"
-                                   Text="{Binding Progress, StringFormat='Trabajando… {0:0} %'}"/>
+                                   Text="{Binding ProgressText}"/>
                     </StackPanel>
                 </Border>
 
@@ -117,7 +118,7 @@
                 </Border>
 
                 <!-- ── BIBLIOTECA ── -->
-                <TextBlock Classes="section" Text="BIBLIOTECA"/>
+                <TextBlock Classes="section" Text="{i18n:T backup.section_library}"/>
 
                 <Border Classes="card" Padding="28,24" Margin="0,0,0,32">
                     <StackPanel>
@@ -133,7 +134,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Grid.Column="0" Classes="body"
                                        VerticalAlignment="Center" Margin="0,0,16,0">
-                                <Run Text="Carpeta de datos: "/>
+                                <Run Text="{i18n:T backup.data_folder}"/>
                                 <Run Text="{Binding DataFolder}" FontWeight="SemiBold"/>
                             </TextBlock>
                             <Button Grid.Column="1"
@@ -146,7 +147,7 @@
                                                     Width="13" Height="13"
                                                     VerticalAlignment="Center"
                                                     Foreground="{DynamicResource AccentColor}"/>
-                                    <TextBlock Text="Abrir carpeta" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{i18n:T backup.open_folder}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </Grid>
@@ -156,21 +157,21 @@
                 <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,32"/>
 
                 <!-- ── CREAR COPIA ── -->
-                <TextBlock Classes="section" Text="CREAR COPIA"/>
+                <TextBlock Classes="section" Text="{i18n:T backup.section_create}"/>
 
                 <Border Classes="card" Padding="28,24" Margin="0,0,0,32">
                     <StackPanel>
-                        <TextBlock Classes="cardTitle" Text="Exportar una copia"/>
+                        <TextBlock Classes="cardTitle" Text="{i18n:T backup.export_title}"/>
                         <TextBlock Classes="body" Margin="0,0,0,18"
-                                   Text="Crea un archivo .zip y guárdalo donde quieras: un disco externo, un pendrive u otra carpeta. Tu perfil va siempre (nombre, foto, estadísticas, tema y ajustes). Los mangas no van: son tu carpeta de la biblioteca."/>
+                                   Text="{i18n:T backup.export_body}"/>
 
                         <!-- Colecciones: sí o no, y cuáles -->
                         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12" IsVisible="{Binding HasCollections}">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Incluir colecciones" FontSize="13" FontWeight="SemiBold"
+                                <TextBlock Text="{i18n:T backup.include_collections}" FontSize="13" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Classes="body" FontSize="11"
-                                           Text="El progreso, los favoritos, el orden y el historial de sus tomos"/>
+                                           Text="{i18n:T backup.include_collections_hint}"/>
                             </StackPanel>
                             <ToggleButton Grid.Column="1" Classes="themeToggle"
                                           IsChecked="{Binding IncludeCollections}"
@@ -186,9 +187,9 @@
                             </Border.IsVisible>
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="12,8,12,4">
-                                    <Button Classes="ghost" Content="Todas" Padding="10,4" FontSize="11"
+                                    <Button Classes="ghost" Content="{i18n:T backup.select_all}" Padding="10,4" FontSize="11"
                                             Command="{Binding SelectAllCollectionsCommand}"/>
-                                    <Button Classes="ghost" Content="Ninguna" Padding="10,4" FontSize="11"
+                                    <Button Classes="ghost" Content="{i18n:T backup.select_none}" Padding="10,4" FontSize="11"
                                             Command="{Binding SelectNoCollectionsCommand}"/>
                                 </StackPanel>
                                 <ScrollViewer MaxHeight="240" VerticalScrollBarVisibility="Auto">
@@ -212,7 +213,7 @@
 
                         <StackPanel Orientation="Horizontal" Spacing="16">
                             <Button Classes="primary"
-                                    Content="Exportar copia…"
+                                    Content="{i18n:T backup.export_button}"
                                     Padding="22,10"
                                     Command="{Binding ExportCommand}"/>
                             <TextBlock Classes="body" Text="{Binding ExportSummary}" VerticalAlignment="Center"/>
@@ -223,16 +224,16 @@
                 <Rectangle Height="1" Fill="{DynamicResource DividerBrush}" Margin="0,0,0,32"/>
 
                 <!-- ── RESTAURAR COPIA ── -->
-                <TextBlock Classes="section" Text="RESTAURAR COPIA"/>
+                <TextBlock Classes="section" Text="{i18n:T backup.section_restore}"/>
 
                 <Border Classes="card" Padding="28,24" Margin="0,0,0,32">
                     <StackPanel>
-                        <TextBlock Classes="cardTitle" Text="Recuperar una copia de seguridad"/>
+                        <TextBlock Classes="cardTitle" Text="{i18n:T backup.restore_title}"/>
                         <TextBlock Classes="body" Margin="0,0,0,20"
-                                   Text="Elige un .zip creado con Hakufu. Se aplica tu perfil y, a los tomos de tu carpeta de la biblioteca que estén en la misma subcarpeta y con el mismo nombre, su progreso y favoritos. Sirve para pasar a otro equipo, aunque sea Mac o Linux."/>
+                                   Text="{i18n:T backup.restore_body}"/>
 
                         <Button Classes="primary"
-                                Content="Elegir copia…"
+                                Content="{i18n:T backup.pick_button}"
                                 HorizontalAlignment="Left" Padding="22,10"
                                 Command="{Binding PickRestoreCommand}"
                                 IsVisible="{Binding !IsConfirmingRestore}"/>
@@ -245,16 +246,16 @@
                                           Fill="{DynamicResource TextPrimary}"
                                           Data="F0 M7,0 A7,7 0 1 1 6.99,0 Z M6,3 L8,3 L7.6,8.5 L6.4,8.5 Z M6,10 L8,10 L8,12 L6,12 Z"/>
                                     <TextBlock Grid.Column="1" FontSize="12" TextWrapping="Wrap"
-                                               Text="Tu perfil y el progreso de los tomos que vengan en la copia sustituirán a los de ahora; lo que no esté en la copia se queda como está (y tus archivos de manga no se tocan). ¿Continuar?"/>
+                                               Text="{i18n:T backup.restore_confirm}"/>
                                 </Grid>
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <Button Classes="primary"
-                                        Content="Restaurar"
+                                        Content="{i18n:T backup.restore_button}"
                                         Padding="22,10"
                                         Command="{Binding ConfirmRestoreCommand}"/>
                                 <Button Classes="ghost"
-                                        Content="Cancelar"
+                                        Content="{i18n:T backup.cancel}"
                                         Padding="22,10"
                                         Command="{Binding CancelRestoreCommand}"/>
                             </StackPanel>
@@ -265,7 +266,7 @@
                 <!-- ── NOTA: TODO LOCAL ── -->
                 <Border Classes="notice">
                     <TextBlock Classes="body" FontSize="11" LineHeight="18"
-                               Text="La copia es un archivo .zip que se queda en tu equipo, donde tú la guardes. Hakufu no la sube a ningún sitio ni se conecta a internet."/>
+                               Text="{i18n:T backup.local_note}"/>
                 </Border>
 
             </StackPanel>

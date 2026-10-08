@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.CollectionDetailView"
              x:DataType="vm:CollectionDetailViewModel">
 
@@ -79,7 +80,7 @@
         <Border Grid.Row="0" Padding="40,26,40,0">
             <StackPanel>
                 <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Button Grid.Column="0" Classes="ghost" Content="← Biblioteca"
+                    <Button Grid.Column="0" Classes="ghost" Content="{i18n:T collection.back}"
                             VerticalAlignment="Center"
                             Command="{Binding GoBackCommand}"/>
 
@@ -96,9 +97,9 @@
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                         <!-- Los tomos se añaden o quitan en su carpeta; luego "Actualizar" en la biblioteca -->
-                        <Button Classes="primary" Content="Abrir carpeta" Padding="18,10"
+                        <Button Classes="primary" Content="{i18n:T collection.open_folder}" Padding="18,10"
                                 Command="{Binding OpenFolderCommand}"
-                                ToolTip.Tip="Añade o quita tomos en su carpeta"/>
+                                ToolTip.Tip="{i18n:T collection.open_folder_tip}"/>
                     </StackPanel>
                 </Grid>
 
@@ -111,18 +112,18 @@
                 <!-- Ordenar + tamaño -->
                 <Grid ColumnDefinitions="Auto,*,Auto,160" Margin="0,22,0,0" Height="52">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <TextBlock Text="Ordenar" Classes="caption" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <Button Classes="ghost chip" Content="Nombre"
+                        <TextBlock Text="{i18n:T collection.sort}" Classes="caption" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <Button Classes="ghost chip" Content="{i18n:T collection.sort_name}"
                                 Command="{Binding SortByNameCommand}"
                                 Opacity="{Binding IsSortByName, Converter={StaticResource BoolToOpacity}}"/>
-                        <Button Classes="ghost chip" Content="Fecha"
+                        <Button Classes="ghost chip" Content="{i18n:T collection.sort_date}"
                                 Command="{Binding SortByDateCommand}"
                                 Opacity="{Binding IsSortByDate, Converter={StaticResource BoolToOpacity}}"/>
-                        <Button Classes="ghost chip" Content="A mano"
+                        <Button Classes="ghost chip" Content="{i18n:T collection.sort_custom}"
                                 Command="{Binding OpenReorderCommand}"
                                 Opacity="{Binding IsSortByCustom, Converter={StaticResource BoolToOpacity}}"/>
                     </StackPanel>
-                    <TextBlock Grid.Column="2" Text="Tamaño" Classes="caption"
+                    <TextBlock Grid.Column="2" Text="{i18n:T collection.size}" Classes="caption"
                                VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <!-- Más columnas = portadas más pequeñas: el deslizador va al revés para que
                          a la derecha se vean más grandes -->
@@ -168,7 +169,7 @@
                                             HorizontalAlignment="Left" VerticalAlignment="Top"
                                             Margin="8,8,0,0"
                                             Command="{Binding ToggleFavoriteCommand}"
-                                            ToolTip.Tip="Manga favorito">
+                                            ToolTip.Tip="{i18n:T collection.favorite_tip}">
                                         <Border Width="24" Height="24" CornerRadius="12" Background="#80000000">
                                             <ContentControl Classes="starIcon"
                                                             Classes.favorite="{Binding IsFavorite}"

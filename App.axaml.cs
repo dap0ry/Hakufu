@@ -2,7 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using System.Globalization;
 using Hakufu.Data;
+using Hakufu.I18n;
 
 namespace Hakufu;
 
@@ -27,6 +29,13 @@ public partial class App : Application
             // alguna continuación intente volver a él.
             Task.Run(_repo.LoadAsync).GetAwaiter().GetResult();
 
+            // Idioma: el guardado, o el del sistema la primera vez (ver Localizer.ResolveInitial).
+            var store = _repo.Current;
+            var hasData = store.Mangas.Count > 0 || store.LibraryRoot != "" ||
+                          store.TotalUsageSeconds > 0 || store.ReadingLog.Count > 0;
+            store.Language = Localizer.ResolveInitial(store.Language, hasData, CultureInfo.CurrentUICulture);
+            Localizer.Instance.SetLanguage(store.Language);
+
             // Restos de "Personalizar" (retirado en la 0.10.1): copias de imágenes
             // que ya no usa nada.
             try { Directory.Delete(Path.Combine(Data.AppPaths.DataDir, "customization"), recursive: true); }
@@ -40,6 +49,9 @@ public partial class App : Application
                 mainWindow.DataContext = root.CreateMainViewModel();
                 // A partir de aquí, cambiar de tema se anima (el de arranque no).
                 root.Theme.Transition = mainWindow.PlayThemeTransition;
+                // Aplicar una actualización cierra el proceso sin pasar por desktop.Exit.
+                root.PrepareRestart = SaveOnExit;
+                _ = root.UpdateBanner.StartAsync();
                 // La carpeta de la biblioteca puede haber cambiado con Hakufu cerrado.
                 _ = root.Scanner.ScanAsync();
             }
@@ -69,6 +81,7 @@ public partial class App : Application
         if (_repo is null) return;
         var elapsed = (long)(DateTime.Now - _sessionStart).TotalSeconds;
         _repo.Current.TotalUsageSeconds += elapsed;
+        _sessionStart = DateTime.Now; // si se llama dos veces (actualizar y luego salir), no cuenta doble
         Task.Run(_repo.SaveAsync).GetAwaiter().GetResult(); // ver LoadAsync arriba
     }
 }

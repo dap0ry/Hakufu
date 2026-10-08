@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Hakufu** is an offline manga manager/reader built with **Avalonia 11.3** on **.NET 10**, running on
 Windows, macOS and Linux. Built by Daniel Poza and friends. It manages PDF and CBR/CBZ files locally —
-**no backend, no accounts, no network access at all** (don't add any: it's a product decision).
+**no backend, no accounts, no network access** — the only exception is `Services/UpdateService`, which
+checks/downloads updates from GitHub Releases (Velopack; opt-out in Ajustes → Acerca de). Don't add any other
+network use: it's a product decision.
 Migrated from WPF in October 2026 (spec: `docs/superpowers/specs/2026-10-01-avalonia-offline-design.md`).
 
 ## Commands
@@ -17,7 +19,13 @@ dotnet run --project Hakufu.csproj    # launch app
 dotnet test tests/Hakufu.Tests        # tests (xUnit + Avalonia.Headless, real Skia)
 ./scripts/publish.sh [rid]            # macOS/Linux self-contained publish (.app on macOS)
 .\scripts\publish.ps1 [-Rid win-x64]  # Windows self-contained publish + zip
+./scripts/pack-velopack.sh <rid>     # after publish.sh: Velopack installer + update feed (publish/velopack)
+.\scripts\pack-velopack.ps1          # Windows: Setup.exe + feed, channel "win" (same packId/channel as 0.9.7)
 ```
+
+Releases: `git tag vX.Y.Z && git push origin vX.Y.Z` (must match `<Version>`); CI uploads portable zips + Velopack
+installers/feeds; a tag with `-` is a pre-release. Velopack: packId `Hakufu`, channels `win`, `osx-arm64`, `osx-x64`,
+`linux`; NuGet `Velopack` and the `vpk` tool must be the same version. macOS needs `--signAppIdentity "-"` (ad hoc).
 
 Data folder: `AppPaths.DataDir` = `Environment.SpecialFolder.ApplicationData/Hakufu`
 (`%APPDATA%\Hakufu` on Windows, `~/.config/Hakufu` on macOS/Linux), overridable with the
@@ -61,6 +69,8 @@ Services/
   BackupService              ← local .zip export/import (data.json + covers + profile, no mangas); rebases paths, keeps the local LibraryRoot
   FilePickerService          ← Avalonia StorageProvider (files, folder, save) + OpenFolder (explorer/open/xdg-open)
   ProfileService             ← profile (name, photo in DataDir/profile), reading log per day (ReadingLog) for the profile charts
+  UpdateService              ← the ONLY network code: Velopack UpdateManager + GithubSource(dap0ry/Hakufu); not installed
+                               (zip / dotnet run) → asks the GitHub API for releases/latest and only notifies
 Assets/
   Themes/LightTheme.axaml, DarkTheme.axaml  ← all brushes; always use DynamicResource
   Styles/GlobalStyles.axaml   ← shared styles as CLASSES (Classes="primary", "ghost", "icon", "card", "caption"…)
@@ -101,6 +111,17 @@ corrupt file opens with 0 pages instead of throwing.
 `tests/Hakufu.Tests`: service tests plus view smoke tests. `ViewSmoke.Start()` boots the real `App` +
 `MainWindow` headless with a sample library; `AssertShows<TView>()` checks that a screen actually
 renders. Add one for every new view.
+
+## Languages (i18n)
+
+The UI is in Spanish or English (Ajustes → Idioma; first run follows the system, existing installs stay Spanish).
+Never write visible text by hand:
+- Views: `xmlns:i18n="using:Hakufu.I18n"` and `Text="{i18n:T area.key}"` (updates live on language change).
+- Code: `L.Get("area.key")`, `L.Format("area.key", n)` and `L.Culture` for numbers/dates (`using Hakufu.I18n;`).
+- Strings live in `Assets/i18n/<area>.es.json` + `<area>.en.json`, keys prefixed with the area.
+  They ship as Content files in `<app>/i18n/` (read with plain File IO, so they work before Avalonia starts).
+  Tests check both files have the same keys and placeholders, and that translated views have no hand-written text.
+- Changing language calls `NavigationService.Reload()` so ViewModel-computed texts are rebuilt.
 
 ## Conventions
 

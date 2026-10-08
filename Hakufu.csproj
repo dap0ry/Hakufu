@@ -9,7 +9,7 @@
     <RootNamespace>Hakufu</RootNamespace>
     <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.10.1</Version>
+    <Version>0.11.0-beta.4</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- Bindings comprobados al compilar: cada vista declara x:DataType. -->
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
@@ -32,6 +32,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Textos de la app (ver I18n/Localizer): archivos junto al ejecutable, sin depender de Avalonia. -->
+    <Content Include="Assets\i18n\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="i18n\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.22" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
@@ -39,6 +44,7 @@
     <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22" Condition="'$(Configuration)' == 'Debug'" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="SharpCompress" Version="0.50.4" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
   </ItemGroup>
 
   <ItemGroup>

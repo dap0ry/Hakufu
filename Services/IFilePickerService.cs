@@ -1,12 +1,15 @@
+using Hakufu.I18n;
+
 namespace Hakufu.Services;
 
 /// <summary>Filtro de un selector de ficheros: nombre visible + extensiones sin punto.</summary>
 public sealed record FileFilter(string Name, params string[] Extensions)
 {
-    public static readonly FileFilter Mangas   = new("Archivos de manga", "pdf", "cbr", "cbz");
-    public static readonly FileFilter Images   = new("Imágenes", "png", "jpg", "jpeg", "bmp", "gif", "webp");
-    public static readonly FileFilter Backup   = new("Copia de Hakufu", "zip");
-    public static readonly FileFilter Png      = new("Imagen PNG", "png");
+    // Propiedades (no campos): el nombre sale en el idioma de cada momento.
+    public static FileFilter Mangas => new(L.Get("files.mangas"), "pdf", "cbr", "cbz");
+    public static FileFilter Images => new(L.Get("files.images"), "png", "jpg", "jpeg", "bmp", "gif", "webp");
+    public static FileFilter Backup => new(L.Get("files.backup"), "zip");
+    public static FileFilter Png    => new(L.Get("files.png"), "png");
 }
 
 public interface IFilePickerService

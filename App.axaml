@@ -3,6 +3,7 @@
              xmlns:local="using:Hakufu"
              xmlns:conv="using:Hakufu.Converters"
              x:Class="Hakufu.App"
+             Name="Hakufu"
              RequestedThemeVariant="Light">
 
     <!-- ViewModel → View por convención (XxxViewModel → XxxView), ver ViewLocator. -->

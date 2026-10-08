@@ -46,7 +46,7 @@ public sealed class ViewSmoke : IDisposable
         repo.LoadAsync().GetAwaiter().GetResult();
         repo.Current.ActiveTheme = darkTheme ? "Dark" : "Light";
         if (!withLibrary)
-            return new ViewSmoke(tmp, new CompositionRoot(repo), new Collection(), new Manga());
+            return new ViewSmoke(tmp, new CompositionRoot(repo, new FakeUpdateService()), new Collection(), new Manga());
 
         // Carpeta de la biblioteca con una subcarpeta (colección) y dos tomos.
         const string colName = "Ataque a los Titanes";
@@ -65,7 +65,7 @@ public sealed class ViewSmoke : IDisposable
         repo.Current.Progress.Add(new ReadingProgress { MangaId = m1.Id, CurrentPage = 2 });
         repo.Current.History.Add(new ReadingHistoryEntry { MangaId = m1.Id });
 
-        return new ViewSmoke(tmp, new CompositionRoot(repo), col, m1);
+        return new ViewSmoke(tmp, new CompositionRoot(repo, new FakeUpdateService()), col, m1);
     }
 
     /// <summary>Procesa la cola del hilo de UI (carga async de portadas, layout…).</summary>

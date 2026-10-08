@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -28,8 +29,11 @@ public class CollectionDetailViewModel : BaseViewModel
         {
             var n = Mangas.Count;
             var done = Mangas.Count(m => m.IsFinished);
-            var text = n == 1 ? "1 tomo" : $"{n} tomos";
-            return done > 0 ? $"{text} · {done} {(done == 1 ? "terminado" : "terminados")}" : text;
+            var text = CollectionCardViewModel.VolumesText(n);
+            return done > 0
+                ? L.Format("collection.summary", text,
+                           L.Format(done == 1 ? "collection.finished_one" : "collection.finished_many", done))
+                : text;
         }
     }
 
@@ -63,7 +67,7 @@ public class CollectionDetailViewModel : BaseViewModel
         _files        = files;
 
         var col = _library.GetCollection(_collectionId);
-        CollectionName = col?.Name ?? string.Empty;
+        CollectionName = col is null ? string.Empty : LibraryService.DisplayName(col);
         Description    = col?.Description ?? string.Empty;
         _sortMode = _library.SortMode;
         _ = LoadMangasAsync();

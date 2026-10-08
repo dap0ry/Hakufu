@@ -121,6 +121,17 @@ instaladores. La lógica que detecta el sistema y lee `releases/latest` se manti
 - **Prueba de punta a punta con GitHub:** pre-release `v0.11.0-beta.1` y `-beta.2` (build de prueba
   con `prerelease: true`). Windows y Linux en el ThinkPad / quien diga Dani; 0.9.7 → beta en Windows.
 
+## Verificado
+
+- **Mac arm64, 08/10/2026:** beta.1 (zip portable de Velopack) con `HAKUFU_UPDATE_SOURCE` → barra
+  «0.11.0-beta.2 disponible» → Actualizar → Reiniciar → Velopack sustituye el `.app` y lo reabre
+  (`open -n`, hereda el entorno) como beta.2, que ya no ve nada más nuevo. Datos reales intactos.
+  Ojo: tras actualizar, `codesign --verify --deep --strict` falla en los `.dll` (Velopack extrae el
+  nupkg sin los atributos extendidos donde va la firma de archivos que no son Mach-O). Arranca igual
+  porque lo descargado por la app no lleva cuarentena; solo importaría si alguien copia ese `.app`
+  a otro Mac con AirDrop o similar.
+- Pendiente: Windows, Linux y 0.9.7 → nueva (necesita publicar una pre-release).
+
 ## Fuera de alcance
 
 - Firma/notarización de Apple y firma de código en Windows (SmartScreen seguirá avisando la

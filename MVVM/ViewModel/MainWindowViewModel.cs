@@ -11,10 +11,11 @@ public class MainWindowViewModel : BaseViewModel
     private BaseViewModel? _modalContent;
     private bool _isModalOpen;
 
-    public MainWindowViewModel(INavigationService nav, DialogService dialog)
+    public MainWindowViewModel(INavigationService nav, DialogService dialog, UpdateBannerViewModel? updateBanner = null)
     {
         _nav = nav;
         _dialog = dialog;
+        UpdateBanner = updateBanner;
 
         // Wire dialog callbacks into this VM
         _dialog.Register(
@@ -33,6 +34,9 @@ public class MainWindowViewModel : BaseViewModel
         // Navigate to home on startup
         _nav.NavigateTo<HomeViewModel>();
     }
+
+    /// <summary>Barra de «versión nueva» (null en los tests que no la montan).</summary>
+    public UpdateBannerViewModel? UpdateBanner { get; }
 
     public BaseViewModel? CurrentView
     {

@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Hakufu.Data;
 using Hakufu.MVVM.Model;
 using Hakufu.MVVM.ViewModel;
@@ -216,5 +217,33 @@ public class UpdateBannerTests
         await vm.CheckNowAsync();
         Assert.Equal("Hay una versión nueva: 0.12.0.", vm.CheckStatus);
         Assert.True(vm.IsVisible);
+    }
+}
+
+public class UpdateViewTests
+{
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public async Task Banner_is_hidden_until_there_is_an_update_and_then_shows_it()
+    {
+        using var app = ViewSmoke.Start();
+        var fake = (FakeUpdateService)app.Root.Updates;
+        var bar = app.Window.FindControl<Avalonia.Controls.Border>("UpdateBar")!;
+        Assert.False(bar.IsVisible);
+
+        fake.Result = new(UpdateCheckStatus.Available, "0.11.0", true);
+        await app.Root.UpdateBanner.CheckNowAsync();
+        app.Pump();
+        Assert.True(bar.IsVisible);
+    }
+
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void Settings_shows_the_update_section()
+    {
+        using var app = ViewSmoke.Start();
+        app.Root.Navigation.NavigateTo<SettingsViewModel>();
+        app.Pump();
+        var vm = (SettingsViewModel)app.Root.Navigation.CurrentViewModel!;
+        Assert.Same(app.Root.UpdateBanner, vm.Updates);
+        Assert.True(vm.CheckUpdatesCommand.CanExecute(null));
     }
 }

@@ -40,6 +40,9 @@ public partial class App : Application
                 mainWindow.DataContext = root.CreateMainViewModel();
                 // A partir de aquí, cambiar de tema se anima (el de arranque no).
                 root.Theme.Transition = mainWindow.PlayThemeTransition;
+                // Aplicar una actualización cierra el proceso sin pasar por desktop.Exit.
+                root.PrepareRestart = SaveOnExit;
+                _ = root.UpdateBanner.StartAsync();
                 // La carpeta de la biblioteca puede haber cambiado con Hakufu cerrado.
                 _ = root.Scanner.ScanAsync();
             }
@@ -69,6 +72,7 @@ public partial class App : Application
         if (_repo is null) return;
         var elapsed = (long)(DateTime.Now - _sessionStart).TotalSeconds;
         _repo.Current.TotalUsageSeconds += elapsed;
+        _sessionStart = DateTime.Now; // si se llama dos veces (actualizar y luego salir), no cuenta doble
         Task.Run(_repo.SaveAsync).GetAwaiter().GetResult(); // ver LoadAsync arriba
     }
 }

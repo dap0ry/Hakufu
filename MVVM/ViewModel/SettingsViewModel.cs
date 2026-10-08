@@ -19,8 +19,9 @@ public class SettingsViewModel : BaseViewModel
 
     public SettingsViewModel(IThemeService theme, IDataRepository repo,
                              INavigationService nav, LibraryScanner scanner,
-                             IFilePickerService files)
+                             IFilePickerService files, UpdateBannerViewModel updates)
     {
+        Updates  = updates;
         _theme   = theme;
         _repo    = repo;
         _nav     = nav;
@@ -302,6 +303,25 @@ public class SettingsViewModel : BaseViewModel
     // ── Navigation ───────────────────────────────────────────────────────────
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
+
+    // ── Actualizaciones ──────────────────────────────────────────────────────
+
+    /// <summary>La misma barra de MainWindow: buscar desde aquí la enseña si hay versión nueva.</summary>
+    public UpdateBannerViewModel Updates { get; }
+
+    public AsyncRelayCommand CheckUpdatesCommand => new(() => Updates.CheckNowAsync());
+
+    public bool CheckUpdatesOnStartup
+    {
+        get => Updates.CheckOnStartup;
+        set
+        {
+            if (Updates.CheckOnStartup == value) return;
+            Updates.CheckOnStartup = value;
+            OnPropertyChanged();
+            _ = _repo.SaveAsync();
+        }
+    }
 
     public RelayCommand OpenLegalCommand => new(() => _nav.NavigateTo<LegalViewModel>());
 

@@ -184,6 +184,29 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
         </Style>
+        <Style Selector="ScrollViewer#ContentScroll">
+            <Setter Property="Grid.Column" Value="1"/>
+        </Style>
+        <Style Selector="StackPanel#ContentPanel">
+            <Setter Property="Margin" Value="56,48,56,64"/>
+        </Style>
+        <!-- iPhone: sin índice, la guía a todo el ancho -->
+        <Style Selector=".compact Border#IndexPanel">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector=".compact ScrollViewer#ContentScroll">
+            <Setter Property="Grid.Column" Value="0"/>
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+        </Style>
+        <Style Selector=".compact StackPanel#ContentPanel">
+            <Setter Property="Margin" Value="20,24,20,48"/>
+        </Style>
+        <Style Selector="Border.exampleCard">
+            <Setter Property="MinWidth" Value="440"/>
+        </Style>
+        <Style Selector=".compact Border.exampleCard">
+            <Setter Property="MinWidth" Value="0"/>
+        </Style>
     </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,*">
@@ -199,7 +222,7 @@
         <Grid Grid.Row="1" ColumnDefinitions="272,*">
 
             <!-- ═══ ÍNDICE (fijo) ═══ -->
-            <Border Grid.Column="0"
+            <Border Grid.Column="0" Name="IndexPanel"
                     Background="{DynamicResource SidebarBackground}"
                     BorderBrush="{DynamicResource DividerBrush}"
                     BorderThickness="0,0,1,0">
@@ -225,8 +248,8 @@
             </Border>
 
             <!-- ═══ GUÍA ═══ -->
-            <ScrollViewer Grid.Column="1" Name="ContentScroll" VerticalScrollBarVisibility="Auto">
-                <StackPanel Name="ContentPanel" MaxWidth="720" Margin="56,48,56,64"
+            <ScrollViewer Name="ContentScroll" VerticalScrollBarVisibility="Auto">
+                <StackPanel Name="ContentPanel" MaxWidth="720"
                             HorizontalAlignment="Center">
 
                     <!-- ── 01 EMPEZAR ── -->
@@ -256,7 +279,7 @@
                         </Border>
 
                         <!-- Árbol de ejemplo -->
-                        <Border Classes="card" Padding="28,22" HorizontalAlignment="Left" MinWidth="440">
+                        <Border Classes="card exampleCard" Padding="28,22" HorizontalAlignment="Left">
                             <StackPanel>
                                 <TextBlock Classes="label" Text="{i18n:T help.s1.example}" Margin="0,0,0,12"/>
 

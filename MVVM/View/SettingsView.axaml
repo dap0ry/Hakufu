@@ -66,6 +66,14 @@
         <Style Selector="Grid:pointerover > Button.keyClear">
             <Setter Property="Opacity" Value="1"/>
         </Style>
+        <Style Selector="StackPanel#SettingsContent">
+            <Setter Property="Width" Value="560"/>
+            <Setter Property="Margin" Value="40"/>
+        </Style>
+        <Style Selector=".compact StackPanel#SettingsContent">
+            <Setter Property="Width" Value="NaN"/>
+            <Setter Property="Margin" Value="16,16,16,32"/>
+        </Style>
     </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,*">
@@ -82,8 +90,7 @@
              El ScrollViewer de Avalonia ya estira el contenido al alto visible,
              así que VerticalAlignment="Center" centra sin el MinHeight de WPF. -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Width="560" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Margin="40,40,40,40">
+            <StackPanel Name="SettingsContent" HorizontalAlignment="Center" VerticalAlignment="Center">
 
                 <!-- ── TEMA ── -->
                 <Border Classes="card" Padding="0"

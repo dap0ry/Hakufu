@@ -131,7 +131,7 @@
                                        VerticalAlignment="Center"
                                        Text="{Binding SummaryText}"/>
                         </StackPanel>
-                        <Grid ColumnDefinitions="*,Auto">
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding ShowDataFolder}">
                             <TextBlock Grid.Column="0" Classes="body"
                                        VerticalAlignment="Center" Margin="0,0,16,0">
                                 <Run Text="{i18n:T backup.data_folder}"/>

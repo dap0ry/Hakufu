@@ -88,6 +88,21 @@ public class MobilePlatformTests
         Assert.False(phone.CanExit);
     }
 
+    // En iOS la carpeta de datos no se ve en Archivos: no se enseña ni se ofrece abrirla.
+    [Fact]
+    public void Backup_hides_the_data_folder_on_mobile()
+    {
+        using var tmp = new TempDataDir();
+        var root = new CompositionRoot(NewRepo(), new FakeUpdateService());
+
+        root.Navigation.NavigateTo<BackupViewModel>();
+        Assert.True(Assert.IsType<BackupViewModel>(root.Navigation.CurrentViewModel).ShowDataFolder);
+
+        using var mobile = new MobileMode(tmp.Root);
+        root.Navigation.NavigateTo<BackupViewModel>();
+        Assert.False(Assert.IsType<BackupViewModel>(root.Navigation.CurrentViewModel).ShowDataFolder);
+    }
+
     [Fact]
     public void Open_folder_and_url_use_the_platform_hooks()
     {

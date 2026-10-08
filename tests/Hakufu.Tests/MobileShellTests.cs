@@ -11,11 +11,29 @@ public class MobileShellTests
     {
         using var app = ViewSmoke.StartMobile(390, 844);
         Assert.True(app.View.IsCompact);
+        var changes = 0;
+        app.View.PropertyChanged += (_, e) => { if (e.Property == MainView.IsCompactProperty) changes++; };
 
         app.Host.Width = 1180;
         app.Host.Height = 820;
         app.Pump();
         Assert.False(app.View.IsCompact);
+        Assert.Equal(1, changes); // se puede enlazar ({Binding $parent[local:MainView].IsCompact})
+    }
+
+    // iPad en vertical: no es compacto (eso es el iPhone) pero sí estrecho (< 900, el
+    // mínimo de la ventana de escritorio): el escritorio nunca ve "narrow".
+    [AvaloniaFact]
+    public void Ipad_portrait_is_narrow_but_not_compact()
+    {
+        using var app = ViewSmoke.StartMobile(744, 1133);
+        Assert.Contains("narrow", app.View.Classes);
+        Assert.DoesNotContain("compact", app.View.Classes);
+
+        app.Host.Width = 390;
+        app.Pump();
+        Assert.Contains("narrow", app.View.Classes);
+        Assert.Contains("compact", app.View.Classes);
     }
 
     [AvaloniaFact]
@@ -42,5 +60,19 @@ public class MobileShellTests
 
         Assert.Null(app.View.Reader);
         Assert.Equal(["zen", "closed-in-zen"], events);
+    }
+}
+
+public class CompactColumnsTests
+{
+    [Fact]
+    public void Phone_uses_three_columns_and_desktop_keeps_the_chosen_size()
+    {
+        var conv = new Hakufu.Converters.CompactColumnsConverter();
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
+
+        Assert.Equal(3, conv.Convert([7, true], typeof(int), null, culture));
+        Assert.Equal(7, conv.Convert([7, false], typeof(int), null, culture));
+        Assert.Equal(1, conv.Convert([null, false], typeof(int), null, culture));
     }
 }

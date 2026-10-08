@@ -9,6 +9,20 @@
              Foreground="{DynamicResource TextPrimary}"
              FontSize="13">
 
+    <UserControl.Styles>
+        <Style Selector="Border#ModalCard">
+            <Setter Property="MinWidth" Value="420"/>
+            <Setter Property="MaxWidth" Value="560"/>
+            <Setter Property="Padding" Value="32"/>
+        </Style>
+        <!-- iPhone: el modal ocupa el ancho de la pantalla, con margen -->
+        <Style Selector=".compact Border#ModalCard">
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Margin" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+        </Style>
+    </UserControl.Styles>
+
     <!-- Todo lo que se ve dentro de Hakufu: la pantalla actual, la barra de versión
          nueva y el modal. En escritorio va dentro de MainWindow (con su barra de
          título en Linux); en iPhone/iPad es la vista única. Por debajo de 700 px de
@@ -16,7 +30,7 @@
     <Grid Name="Root">
 
         <!-- Page content -->
-        <Border Background="{DynamicResource AppBackground}" ClipToBounds="True">
+        <Border Name="PageHost" Background="{DynamicResource AppBackground}" ClipToBounds="True">
             <ContentControl Content="{Binding CurrentView}"/>
         </Border>
 
@@ -48,9 +62,7 @@
                        PointerPressed="Overlay_PointerPressed"/>
             <Border Name="ModalCard" Classes="card"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    MinWidth="420" MaxWidth="560"
-                    Padding="32">
+                    VerticalAlignment="Center">
                 <ContentControl Content="{Binding ModalContent}"/>
             </Border>
         </Grid>

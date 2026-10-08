@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
              xmlns:i18n="using:Hakufu.I18n"
+             xmlns:local="using:Hakufu"
              x:Class="Hakufu.MVVM.View.CollectionDetailView"
              x:DataType="vm:CollectionDetailViewModel">
 
@@ -72,22 +73,31 @@
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="FontSize" Value="12"/>
         </Style>
+        <Style Selector="Border#CollectionHeader">
+            <Setter Property="Padding" Value="40,26,40,0"/>
+        </Style>
+        <Style Selector=".compact Border#CollectionHeader">
+            <Setter Property="Padding" Value="16,12,16,0"/>
+        </Style>
+        <Style Selector=".compact :is(Control).sizeControl">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
     </UserControl.Styles>
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- Cabecera -->
-        <Border Grid.Row="0" Padding="40,26,40,0">
+        <Border Grid.Row="0" Name="CollectionHeader">
             <StackPanel>
-                <Grid ColumnDefinitions="Auto,*,Auto">
+                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
                     <Button Grid.Column="0" Classes="ghost" Content="{i18n:T collection.back}"
                             VerticalAlignment="Center"
                             Command="{Binding GoBackCommand}"/>
 
-                    <StackPanel Grid.Column="1" Margin="28,0,24,0" VerticalAlignment="Center">
+                    <StackPanel Classes="pageTitle" VerticalAlignment="Center">
                         <TextBlock Text="{Binding CollectionName}"
+                                   Classes="pageTitleText"
                                    FontFamily="{DynamicResource DisplayFont}"
-                                   FontSize="52" LineHeight="50"
                                    TextTrimming="CharacterEllipsis"
                                    Foreground="{DynamicResource TextPrimary}"/>
                         <TextBlock Text="{Binding SummaryText}"
@@ -123,11 +133,11 @@
                                 Command="{Binding OpenReorderCommand}"
                                 Opacity="{Binding IsSortByCustom, Converter={StaticResource BoolToOpacity}}"/>
                     </StackPanel>
-                    <TextBlock Grid.Column="2" Text="{i18n:T collection.size}" Classes="caption"
+                    <TextBlock Grid.Column="2" Text="{i18n:T collection.size}" Classes="caption sizeControl"
                                VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <!-- Más columnas = portadas más pequeñas: el deslizador va al revés para que
                          a la derecha se vean más grandes -->
-                    <Slider Grid.Column="3" Classes="compact"
+                    <Slider Grid.Column="3" Classes="compact sizeControl"
                             Minimum="3" Maximum="10" SmallChange="1" LargeChange="1"
                             TickFrequency="1" IsSnapToTickEnabled="True"
                             IsDirectionReversed="True"
@@ -144,7 +154,15 @@
             <ItemsControl ItemsSource="{Binding Mangas}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="{Binding $parent[UserControl].((vm:CollectionDetailViewModel)DataContext).ItemsPerRow}"/>
+                        <!-- En iPhone, 3 por fila (el deslizador de tamaño no se enseña) -->
+                        <UniformGrid>
+                            <UniformGrid.Columns>
+                                <MultiBinding Converter="{StaticResource CompactColumns}">
+                                    <Binding Path="$parent[UserControl].((vm:CollectionDetailViewModel)DataContext).ItemsPerRow"/>
+                                    <Binding Path="$parent[local:MainView].IsCompact" FallbackValue="False"/>
+                                </MultiBinding>
+                            </UniformGrid.Columns>
+                        </UniformGrid>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>

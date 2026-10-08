@@ -38,6 +38,10 @@ public class BackupViewModel : BaseViewModel
         LoadCollectionOptions();
     }
 
+    /// <summary>iOS: la carpeta de datos no está en Archivos; no se enseña.</summary>
+
+    public bool ShowDataFolder => !AppPlatform.IsMobile;
+
     public string DataFolder => AppPaths.DataDir;
 
     public int MangaCount      => _repo.Current.Mangas.Count;

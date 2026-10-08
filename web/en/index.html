@@ -190,6 +190,20 @@
     .split > img.shot, .reader { border-color: var(--line-d); box-shadow: 0 30px 60px -24px rgba(0,0,0,.6); }
     .soft { background: transparent; }
 
+    /* ── Cómo se hizo: historia + versiones (una línea de tiempo real) ── */
+    .timeline { list-style: none; border-left: 1px solid var(--line-d); padding-left: 32px; display: grid; gap: 40px; }
+    .timeline li { position: relative; }
+    .timeline li::before {
+      content: '';
+      position: absolute; left: -37px; top: 14px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--paper);
+    }
+    .timeline li.next::before { background: var(--night); border: 1px solid var(--paper); }
+    .timeline .v { font-weight: 900; letter-spacing: -.04em; font-size: 44px; line-height: 1; }
+    .timeline .when { margin-top: 6px; font-size: 14px; color: var(--muted-d); }
+    .timeline p { margin-top: 10px; max-width: 42ch; color: var(--muted-d); }
+
     /* ── Perfil y lectura ─────────────────────────────── */
     .points { list-style: none; display: grid; gap: 12px; margin-top: 28px; }
     .points li { padding-left: 30px; position: relative; color: var(--muted-d); }
@@ -481,6 +495,32 @@
           <img class="two zoomable" tabindex="0" src="/img/real-reader-2.webp" width="1600" height="974" loading="lazy"
                alt="The Hakufu reader on two pages, with the volume open like a real book.">
         </div>
+      </div>
+    </section>
+
+    <section id="historia">
+      <div class="wrap split">
+        <div data-reveal>
+          <h2 class="display">How it was made</h2>
+          <p class="lead">I started Hakufu months ago as a Windows-only app. This autumn I rewrote it from scratch, learning as I went with help from AI, so it runs on any computer and keeps itself up to date.</p>
+        </div>
+        <ol class="timeline" data-reveal>
+          <li>
+            <div class="v">0.9</div>
+            <div class="when">August 2026</div>
+            <p>Windows only, built with WPF. It had accounts and friends in the cloud.</p>
+          </li>
+          <li>
+            <div class="v">0.10</div>
+            <div class="when">October 2026</div>
+            <p>Moved to Avalonia: the same app on Windows, macOS and Linux. No accounts, no servers: your library never leaves your computer.</p>
+          </li>
+          <li class="next">
+            <div class="v">0.11</div>
+            <div class="when">Coming soon</div>
+            <p>Updates itself in one click on all three systems, and speaks English and Spanish.</p>
+          </li>
+        </ol>
       </div>
     </section>
 

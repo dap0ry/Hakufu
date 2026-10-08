@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.LibraryView"
              x:DataType="vm:LibraryViewModel">
 
@@ -80,12 +81,12 @@
         <Border Grid.Row="0" Padding="40,26,40,22"
                 BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <Button Grid.Column="0" Classes="ghost" Content="← Inicio"
+                <Button Grid.Column="0" Classes="ghost" Content="{i18n:T common.back_home}"
                         VerticalAlignment="Center"
                         Command="{Binding GoBackCommand}"/>
 
                 <StackPanel Grid.Column="1" Margin="28,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="Biblioteca"
+                    <TextBlock Text="{i18n:T library.title}"
                                FontFamily="{DynamicResource DisplayFont}"
                                FontSize="52" LineHeight="50"
                                Foreground="{DynamicResource TextPrimary}"/>
@@ -97,10 +98,10 @@
                 <!-- La biblioteca es una carpeta del usuario: se abre en el explorador y se vuelve a leer -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
                             IsVisible="{Binding !NeedsRoot}">
-                    <Button Classes="ghost" Content="Actualizar" Padding="16,10"
+                    <Button Classes="ghost" Content="{i18n:T library.refresh}" Padding="16,10"
                             Command="{Binding RefreshCommand}"
-                            ToolTip.Tip="Volver a leer la carpeta"/>
-                    <Button Classes="primary" Content="Abrir carpeta" Padding="18,10"
+                            ToolTip.Tip="{i18n:T library.refresh_tip}"/>
+                    <Button Classes="primary" Content="{i18n:T library.open_folder}" Padding="18,10"
                             Command="{Binding OpenFolderCommand}"/>
                 </StackPanel>
             </Grid>
@@ -113,14 +114,14 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                             MaxWidth="400" Spacing="12" Margin="40,80"
                             IsVisible="{Binding NeedsRoot}">
-                    <TextBlock Text="Elige la carpeta donde tienes tus mangas"
+                    <TextBlock Text="{i18n:T library.pick_title}"
                                FontFamily="{DynamicResource DisplayFont}"
                                FontSize="48" LineHeight="46" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Cada carpeta de dentro será una colección, y sus PDF, CBR y CBZ, los tomos. Hakufu solo la lee: no copia, mueve ni borra nada."
+                    <TextBlock Text="{i18n:T library.pick_body}"
                                TextWrapping="Wrap" FontSize="14"
                                Foreground="{DynamicResource TextSecondary}"/>
-                    <Button Classes="primary" Content="Elegir carpeta…" HorizontalAlignment="Left"
+                    <Button Classes="primary" Content="{i18n:T library.pick_button}" HorizontalAlignment="Left"
                             Padding="22,11" Margin="0,12,0,0"
                             Command="{Binding PickRootCommand}"/>
                 </StackPanel>
@@ -129,7 +130,7 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                             MaxWidth="400" Spacing="12" Margin="40,80"
                             IsVisible="{Binding HasError}">
-                    <TextBlock Text="No encuentro tus mangas"
+                    <TextBlock Text="{i18n:T library.error_title}"
                                FontFamily="{DynamicResource DisplayFont}"
                                FontSize="48" LineHeight="46" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextPrimary}"/>
@@ -137,9 +138,9 @@
                                TextWrapping="Wrap" FontSize="14"
                                Foreground="{DynamicResource TextSecondary}"/>
                     <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,12,0,0">
-                        <Button Classes="primary" Content="Volver a leer" Padding="22,11"
+                        <Button Classes="primary" Content="{i18n:T library.reread}" Padding="22,11"
                                 Command="{Binding RefreshCommand}"/>
-                        <Button Classes="ghost" Content="Elegir otra carpeta…" Padding="18,11"
+                        <Button Classes="ghost" Content="{i18n:T library.pick_other}" Padding="18,11"
                                 Command="{Binding PickRootCommand}"/>
                     </StackPanel>
                 </StackPanel>
@@ -148,14 +149,14 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                             MaxWidth="360" Spacing="12" Margin="40,80"
                             IsVisible="{Binding IsEmpty}">
-                    <TextBlock Text="Tu estantería está vacía"
+                    <TextBlock Text="{i18n:T library.empty_title}"
                                FontFamily="{DynamicResource DisplayFont}"
                                FontSize="48" LineHeight="46" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Crea una carpeta por serie dentro de la carpeta de la biblioteca, mete ahí tus tomos en PDF, CBR o CBZ y dale a «Actualizar»."
+                    <TextBlock Text="{i18n:T library.empty_body}"
                                TextWrapping="Wrap" FontSize="14"
                                Foreground="{DynamicResource TextSecondary}"/>
-                    <Button Classes="primary" Content="Abrir carpeta" HorizontalAlignment="Left"
+                    <Button Classes="primary" Content="{i18n:T library.open_folder}" HorizontalAlignment="Left"
                             Padding="22,11" Margin="0,12,0,0"
                             Command="{Binding OpenFolderCommand}"/>
                 </StackPanel>
@@ -216,7 +217,7 @@
                                                     HorizontalAlignment="Left" VerticalAlignment="Top"
                                                     Margin="8,8,0,0"
                                                     Command="{Binding ToggleFavoriteCommand}"
-                                                    ToolTip.Tip="Colección favorita">
+                                                    ToolTip.Tip="{i18n:T library.favorite_tip}">
                                                 <Border Width="26" Height="26" CornerRadius="13" Background="#80000000">
                                                     <ContentControl Classes="starIcon"
                                                                     Classes.favorite="{Binding IsFavorite}"

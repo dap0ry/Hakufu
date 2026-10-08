@@ -1,16 +1,17 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.ReorderMangaView"
              x:DataType="vm:ReorderMangaViewModel">
 
     <StackPanel Width="420">
 
-        <TextBlock Text="Orden personalizado"
+        <TextBlock Text="{i18n:T collection.reorder_title}"
                    FontSize="16" FontWeight="SemiBold"
                    Foreground="{DynamicResource TextPrimary}"
                    Margin="0,0,0,6"/>
-        <TextBlock Text="Usa las flechas para mover cada manga. Se guarda al pulsar &quot;Guardar orden&quot;."
+        <TextBlock Text="{i18n:T collection.reorder_hint}"
                    FontSize="12"
                    Foreground="{DynamicResource TextMuted}"
                    TextWrapping="Wrap"
@@ -47,12 +48,12 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Classes="ghost"
-                    Content="Cancelar"
+                    Content="{i18n:T collection.cancel}"
                     Padding="20,10"
                     Margin="0,0,12,0"
                     Command="{Binding CancelCommand}"/>
             <Button Classes="primary"
-                    Content="Guardar orden"
+                    Content="{i18n:T collection.save_order}"
                     Padding="20,10"
                     Command="{Binding SaveCommand}"/>
         </StackPanel>

@@ -1,4 +1,5 @@
 using Avalonia.Media.Imaging;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -21,10 +22,10 @@ public class MangaCardViewModel : BaseViewModel
     public bool   IsStarted   => _progress is not null;
     public bool   IsFinished  => TotalPages > 0 && CurrentPage >= TotalPages - 1;
     /// <summary>"Pág. 12 de 180", "Terminado" o "Sin empezar" (TotalPages es 0 hasta que se sabe).</summary>
-    public string PageText => IsFinished ? "Terminado"
-                            : !IsStarted ? (TotalPages > 0 ? $"{TotalPages} págs." : "Sin empezar")
-                            : TotalPages > 0 ? $"Pág. {CurrentPage + 1} de {TotalPages}"
-                            : $"Pág. {CurrentPage + 1}";
+    public string PageText => IsFinished ? L.Get("collection.page_finished")
+                            : !IsStarted ? (TotalPages > 0 ? L.Format("collection.pages", TotalPages) : L.Get("collection.not_started"))
+                            : TotalPages > 0 ? L.Format("collection.page_of", CurrentPage + 1, TotalPages)
+                            : L.Format("collection.page", CurrentPage + 1);
 
     private bool _isFavorite;
     public bool IsFavorite { get => _isFavorite; private set => SetProperty(ref _isFavorite, value); }

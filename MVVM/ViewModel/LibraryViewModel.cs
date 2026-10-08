@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Hakufu.I18n;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -22,10 +23,12 @@ public class LibraryViewModel : BaseViewModel
     {
         get
         {
-            if (IsScanning && Collections.Count == 0) return "Leyendo la carpeta…";
+            if (IsScanning && Collections.Count == 0) return L.Get("library.reading_folder");
             var cols  = Collections.Count;
             var tomos = Collections.Sum(c => c.MangaCount);
-            return $"{cols} {(cols == 1 ? "colección" : "colecciones")} · {tomos} {(tomos == 1 ? "tomo" : "tomos")}";
+            return L.Format("library.summary",
+                L.Format(cols == 1 ? "library.collections_one" : "library.collections_many", cols),
+                CollectionCardViewModel.VolumesText(tomos));
         }
     }
 
@@ -96,7 +99,7 @@ public class LibraryViewModel : BaseViewModel
 
     public AsyncRelayCommand PickRootCommand => new(async () =>
     {
-        var folder = await _files.PickFolderAsync("Carpeta de la biblioteca");
+        var folder = await _files.PickFolderAsync(L.Get("library.folder_picker_title"));
         if (folder is null) return;
         await ShowAsync(_scanner.SetRootAsync(folder));
     });

@@ -1,4 +1,5 @@
 using Hakufu.Data;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using SharpCompress.Archives;
 using SharpCompress.Readers;
@@ -14,8 +15,8 @@ public sealed record ScanResult(ScanStatus Status, string Root = "")
     /// <summary>Mensaje para el usuario si no se pudo leer (null si fue bien).</summary>
     public string? Message => Status switch
     {
-        ScanStatus.NoRoot     => "Elige la carpeta donde tienes tus mangas.",
-        ScanStatus.Unreadable => $"No se puede leer la carpeta «{Root}». ¿Está conectado el disco o se ha movido?",
+        ScanStatus.NoRoot     => L.Get("library.scan_no_root"),
+        ScanStatus.Unreadable => L.Format("library.scan_unreadable", Root),
         _                     => null,
     };
 }
@@ -29,6 +30,8 @@ public sealed record ScanResult(ScanStatus Status, string Root = "")
 /// </summary>
 public class LibraryScanner
 {
+    // Dato guardado (y usado para emparejar colecciones antiguas): no se traduce aquí,
+    // sino al mostrarlo (LibraryService.DisplayName).
     public const string LooseCollectionName = "Sin colección";
     private static readonly HashSet<string> Extensions = new([".cbz", ".cbr", ".pdf"], StringComparer.OrdinalIgnoreCase);
 

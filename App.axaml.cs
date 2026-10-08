@@ -41,7 +41,7 @@ public partial class App : Application
             mainWindow.DataContext = root.CreateMainViewModel();
             // A partir de aquí, cambiar de tema se anima (el de arranque no).
             root.Theme.Transition = mainWindow.PlayThemeTransition;
-            StartBackgroundWork(root);
+            _ = StartBackgroundWork(root);
         }
         catch (Exception ex)
         {
@@ -69,7 +69,8 @@ public partial class App : Application
             var root = Compose();
             view.DataContext = root.CreateMainViewModel();
             root.Theme.Transition = view.PlayThemeTransition;
-            StartBackgroundWork(root);
+            var scan = StartBackgroundWork(root);
+            _ = OpenStartScreenAsync(root, scan);
         }
         catch (Exception ex)
         {
@@ -136,13 +137,21 @@ public partial class App : Application
         return root;
     }
 
-    private void StartBackgroundWork(CompositionRoot root)
+    /// <returns>La primera lectura de la carpeta de la biblioteca.</returns>
+    private Task StartBackgroundWork(CompositionRoot root)
     {
         // Aplicar una actualización cierra el proceso sin pasar por desktop.Exit.
         root.PrepareRestart = SaveOnExit;
         _ = root.UpdateBanner.StartAsync();
         // La carpeta de la biblioteca puede haber cambiado con Hakufu cerrado.
-        _ = root.Scanner.ScanAsync();
+        return root.Scanner.ScanAsync();
+    }
+
+    // HAKUFU_START_SCREEN (capturas del CI en el simulador): cuando la biblioteca ya está leída.
+    private static async Task OpenStartScreenAsync(CompositionRoot root, Task scan)
+    {
+        await scan;
+        StartScreen.Apply(root);
     }
 
     private static TextBlock StartupError(Exception ex) => new()

@@ -32,6 +32,8 @@
     <!-- iOS solo admite números en la versión: 0.11.0-beta.4 → 0.11.0 -->
     <ApplicationDisplayVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(Version)', '-.*$', ''))</ApplicationDisplayVersion>
     <ApplicationVersion>$(ApplicationDisplayVersion)</ApplicationVersion>
+    <!-- Platforms/iOS/Assets.xcassets/AppIcon.appiconset (un PNG de 1024×1024) -->
+    <AppIcon>AppIcon</AppIcon>
   </PropertyGroup>
 
   <!-- El resto del repo (web/, tests/) no forma parte de la app. -->
@@ -49,6 +51,10 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
     <!-- Program.cs es el arranque de escritorio (Velopack + ventana); Docnet no tiene binarios para iOS. -->
     <Compile Remove="Program.cs;Services/PdfDocument.Docnet.cs" />
+    <!-- Se mezcla con el Info.plist que genera .NET (Archivos, orientaciones, pantalla de arranque…) -->
+    <PartialAppManifest Include="Platforms/iOS/Info.plist" />
+    <!-- Los textos van dentro de la app, en <app>/i18n/ como en escritorio (ver I18n/Localizer) -->
+    <BundleResource Include="Assets/i18n/*.json" LogicalName="i18n/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,7 +65,7 @@
     <AvaloniaResource Include="Assets\Help\*.png" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0-ios'">
     <!-- Textos de la app (ver I18n/Localizer): archivos junto al ejecutable, sin depender de Avalonia. -->
     <Content Include="Assets\i18n\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="i18n\%(Filename)%(Extension)" />
   </ItemGroup>

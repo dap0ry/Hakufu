@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Se mezcla con el Info.plist que genera .NET (PartialAppManifest en Hakufu.csproj).
+     Nombre, identificador y versión salen del .csproj. -->
+<plist version="1.0">
+<dict>
+  <!-- La carpeta Documentos de Hakufu se ve en Archivos («En mi iPhone → Hakufu»):
+       es la biblioteca. -->
+  <key>UIFileSharingEnabled</key>
+  <true/>
+  <key>LSSupportsOpeningDocumentsInPlace</key>
+  <true/>
+
+  <!-- iPhone e iPad -->
+  <key>UIDeviceFamily</key>
+  <array>
+    <integer>1</integer>
+    <integer>2</integer>
+  </array>
+
+  <!-- Pantalla de arranque vacía (sin ella iOS abre la app en modo «compatibilidad») -->
+  <key>UILaunchScreen</key>
+  <dict/>
+
+  <!-- iPhone: en vertical (la app no está maquetada para el iPhone en horizontal).
+       iPad: todas. -->
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+  </array>
+  <key>UISupportedInterfaceOrientations~ipad</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
+
+  <!-- Solo HTTPS a GitHub para avisar de versiones nuevas: sin cifrado propio. -->
+  <key>ITSAppUsesNonExemptEncryption</key>
+  <false/>
+</dict>
+</plist>

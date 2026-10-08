@@ -1,4 +1,6 @@
 using Avalonia.Headless.XUnit;
+using Avalonia;
+using Avalonia.VisualTree;
 using Hakufu.MVVM.ViewModel;
 
 namespace Hakufu.Tests;
@@ -41,4 +43,21 @@ public class AppNameTests
     [Avalonia.Headless.XUnit.AvaloniaFact]
     public void The_app_is_called_Hakufu_in_the_menu_bar()
         => Assert.Equal("Hakufu", Avalonia.Application.Current!.Name);
+}
+
+public class BackupLayoutTests
+{
+    // Como Ayuda y Ajustes: la columna de contenido va centrada en la ventana.
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void Backup_content_is_centered()
+    {
+        using var app = ViewSmoke.Start();
+        app.Root.Navigation.NavigateTo<BackupViewModel>();
+        app.Pump();
+        var panel = app.Window.GetVisualDescendants().OfType<Avalonia.Controls.StackPanel>()
+                       .First(p => p.Name == "BackupContent");
+        var left = panel.TranslatePoint(new Avalonia.Point(0, 0), app.Window)!.Value.X;
+        var right = app.Window.Bounds.Width - (left + panel.Bounds.Width);
+        Assert.InRange(Math.Abs(left - right), 0, 24); // la barra de scroll puede descentrar un poco
+    }
 }

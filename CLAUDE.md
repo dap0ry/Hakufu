@@ -118,8 +118,9 @@ The UI is in Spanish or English (Ajustes → Idioma; first run follows the syste
 Never write visible text by hand:
 - Views: `xmlns:i18n="using:Hakufu.I18n"` and `Text="{i18n:T area.key}"` (updates live on language change).
 - Code: `L.Get("area.key")`, `L.Format("area.key", n)` and `L.Culture` for numbers/dates (`using Hakufu.I18n;`).
-- Strings live in `Assets/i18n/<area>.es.json` + `<area>.en.json` (AvaloniaResource), keys prefixed with the area.
-  Tests check both files have the same keys and that translated views have no hand-written text.
+- Strings live in `Assets/i18n/<area>.es.json` + `<area>.en.json`, keys prefixed with the area.
+  They ship as Content files in `<app>/i18n/` (read with plain File IO, so they work before Avalonia starts).
+  Tests check both files have the same keys and placeholders, and that translated views have no hand-written text.
 - Changing language calls `NavigationService.Reload()` so ViewModel-computed texts are rebuilt.
 
 ## Conventions

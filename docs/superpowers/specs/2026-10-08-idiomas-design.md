@@ -21,10 +21,10 @@ Toda la app en español **o** inglés, elegible en Ajustes y con cambio al momen
 ## Arquitectura
 
 ```
-Assets/i18n/<area>.es.json, <area>.en.json   ← textos por pantalla/área, clave → texto (EmbeddedResource)
-Services/Localizer.cs                        ← singleton: idioma actual, Get(key), Format(key, args), Culture,
+Assets/i18n/<area>.es.json, <area>.en.json   ← textos por pantalla/área, clave → texto (Content → <app>/i18n/)
+I18n/Localizer.cs                            ← singleton: idioma actual, Get(key), Format(key, args), Culture,
                                                SetLanguage(lang), Observe(key) (IObservable<string>), LanguageChanged
-Services/T.cs (MarkupExtension)              ← {i18n:T settings.title} → binding a Localizer.Observe(key)
+I18n/T.cs (MarkupExtension)                  ← {i18n:T settings.title} → binding a Localizer.Observe(key)
 AppDataStore.Language                        ← "es" | "en" | "" (vacío = decidir al arrancar)
 ```
 

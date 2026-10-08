@@ -25,9 +25,12 @@ public sealed class Localizer
     }
 
     public string Language { get; private set; } = "es";
-    public CultureInfo Culture { get; private set; } = new("es-ES");
+    public CultureInfo Culture { get; private set; } = CultureInfo.GetCultureInfo("es-ES");
 
     public event Action? LanguageChanged;
+
+    /// <summary>Suscripciones vivas a textos (para los tests de memoria).</summary>
+    internal int ObserverCount => _observers.Count;
 
     /// <summary>El texto de la clave en el idioma actual (si falta: español; si tampoco: la clave).</summary>
     public string Get(string key)
@@ -47,8 +50,10 @@ public sealed class Localizer
         if (_fallback.Count == 0) _fallback = Load("es");
         _current = Load(lang);
         Language = lang;
-        Culture = new CultureInfo(lang == "es" ? "es-ES" : "en-US");
+        // GetCultureInfo: la cultura estándar (sin los retoques regionales del usuario), como antes.
+        Culture = CultureInfo.GetCultureInfo(lang == "es" ? "es-ES" : "en-US");
         foreach (var o in _observers.ToArray()) o.Push();
+        _observers.RemoveAll(o => !o.IsAlive);
         LanguageChanged?.Invoke();
     }
 
@@ -65,17 +70,18 @@ public sealed class Localizer
         if (_byLanguage.TryGetValue(lang, out var cached)) return cached;
         var all = new Dictionary<string, string>();
         var dir = Path.Combine(AppContext.BaseDirectory, "i18n");
-        var files = Directory.Exists(dir) ? Directory.GetFiles(dir, $"*.{lang}.json") : [];
+        string[] files;
+        try { files = Directory.Exists(dir) ? Directory.GetFiles(dir, $"*.{lang}.json") : []; }
+        catch { files = []; }
         foreach (var file in files)
         {
             try
             {
                 using var s = File.OpenRead(file);
                 var map = JsonSerializer.Deserialize<Dictionary<string, string>>(s) ?? [];
-                foreach (var (k, v) in map) all[k] = v;
+                foreach (var (k, v) in map) if (v is not null) all[k] = v;
             }
-            catch (Exception e) when (e is JsonException or IOException)
-            { /* un archivo roto no tumba la app: esas claves caen al español */ }
+            catch { /* un archivo roto o ilegible no tumba la app: esas claves caen al español */ }
         }
         if (all.Count > 0) _byLanguage[lang] = all;
         return all;
@@ -85,6 +91,7 @@ public sealed class Localizer
     {
         public IDisposable Subscribe(IObserver<string> observer)
         {
+            owner._observers.RemoveAll(o => !o.IsAlive);
             var o = new KeyObserver(owner, key, observer);
             owner._observers.Add(o);
             o.Push();
@@ -92,9 +99,20 @@ public sealed class Localizer
         }
     }
 
+    // Referencia débil al observador: Avalonia no deshace los bindings de un control al
+    // quitarlo de la pantalla, y una referencia fuerte desde este singleton mantendría
+    // viva la vista entera para siempre. El control sí sujeta su binding mientras vive.
     private sealed class KeyObserver(Localizer owner, string key, IObserver<string> target) : IDisposable
     {
-        public void Push() => target.OnNext(owner.Get(key));
+        private readonly WeakReference<IObserver<string>> _target = new(target);
+
+        public bool IsAlive => _target.TryGetTarget(out _);
+
+        public void Push()
+        {
+            if (_target.TryGetTarget(out var t)) t.OnNext(owner.Get(key));
+        }
+
         public void Dispose() => owner._observers.Remove(this);
     }
 }

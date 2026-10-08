@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Avalonia.VisualTree;
 using Hakufu.I18n;
 using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
@@ -151,6 +152,73 @@ public class LanguageSettingTests
             var after = Assert.IsType<SettingsViewModel>(app.Root.Navigation.CurrentViewModel);
             Assert.NotSame(vm, after);
             Assert.True(after.IsEnglish);
+        }
+        finally { Localizer.Instance.SetLanguage("es"); }
+    }
+}
+
+public class I18nRobustnessTests
+{
+    [Fact]
+    public void Placeholders_match_between_languages()
+    {
+        var dir = Path.Combine(Repo.Root, "Assets", "i18n");
+        var holes = new Regex(@"\{(\d+)(?:[:,][^}]*)?\}");
+        int Max(string s) => holes.Matches(s).Select(m => int.Parse(m.Groups[1].Value)).DefaultIfEmpty(-1).Max();
+        var bad = new List<string>();
+        foreach (var es in Directory.GetFiles(dir, "*.es.json"))
+        {
+            var a = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(es))!;
+            var b = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(es.Replace(".es.json", ".en.json")))!;
+            foreach (var (k, v) in a)
+            {
+                if (b.TryGetValue(k, out var w) && Max(v) != Max(w)) bad.Add($"{k}: es {{{Max(v)}}} / en {{{Max(w)}}}");
+                // string.Format no debe lanzar con tantos argumentos como huecos.
+                foreach (var text in new[] { v, w })
+                    try { string.Format(text!, Enumerable.Repeat<object?>("x", Max(text!) + 1).ToArray()); }
+                    catch (FormatException) { bad.Add($"{k}: formato roto «{text}»"); }
+            }
+        }
+        Assert.Empty(bad);
+    }
+
+    // Cada {i18n:T} se suscribe al Localizer: al salir de una pantalla, sus controles
+    // no pueden quedarse vivos por esa suscripción.
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void Leaving_screens_does_not_keep_their_texts_alive()
+    {
+        using var app = ViewSmoke.Start();
+        var nav = app.Root.Navigation;
+        void Round()
+        {
+            nav.NavigateTo<LibraryViewModel>(); app.Pump();
+            nav.NavigateTo<SettingsViewModel>(); app.Pump();
+            nav.NavigateTo<HelpViewModel>(); app.Pump();
+            nav.NavigateTo<HomeViewModel>(); app.Pump();
+        }
+        Round();
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        Localizer.Instance.SetLanguage("es"); // limpia las suscripciones muertas
+        var baseline = Localizer.Instance.ObserverCount;
+        for (var i = 0; i < 5; i++) Round();
+        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        Localizer.Instance.SetLanguage("es");
+        Assert.InRange(Localizer.Instance.ObserverCount, 0, baseline + 20);
+    }
+
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void Texts_on_screen_still_change_language_after_a_garbage_collection()
+    {
+        try
+        {
+            using var app = ViewSmoke.Start();
+            app.Root.Navigation.NavigateTo<LibraryViewModel>();
+            app.Pump();
+            GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+            Localizer.Instance.SetLanguage("en");
+            app.Pump();
+            var texts = app.Window.GetVisualDescendants().OfType<Avalonia.Controls.TextBlock>().Select(t => t.Text).ToList();
+            Assert.Contains("Library", texts);
         }
         finally { Localizer.Instance.SetLanguage("es"); }
     }

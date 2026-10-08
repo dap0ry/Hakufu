@@ -57,11 +57,11 @@ Dentro: `data.json` (colecciones, progreso, ajustes), `covers/` y `profile/` (fo
 
 Arquitectura y convenciones: [`CLAUDE.md`](CLAUDE.md).
 
-## `web/`: la landing (hakufuweb.vercel.app)
+## `web/`: la landing (hakufu.vercel.app)
 
 Página estática de presentación y descarga (HTML, imágenes e iconos; sin backend). Lee la última versión de las releases de GitHub para enlazar las descargas.
 
-- **Despliegue:** proyecto de Vercel `hakufuweb` (equipo *Proyectos Propios*) con **Root Directory `web`**. Un push a `main` que toque `web/` publica en producción.
+- **Despliegue:** proyecto de Vercel `hakufuweb` (equipo *Proyectos Propios*) con **Root Directory `web`**. Un push a `main` que toque `web/` publica en producción. Dominio principal `hakufu.vercel.app`; `hakufuweb.vercel.app` redirige con 308 (`web/vercel.json`). SEO: `robots.txt`, `sitemap.xml`, `llms.txt` y clave de IndexNow en `web/`.
 - El antiguo backend de la 0.9.x (cuentas, amigos y copia en la nube) se retiró el 01/10/2026: la app no se conecta a nada.
 
 ## Cómo trabajamos

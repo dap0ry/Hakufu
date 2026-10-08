@@ -118,6 +118,8 @@ public class UpdateBannerTests
     private static (UpdateBannerViewModel vm, FakeUpdateService svc, List<string> urls)
         Make(UpdateCheckResult result, bool checkOnStartup = true)
     {
+        // Los textos salen de Assets/i18n (hace falta Avalonia: AvaloniaFact) y se comprueban en español.
+        Hakufu.I18n.Localizer.Instance.SetLanguage("es");
         var svc = new FakeUpdateService { Result = result };
         var set = new UpdateSettings { CheckOnStartup = checkOnStartup };
         var urls = new List<string>();
@@ -126,7 +128,7 @@ public class UpdateBannerTests
         return (vm, svc, urls);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Stalled_download_gives_up_and_offers_retry()
     {
         var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
@@ -138,7 +140,7 @@ public class UpdateBannerTests
         Assert.Equal("Reintentar", vm.PrimaryText);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Failing_to_apply_does_not_crash_and_offers_retry()
     {
         var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
@@ -152,7 +154,7 @@ public class UpdateBannerTests
         Assert.Equal("Reintentar", vm.PrimaryText);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Checking_again_after_downloading_keeps_the_downloaded_update()
     {
         var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
@@ -168,7 +170,7 @@ public class UpdateBannerTests
         Assert.Contains("0.11.0", vm.CheckStatus);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Up_to_date_or_failed_keeps_the_banner_hidden()
     {
         foreach (var s in new[] { UpdateCheckStatus.UpToDate, UpdateCheckStatus.Failed })
@@ -180,7 +182,7 @@ public class UpdateBannerTests
         }
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Startup_check_is_skipped_when_disabled()
     {
         var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true), checkOnStartup: false);
@@ -189,7 +191,7 @@ public class UpdateBannerTests
         Assert.False(vm.IsVisible);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Available_update_downloads_then_restarts_saving_first()
     {
         var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
@@ -209,7 +211,7 @@ public class UpdateBannerTests
         Assert.Equal(["save", "apply"], svc.Log);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Failed_download_goes_back_to_available_with_retry()
     {
         var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
@@ -221,7 +223,7 @@ public class UpdateBannerTests
         Assert.Equal("Reintentar", vm.PrimaryText);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Cannot_start_a_second_download_while_downloading()
     {
         var (vm, _, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
@@ -231,7 +233,7 @@ public class UpdateBannerTests
         Assert.False(vm.PrimaryCommand.CanExecute(null));
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Portable_copy_offers_the_download_page()
     {
         var (vm, svc, urls) = Make(new(UpdateCheckStatus.Available, "0.11.0", CanSelfUpdate: false));
@@ -244,7 +246,7 @@ public class UpdateBannerTests
         Assert.Equal(0, svc.Downloads);
     }
 
-    [Fact]
+    [Avalonia.Headless.XUnit.AvaloniaFact]
     public async Task Later_hides_and_check_now_reports_in_words()
     {
         var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));

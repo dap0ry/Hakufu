@@ -1,0 +1,15 @@
+{
+  "home.library": "Biblioteca",
+  "home.profile": "Perfil",
+  "home.backup": "Copia de seguridad",
+  "home.settings": "Ajustes",
+  "home.help": "Ayuda",
+  "home.credit_dev": "Desarrollado por @dp0r1",
+  "home.credit_design": "Diseño con la ayuda de @_.riscooo",
+  "home.empty_title": "Nada a medias",
+  "home.empty_body": "Abre la biblioteca, añade tus tomos y aquí te esperará el último que estés leyendo.",
+  "home.go_library": "Ir a la biblioteca",
+  "home.continue_label": "Continuar leyendo",
+  "home.continue_button": "Seguir leyendo",
+  "home.page_of": "Página {0} de {1}"
+}

@@ -1,0 +1,15 @@
+{
+  "home.library": "Library",
+  "home.profile": "Profile",
+  "home.backup": "Backup",
+  "home.settings": "Settings",
+  "home.help": "Help",
+  "home.credit_dev": "Developed by @dp0r1",
+  "home.credit_design": "Design with help from @_.riscooo",
+  "home.empty_title": "Nothing yet",
+  "home.empty_body": "Open the library, add your volumes and the one you're reading will be waiting for you here.",
+  "home.go_library": "Go to library",
+  "home.continue_label": "Continue reading",
+  "home.continue_button": "Keep reading",
+  "home.page_of": "Page {0} of {1}"
+}

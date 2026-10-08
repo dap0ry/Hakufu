@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Hakufu.I18n;
 using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
 
@@ -33,6 +34,21 @@ public partial class MainWindow : Window
 
         foreach (var grip in ResizeGrips.Children)
             grip.PointerPressed += ResizeGrip_PointerPressed;
+
+        UpdateFullScreenTip();
+    }
+
+    // Lo que el code-behind escribe a mano (el ToolTip de pantalla completa) se rehace al cambiar de idioma.
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        Localizer.Instance.LanguageChanged += UpdateFullScreenTip;
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        Localizer.Instance.LanguageChanged -= UpdateFullScreenTip;
+        base.OnClosed(e);
     }
 
     // ── Barra de título propia ───────────────────────────────────────────────
@@ -72,8 +88,12 @@ public partial class MainWindow : Window
         FullScreenGlyph.Data = Geometry.Parse(fullScreen
             ? "M3.5,0.5 L3.5,3.5 L0.5,3.5 M6.5,0.5 L6.5,3.5 L9.5,3.5 M9.5,6.5 L6.5,6.5 L6.5,9.5 M3.5,9.5 L3.5,6.5 L0.5,6.5"   // salir
             : "M0.5,3.5 L0.5,0.5 L3.5,0.5 M6.5,0.5 L9.5,0.5 L9.5,3.5 M9.5,6.5 L9.5,9.5 L6.5,9.5 M3.5,9.5 L0.5,9.5 L0.5,6.5"); // entrar
-        ToolTip.SetTip(FullScreenButton, fullScreen ? "Salir de pantalla completa" : "Pantalla completa");
+        UpdateFullScreenTip();
     }
+
+    private void UpdateFullScreenTip() =>
+        ToolTip.SetTip(FullScreenButton,
+                       L.Get(WindowState == WindowState.FullScreen ? "shell.exit_fullscreen" : "shell.fullscreen"));
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {

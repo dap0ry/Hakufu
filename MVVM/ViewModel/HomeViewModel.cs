@@ -1,5 +1,6 @@
 using Avalonia.Media.Imaging;
 using Hakufu.Data;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -20,7 +21,7 @@ public class HomeViewModel : BaseViewModel
     public string? LastMangaTitle { get => _lastMangaTitle; private set => SetProperty(ref _lastMangaTitle, value); }
     public Bitmap? LastMangaCover { get => _lastMangaCover; private set => SetProperty(ref _lastMangaCover, value); }
     public bool HasLastManga => LastMangaTitle is not null;
-    /// <summary>"Página 12 de 180" (null si no se sabe cuántas páginas tiene).</summary>
+    /// <summary>"Página 12 de 180" / "Page 12 of 180" (null si no se sabe cuántas páginas tiene).</summary>
     public string? LastMangaPageText { get => _lastMangaPageText; private set => SetProperty(ref _lastMangaPageText, value); }
     /// <summary>Avance de 0 a 100.</summary>
     public double LastMangaProgress { get => _lastMangaProgress; private set => SetProperty(ref _lastMangaProgress, value); }
@@ -55,7 +56,7 @@ public class HomeViewModel : BaseViewModel
             if (total > 0)
             {
                 page = Math.Min(page, total);
-                LastMangaPageText = $"Página {page} de {total}";
+                LastMangaPageText = L.Format("home.page_of", page, total);
                 LastMangaProgress = page * 100.0 / total;
             }
             LastMangaCover = await _cover.GetCoverAsync(last);

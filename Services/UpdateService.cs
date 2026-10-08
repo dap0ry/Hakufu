@@ -19,6 +19,7 @@ public sealed class UpdateService : IUpdateService
     private readonly UpdateManager? _velopack;
     private readonly HttpClient _http;
     private UpdateInfo? _pending;
+    private VelopackAsset? _downloaded;
 
     /// <param name="http">Solo para tests: fuerza el camino de la API de GitHub con una red falsa.</param>
     /// <param name="localSource">Carpeta de releases en vez de GitHub (o la variable HAKUFU_UPDATE_SOURCE),
@@ -53,6 +54,9 @@ public sealed class UpdateService : IUpdateService
         {
             if (_velopack is not null)
             {
+                // Ya descargada: no se cambia por otra que no se ha bajado.
+                if (_downloaded is not null)
+                    return new(UpdateCheckStatus.Available, _downloaded.Version.ToString(), CanSelfUpdate: true);
                 _pending = await _velopack.CheckForUpdatesAsync().WaitAsync(Timeout, ct);
                 return _pending is null
                     ? new(UpdateCheckStatus.UpToDate)
@@ -76,12 +80,14 @@ public sealed class UpdateService : IUpdateService
     public async Task DownloadAsync(Action<int> progress, CancellationToken ct = default)
     {
         if (_velopack is null || _pending is null) throw new InvalidOperationException("Nada que descargar.");
-        await _velopack.DownloadUpdatesAsync(_pending, progress, ct);
+        var target = _pending;
+        await _velopack.DownloadUpdatesAsync(target, progress, ct);
+        _downloaded = target.TargetFullRelease;
     }
 
     public void ApplyAndRestart()
     {
-        if (_velopack is null || _pending is null) return;
-        _velopack.ApplyUpdatesAndRestart(_pending.TargetFullRelease);
+        if (_velopack is null || _downloaded is null) return;
+        _velopack.ApplyUpdatesAndRestart(_downloaded);
     }
 }

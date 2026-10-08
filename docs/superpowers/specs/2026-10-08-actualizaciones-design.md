@@ -131,6 +131,10 @@ instaladores. La lógica que detecta el sistema y lee `releases/latest` se manti
   porque lo descargado por la app no lleva cuarentena; solo importaría si alguien copia ese `.app`
   a otro Mac con AirDrop o similar.
 - Pendiente: Windows, Linux y 0.9.7 → nueva (necesita publicar una pre-release).
+  Ojo: la 0.9.7 busca con `prerelease: false`, así que **nunca verá una beta**. Para probarla en el
+  ThinkPad sin publicar una estable: copiar el `Hakufu-<v>-full.nupkg` de la beta a la carpeta
+  `packages` de la 0.9.7 instalada (`%LocalAppData%\Hakufu\packages`) y lanzar su `Update.exe apply`,
+  o apuntar una copia a un feed local. Solo después, la primera estable.
 
 ## Fuera de alcance
 

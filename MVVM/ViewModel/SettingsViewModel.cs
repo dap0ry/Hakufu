@@ -298,7 +298,7 @@ public class SettingsViewModel : BaseViewModel
     }
 
     public string VersionText =>
-        $"Versión {System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "?"}";
+        $"Versión {AppVersion.Current}"; // con su -beta.N, si lo tiene
 
     // ── Navigation ───────────────────────────────────────────────────────────
 

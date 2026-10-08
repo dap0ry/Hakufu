@@ -32,12 +32,20 @@ public sealed class CompositionRoot
     {
         Repo    = repo;
         Updates = updates ?? new UpdateService();
-        UpdateBanner = new UpdateBannerViewModel(Updates, repo.Current.Updates, () => PrepareRestart(), UrlOpener.Open);
+        UpdateBanner = new UpdateBannerViewModel(Updates, repo.Current.Updates, BeforeRestart, UrlOpener.Open);
         Library = new LibraryService(repo);
         Scanner = new LibraryScanner(repo);
         Profile = new ProfileService(repo);
         Backup  = new BackupService(repo);
         Navigation = new NavigationService(Create);
+    }
+
+    // Reiniciar para actualizar no pasa por MainWindow.OnClosing: apuntar aquí el rato
+    // leído (si se está en el lector) antes de que App guarde.
+    private void BeforeRestart()
+    {
+        (Navigation.CurrentViewModel as ReaderViewModel)?.FlushReadingTime();
+        PrepareRestart();
     }
 
     /// <summary>Aplica el tema guardado. Llamar antes de crear ninguna vista.</summary>

@@ -90,23 +90,27 @@ public class UpdateServicePortableTests
 public sealed class FakeUpdateService : IUpdateService
 {
     public UpdateCheckResult Result = new(UpdateCheckStatus.UpToDate);
-    public bool FailDownload;
+    public bool FailDownload, HangDownload, FailApply;
     public int Checks, Downloads;
     public List<string> Log = [];
     public string CurrentVersion => "0.10.1";
 
     public Task<UpdateCheckResult> CheckAsync(CancellationToken ct = default) { Checks++; return Task.FromResult(Result); }
 
-    public Task DownloadAsync(Action<int> progress, CancellationToken ct = default)
+    public async Task DownloadAsync(Action<int> progress, CancellationToken ct = default)
     {
         Downloads++;
+        if (HangDownload) await Task.Delay(Timeout.Infinite, ct);
         progress(50);
         if (FailDownload) throw new HttpRequestException("cortado");
         progress(100);
-        return Task.CompletedTask;
     }
 
-    public void ApplyAndRestart() => Log.Add("apply");
+    public void ApplyAndRestart()
+    {
+        if (FailApply) throw new InvalidOperationException("sin Update");
+        Log.Add("apply");
+    }
 }
 
 public class UpdateBannerTests
@@ -117,8 +121,51 @@ public class UpdateBannerTests
         var svc = new FakeUpdateService { Result = result };
         var set = new UpdateSettings { CheckOnStartup = checkOnStartup };
         var urls = new List<string>();
-        var vm = new UpdateBannerViewModel(svc, set, () => svc.Log.Add("save"), urls.Add, TimeSpan.Zero);
+        var vm = new UpdateBannerViewModel(svc, set, () => svc.Log.Add("save"), urls.Add, TimeSpan.Zero,
+                                           downloadStall: TimeSpan.FromMilliseconds(100));
         return (vm, svc, urls);
+    }
+
+    [Fact]
+    public async Task Stalled_download_gives_up_and_offers_retry()
+    {
+        var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
+        svc.HangDownload = true;
+        await vm.StartAsync();
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(UpdateBannerState.Available, vm.State);
+        Assert.Equal("Reintentar", vm.PrimaryText);
+    }
+
+    [Fact]
+    public async Task Failing_to_apply_does_not_crash_and_offers_retry()
+    {
+        var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
+        svc.FailApply = true;
+        await vm.StartAsync();
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation;
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation; // no lanza
+        Assert.Equal(UpdateBannerState.Available, vm.State);
+        Assert.Equal("Reintentar", vm.PrimaryText);
+    }
+
+    [Fact]
+    public async Task Checking_again_after_downloading_keeps_the_downloaded_update()
+    {
+        var (vm, svc, _) = Make(new(UpdateCheckStatus.Available, "0.11.0", true));
+        await vm.StartAsync();
+        vm.PrimaryCommand.Execute(null);
+        await vm.LastOperation;
+        var checks = svc.Checks;
+
+        svc.Result = new(UpdateCheckStatus.Available, "0.12.0", true);
+        await vm.CheckNowAsync();
+        Assert.Equal(checks, svc.Checks);
+        Assert.Equal(UpdateBannerState.Ready, vm.State);
+        Assert.Contains("0.11.0", vm.CheckStatus);
     }
 
     [Fact]
@@ -245,5 +292,40 @@ public class UpdateViewTests
         var vm = (SettingsViewModel)app.Root.Navigation.CurrentViewModel!;
         Assert.Same(app.Root.UpdateBanner, vm.Updates);
         Assert.True(vm.CheckUpdatesCommand.CanExecute(null));
+    }
+}
+
+public class UpdateRestartTests
+{
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public async Task Restarting_from_the_reader_logs_the_reading_time_before_saving()
+    {
+        using var app = ViewSmoke.Start();
+        app.Root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
+        app.Pump();
+        var log = app.Root.Repo.Current.ReadingLog;
+        double Seconds() => log.Sum(d => d.Seconds);
+        var before = Seconds();
+        await Task.Delay(50);
+
+        double atSave = -1;
+        app.Root.PrepareRestart = () => atSave = Seconds();
+        ((FakeUpdateService)app.Root.Updates).Result = new(UpdateCheckStatus.Available, "0.11.0", true);
+        await app.Root.UpdateBanner.CheckNowAsync();
+        app.Root.UpdateBanner.PrimaryCommand.Execute(null);
+        await app.Root.UpdateBanner.LastOperation;
+        app.Root.UpdateBanner.PrimaryCommand.Execute(null);
+        await app.Root.UpdateBanner.LastOperation;
+
+        Assert.True(atSave > before, $"antes {before}, al guardar {atSave}");
+    }
+
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void About_shows_the_full_version_including_beta()
+    {
+        using var app = ViewSmoke.Start();
+        app.Root.Navigation.NavigateTo<SettingsViewModel>();
+        var vm = (SettingsViewModel)app.Root.Navigation.CurrentViewModel!;
+        Assert.Equal($"Versión {AppVersion.Current}", vm.VersionText);
     }
 }

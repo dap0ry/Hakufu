@@ -19,6 +19,7 @@ public class UpdateBannerViewModel : BaseViewModel
     private readonly Action _prepareRestart;
     private readonly Action<string> _openUrl;
     private readonly TimeSpan _startupDelay;
+    private readonly TimeSpan _downloadStall;
 
     private UpdateBannerState _state;
     private string _version = "";
@@ -28,13 +29,15 @@ public class UpdateBannerViewModel : BaseViewModel
 
     /// <param name="prepareRestart">Guarda los datos: aplicar la actualización cierra el proceso sin pasar por la salida normal.</param>
     public UpdateBannerViewModel(IUpdateService updates, UpdateSettings settings,
-                                 Action prepareRestart, Action<string> openUrl, TimeSpan? startupDelay = null)
+                                 Action prepareRestart, Action<string> openUrl, TimeSpan? startupDelay = null,
+                                 TimeSpan? downloadStall = null)
     {
         _updates = updates;
         _settings = settings;
         _prepareRestart = prepareRestart;
         _openUrl = openUrl;
         _startupDelay = startupDelay ?? TimeSpan.FromSeconds(5);
+        _downloadStall = downloadStall ?? TimeSpan.FromSeconds(60);
         PrimaryCommand = new AsyncRelayCommand(() => LastOperation = PrimaryAsync(),
             () => _state is not (UpdateBannerState.Hidden or UpdateBannerState.Downloading));
         LaterCommand = new RelayCommand(() => State = UpdateBannerState.Hidden);
@@ -105,6 +108,12 @@ public class UpdateBannerViewModel : BaseViewModel
     /// <summary>Botón de Ajustes: comprueba siempre y lo cuenta con palabras.</summary>
     public async Task CheckNowAsync()
     {
+        // Ya descargando o descargada: no se vuelve a preguntar (no se cambia lo que se va a aplicar).
+        if (_state is UpdateBannerState.Downloading or UpdateBannerState.Ready)
+        {
+            CheckStatus = $"Hakufu {_version} se está descargando o ya está lista para reiniciar.";
+            return;
+        }
         CheckStatus = "Buscando…";
         var r = await _updates.CheckAsync();
         CheckStatus = r.Status switch
@@ -139,26 +148,48 @@ public class UpdateBannerViewModel : BaseViewModel
                 return;
 
             case UpdateBannerState.Ready:
-                _prepareRestart();
-                _updates.ApplyAndRestart();
+                try
+                {
+                    _prepareRestart();
+                    _updates.ApplyAndRestart();
+                }
+                catch
+                {
+                    // No se pudo aplicar: mejor seguir con la versión actual que cerrar la app.
+                    FailBackToAvailable();
+                }
                 return;
 
             case UpdateBannerState.Available:
                 Progress = 0;
                 State = UpdateBannerState.Downloading;
-                try
+                // Si la descarga se queda colgada (wifi caída, portátil dormido) sin dar
+                // error, se corta tras un rato sin progreso y se ofrece reintentar.
+                using (var stall = new CancellationTokenSource(_downloadStall))
                 {
-                    await _updates.DownloadAsync(p => Dispatcher.UIThread.Post(() => Progress = p));
-                    Progress = 100;
-                    State = UpdateBannerState.Ready;
-                }
-                catch
-                {
-                    _retry = true;
-                    State = UpdateBannerState.Available;
-                    OnPropertyChanged(nameof(PrimaryText));
+                    try
+                    {
+                        await _updates.DownloadAsync(p =>
+                        {
+                            try { stall.CancelAfter(_downloadStall); } catch (ObjectDisposedException) { }
+                            Dispatcher.UIThread.Post(() => Progress = p);
+                        }, stall.Token);
+                        Progress = 100;
+                        State = UpdateBannerState.Ready;
+                    }
+                    catch
+                    {
+                        FailBackToAvailable();
+                    }
                 }
                 return;
         }
+    }
+
+    private void FailBackToAvailable()
+    {
+        _retry = true;
+        State = UpdateBannerState.Available;
+        OnPropertyChanged(nameof(PrimaryText));
     }
 }

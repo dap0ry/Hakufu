@@ -133,7 +133,9 @@ jobs:
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Espera al .ipa, pero si el job de iOS falla (p. ej. GitHub cambia el Xcode del
+    # runner) la release de escritorio sale igual, sin él.
+    if: startsWith(github.ref, 'refs/tags/v') && !cancelled() && needs.build.result == 'success'
     needs: [build, ios]
     runs-on: ubuntu-latest
     permissions:

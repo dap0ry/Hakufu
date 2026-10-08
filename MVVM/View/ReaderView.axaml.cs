@@ -46,6 +46,7 @@ public partial class ReaderView : UserControl
         PageArea.GestureRecognizers.Add(new PinchGestureRecognizer());
         PageArea.AddHandler(Gestures.PinchEvent, PageArea_Pinch);
         PageArea.AddHandler(Gestures.PinchEndedEvent, (_, _) => _pinching = false);
+        PageArea.PointerCaptureLost += (_, e) => { if (e.Pointer == _touch) _touch = null; };
         PageArea.AddHandler(Gestures.DoubleTappedEvent, (_, e) =>
         {
             if (!_zoom.IsZoomed || e.Pointer.Type == PointerType.Mouse) return;
@@ -107,7 +108,11 @@ public partial class ReaderView : UserControl
     {
         Focus(); // mantener el foco en el lector tras hacer clic en la página
 
-        if (e.Pointer.Type == PointerType.Mouse || _touch is not null || _pinching) return;
+        // Un dedo principal nuevo empieza siempre otro gesto: si el anterior nunca se
+        // levantó (fuera de la página, gesto cancelado por el sistema) no bloquea nada.
+        // El segundo dedo (no principal) es el de pellizcar: no cuenta.
+        if (e.Pointer.Type == PointerType.Mouse || !e.Pointer.IsPrimary) return;
+        _pinching = false;
         _touch = e.Pointer;
         _touchStart = _touchLast = e.GetPosition(PageArea);
         _touchStartTime = DateTime.UtcNow;

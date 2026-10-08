@@ -145,4 +145,28 @@ public class ReaderTouchTests
         app.Pump();
         Assert.True(vm.IsZenMode);
     }
+
+    // Un dedo cuyo «levantar» nunca llega (se levantó fuera, el sistema canceló el
+    // gesto…) no puede dejar el lector sordo a los toques siguientes.
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void A_lost_touch_does_not_block_the_next_one()
+    {
+        using var app = ViewSmoke.StartMobile(390, 844);
+        app.Root.Navigation.NavigateTo<Hakufu.MVVM.ViewModel.ReaderViewModel>(
+            new Hakufu.MVVM.ViewModel.ReaderNavigationParam(app.SampleManga, 0));
+        var view = app.AssertShows<ReaderView>();
+        var vm = (Hakufu.MVVM.ViewModel.ReaderViewModel)view.DataContext!;
+        var area = view.FindControl<Avalonia.Controls.Grid>("PageArea")!;
+        var right = new Point(area.Bounds.Width - 30, area.Bounds.Height / 2);
+
+        var lost = new Avalonia.Input.Pointer(Avalonia.Input.Pointer.GetNextFreeId(), Avalonia.Input.PointerType.Touch, true);
+        Touch(area, lost, right, down: true); // y nunca se levanta
+
+        var finger = new Avalonia.Input.Pointer(Avalonia.Input.Pointer.GetNextFreeId(), Avalonia.Input.PointerType.Touch, true);
+        Touch(area, finger, right, down: true);
+        Touch(area, finger, right, down: false);
+        app.Pump();
+
+        Assert.Equal(1, vm.CurrentPage);
+    }
 }

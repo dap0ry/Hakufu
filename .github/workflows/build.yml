@@ -61,6 +61,10 @@ jobs:
         shell: pwsh
         run: ./scripts/pack-velopack.ps1 -Rid ${{ matrix.rid }}
 
+      - name: mksquashfs para el AppImage (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y squashfs-tools
+
       - name: Empaquetar con Velopack (macOS / Linux)
         if: runner.os != 'Windows'
         run: bash ./scripts/pack-velopack.sh ${{ matrix.rid }}

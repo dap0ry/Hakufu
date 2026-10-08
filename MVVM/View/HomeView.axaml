@@ -142,7 +142,9 @@
             <Setter Property="FontSize"   Value="52"/>
             <Setter Property="LineHeight" Value="52"/>
         </Style>
-        <Style Selector=".narrow Grid#ContinuePanel">
+        <!-- Sin nada empezado no hay barra (Biblioteca ya está en el menú) -->
+        <Style Selector=".narrow Grid#ContinuePanel" x:DataType="vm:HomeViewModel">
+            <Setter Property="IsVisible" Value="{Binding HasLastManga}"/>
             <Setter Property="Grid.Column" Value="0"/>
             <Setter Property="Grid.ColumnSpan" Value="2"/>
             <Setter Property="Grid.Row" Value="1"/>

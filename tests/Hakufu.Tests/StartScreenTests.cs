@@ -13,6 +13,7 @@ public class StartScreenTests
     [InlineData("reader",     typeof(ReaderViewModel))]
     [InlineData("settings",   typeof(SettingsViewModel))]
     [InlineData("profile",    typeof(ProfileViewModel))]
+    [InlineData("pdf",        typeof(HomeViewModel))]   // la biblioteca de ejemplo no tiene PDF
     [InlineData("",           typeof(HomeViewModel))]
     [InlineData("nada",       typeof(HomeViewModel))]
     public void Opens_the_requested_screen(string screen, Type expected)
@@ -23,5 +24,23 @@ public class StartScreenTests
         app.Pump();
 
         Assert.IsType(expected, app.Root.Navigation.CurrentViewModel);
+    }
+
+    [AvaloniaFact]
+    public void Pdf_opens_the_first_pdf_volume_in_the_reader()
+    {
+        using var app = ViewSmoke.StartMobile(390, 844);
+        var pdf = new Hakufu.MVVM.Model.Manga
+        {
+            Title = "Tomo en PDF", RelativePath = "PDF/Tomo en PDF.pdf",
+            FilePath = Fixtures.MakePdf(Path.Combine(Hakufu.Data.AppPaths.FixedLibraryRoot!, "PDF"), "Tomo en PDF.pdf"),
+        };
+        app.Root.Repo.Current.Mangas.Add(pdf);
+
+        StartScreen.Apply(app.Root, "pdf");
+        app.Pump();
+
+        var reader = Assert.IsType<ReaderViewModel>(app.Root.Navigation.CurrentViewModel);
+        Assert.Equal("Tomo en PDF", reader.MangaTitle);
     }
 }

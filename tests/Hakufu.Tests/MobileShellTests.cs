@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Hakufu.MVVM.ViewModel;
 
@@ -34,6 +35,34 @@ public class MobileShellTests
         app.Pump();
         Assert.Contains("narrow", app.View.Classes);
         Assert.Contains("compact", app.View.Classes);
+    }
+
+    // Sin nada empezado, en una columna no queda el hueco de «Continuar leyendo».
+    [AvaloniaFact]
+    public void Home_on_a_phone_has_no_empty_continue_bar()
+    {
+        using var app = ViewSmoke.Start(withLibrary: false, mobile: new Avalonia.Size(390, 844));
+        var home = app.AssertShows<Hakufu.MVVM.View.HomeView>();
+
+        var panel = home.FindControl<Avalonia.Controls.Grid>("ContinuePanel")!;
+        Assert.False(panel.IsEffectivelyVisible);
+    }
+
+    // En el lector, lo que queda detrás de la barra de estado (zona segura) va oscuro como el lector.
+    [AvaloniaFact]
+    public void Reader_paints_the_safe_area_dark()
+    {
+        using var app = ViewSmoke.StartMobile(390, 844);
+        var appBackground = app.View.Background;
+
+        app.Root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
+        app.Pump();
+        Assert.True(app.View.TryFindResource("ReaderBackground", out var reader));
+        Assert.Same(reader, app.View.Background);
+
+        app.Root.Navigation.NavigateTo<HomeViewModel>();
+        app.Pump();
+        Assert.Same(appBackground, app.View.Background);
     }
 
     [AvaloniaFact]

@@ -17,18 +17,26 @@ namespace Hakufu.Tests;
 /// </summary>
 public class MobileLayoutTests
 {
-    public static readonly TheoryData<int, int, bool> Sizes = new()
+    public static readonly TheoryData<int, int, bool, string> Sizes = new()
     {
-        { 390, 844, false }, { 390, 844, true },
-        { 744, 1133, false },
-        { 1180, 820, true },
+        { 390, 844, false, "es" }, { 390, 844, true, "es" },
+        { 390, 844, false, "en" },   // los textos en inglés suelen ser más largos
+        { 744, 1133, false, "es" },
+        { 1180, 820, true, "es" },
     };
 
     private static readonly string ShotsDir = Path.Combine(AppContext.BaseDirectory, "mobile-shots");
 
     [AvaloniaTheory]
     [MemberData(nameof(Sizes))]
-    public void Every_screen_fits_the_width(int width, int height, bool dark)
+    public void Every_screen_fits_the_width(int width, int height, bool dark, string language)
+    {
+        Hakufu.I18n.Localizer.Instance.SetLanguage(language);
+        try { CheckAllScreens(width, height, dark, language); }
+        finally { Hakufu.I18n.Localizer.Instance.SetLanguage("es"); }
+    }
+
+    private static void CheckAllScreens(int width, int height, bool dark, string language)
     {
         using var app = ViewSmoke.StartMobile(width, height, dark);
         var problems = new List<string>();
@@ -38,7 +46,7 @@ public class MobileLayoutTests
         {
             open();
             app.Pump();
-            Shot(app, $"{width}x{height}-{(dark ? "dark" : "light")}-{name}");
+            Shot(app, $"{width}x{height}-{(dark ? "dark" : "light")}{(language == "es" ? "" : "-" + language)}-{name}");
             problems.AddRange(Overflowing(app.Host, width).Select(p => $"{name}: {p}"));
         }
 

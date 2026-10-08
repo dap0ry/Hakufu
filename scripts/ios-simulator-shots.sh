@@ -12,7 +12,7 @@ set -euo pipefail
 APP="$1"
 OUT="$2"
 BUNDLE="com.dapory.hakufu"
-SCREENS=(home library collection reader settings profile)
+SCREENS=(home library collection reader pdf settings profile)
 mkdir -p "${OUT}"
 cd "$(dirname "$0")/.."
 

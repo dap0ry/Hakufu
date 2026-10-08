@@ -72,7 +72,10 @@ public sealed class ViewSmoke : IDisposable
         repo.LoadAsync().GetAwaiter().GetResult();
         repo.Current.ActiveTheme = darkTheme ? "Dark" : "Light";
         if (!withLibrary)
-            return new ViewSmoke(tmp, new CompositionRoot(repo, new FakeUpdateService()), new Collection(), new Manga());
+        {
+            var empty = mobile is null ? null : new MobileMode(Directory.CreateDirectory(Path.Combine(tmp.Root, "Documents")).FullName);
+            return new ViewSmoke(tmp, new CompositionRoot(repo, new FakeUpdateService()), new Collection(), new Manga(), mobile, empty);
+        }
 
         // Carpeta de la biblioteca con una subcarpeta (colección) y dos tomos.
         const string colName = "Ataque a los Titanes";

@@ -21,6 +21,7 @@ public partial class MainView : UserControl
 
     private MainWindowViewModel? _vm;
     private ReaderViewModel? _reader;
+    private IDisposable? _background;
 
     /// <summary>El lector entra (true) o sale (false) del modo zen.</summary>
     public event EventHandler<bool>? ZenModeChanged;
@@ -98,6 +99,12 @@ public partial class MainView : UserControl
             _reader = null;
             ReaderClosed?.Invoke(this, wasZen);
         }
+
+        // En iOS el fondo se ve detrás de la barra de estado (zona segura): en el
+        // lector, oscuro como él.
+        _background?.Dispose();
+        _background = Bind(BackgroundProperty,
+            this.GetResourceObservable(_vm.CurrentView is ReaderViewModel ? "ReaderBackground" : "AppBackground"));
 
         if (_vm.CurrentView is ReaderViewModel reader)
         {

@@ -58,11 +58,18 @@
         </Border>
 
         <!-- PAGE AREA -->
+        <!-- Con el dedo (iPhone/iPad): tocar los lados pasa página, el centro
+             muestra/oculta las barras, deslizar también pasa y dos dedos amplían
+             (ver ReaderGestures). Con el ratón, como siempre. -->
         <Grid Grid.Row="1"
               Name="PageArea"
               Background="{DynamicResource ReaderBackground}"
-              PointerPressed="PageArea_PointerPressed">
+              ClipToBounds="True"
+              PointerPressed="PageArea_PointerPressed"
+              PointerMoved="PageArea_PointerMoved"
+              PointerReleased="PageArea_PointerReleased">
 
+            <Panel Name="PageZoomHost">
             <!-- Doble página: unidas con una línea fina -->
             <Grid ColumnDefinitions="*,1,*" IsVisible="{Binding ShowsTwoPages}">
                 <Image Grid.Column="0"
@@ -97,6 +104,7 @@
                   ColumnDefinitions="*,1,*"
                   ClipToBounds="True"
                   IsHitTestVisible="False"/>
+            </Panel>
 
             <!-- Aviso del modo zen -->
             <Border HorizontalAlignment="Center"
@@ -107,9 +115,16 @@
                     CornerRadius="20"
                     IsHitTestVisible="False"
                     IsVisible="{Binding ShowZenHint}">
-                <TextBlock Text="{i18n:T reader.zen_hint}"
-                           Foreground="{DynamicResource ReaderForeground}"
-                           FontSize="13"/>
+                <Panel>
+                    <TextBlock Text="{i18n:T reader.zen_hint}"
+                               IsVisible="{Binding !IsMobile}"
+                               Foreground="{DynamicResource ReaderForeground}"
+                               FontSize="13"/>
+                    <TextBlock Text="{i18n:T reader.zen_hint_touch}"
+                               IsVisible="{Binding IsMobile}"
+                               Foreground="{DynamicResource ReaderForeground}"
+                               FontSize="13"/>
+                </Panel>
             </Border>
         </Grid>
 

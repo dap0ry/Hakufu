@@ -121,7 +121,7 @@ public class BackupViewModel : BaseViewModel
         CollectionOptions.Clear();
         foreach (var c in _repo.Current.Collections.OrderBy(c => c.Name, NaturalComparer.Instance))
         {
-            var option = new BackupCollectionOption(c.Id, c.Name, c.MangaIds.Count);
+            var option = new BackupCollectionOption(c.Id, LibraryService.DisplayName(c), c.MangaIds.Count);
             option.PropertyChanged += (_, _) => OnPropertyChanged(nameof(ExportSummary));
             CollectionOptions.Add(option);
         }

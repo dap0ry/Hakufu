@@ -27,8 +27,8 @@
   "profile.card.last_weeks": "Last 12 weeks",
   "profile.card.this_week": "this week",
   "profile.card.no_weeks": "Read for a while and your weeks will show up here.",
-  "profile.card.favorite": "Favourite manga",
-  "profile.card.pick_favorite": "Pick your favourite in Edit profile",
+  "profile.card.favorite": "Favorite manga",
+  "profile.card.pick_favorite": "Pick your favorite in Edit profile",
   "profile.card.reading_now": "Reading now",
   "profile.card.no_recent": "You haven't started any manga yet.",
 
@@ -37,7 +37,7 @@
   "profile.edit.pick_photo_title": "Choose your profile photo",
   "profile.edit.name": "Name",
   "profile.edit.name_hint": "How you want it to appear",
-  "profile.edit.favorite": "Favourite manga",
+  "profile.edit.favorite": "Favorite manga",
   "profile.edit.no_favorite": "None",
   "profile.edit.cancel": "Cancel",
   "profile.edit.save": "Save"

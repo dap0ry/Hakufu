@@ -162,7 +162,7 @@ public class RecentCollectionCardViewModel : BaseViewModel
     {
         _lastVolume  = r.LastVolume;
         CollectionId = r.Collection.Id;
-        Title        = r.Collection.Name;
+        Title        = LibraryService.DisplayName(r.Collection);
         ProgressPct  = r.ProgressPct;
     }
 

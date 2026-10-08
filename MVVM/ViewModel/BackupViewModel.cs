@@ -146,7 +146,7 @@ public class BackupViewModel : BaseViewModel
         await RunAsync(async p =>
         {
             await _backup.ExportAsync(path, options, p);
-            return (true, L.Format("backup.export_done", what.ToLower(L.Culture), path));
+            return (true, L.Format("backup.export_done", what.ToLower(L.Culture), FilePickerService.DisplayPath(path)));
         }, "backup.export_failed");
     }, () => IsIdle);
 

@@ -1,0 +1,26 @@
+# Hakufu (Hakufu Manga Reader)
+
+> Hakufu es un lector y gestor de manga de escritorio, gratis y sin conexión, para Windows, macOS y Linux. Lee archivos PDF, CBR y CBZ y los ordena en colecciones. No tiene cuentas, anuncios ni servidores: todo se queda en el ordenador del usuario.
+
+- Web: https://hakufu.vercel.app/
+- Descargas y novedades: https://github.com/dap0ry/Hakufu/releases/latest
+- Código fuente: https://github.com/dap0ry/Hakufu
+- Autor: Daniel Poza Rivera (https://danielpozarivera.es/)
+
+## Qué hace
+
+- Biblioteca por carpetas: cada subcarpeta es una colección y cada archivo .pdf, .cbz o .cbr es un tomo. Hakufu solo lee los archivos; no los copia ni los mueve.
+- Lector a una o dos páginas, con modo zen a pantalla completa y atajos de teclado configurables.
+- Recuerda por dónde ibas en cada tomo.
+- Perfil de lector con horas, páginas, racha y gráfica de 12 semanas, exportable como imagen.
+- Copia de seguridad local en .zip para pasar la biblioteca a otro ordenador.
+
+## Requisitos
+
+- Windows 10 u 11 (64 bits), macOS 12 o posterior (Apple Silicon o Intel), Linux x64.
+- Precio: gratis.
+
+## Páginas
+
+- [Inicio y descargas](https://hakufu.vercel.app/)
+- [Términos y condiciones](https://hakufu.vercel.app/terminos.html)

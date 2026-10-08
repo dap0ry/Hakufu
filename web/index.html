@@ -3,13 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hakufu — Gestor de manga offline</title>
-  <meta name="description" content="Hakufu organiza y lee tu manga en PDF, CBR y CBZ sin conexión. Gratis para Windows, macOS y Linux. Sin cuentas ni servidores.">
+  <title>Hakufu Manga Reader — lector de manga offline gratis para Windows, macOS y Linux</title>
+  <meta name="description" content="Hakufu es un manga reader de escritorio gratis y sin conexión: ordena y lee tu manga en PDF, CBR y CBZ en Windows, macOS y Linux. Sin cuentas ni anuncios.">
+  <link rel="canonical" href="https://hakufu.vercel.app/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="author" content="Daniel Poza Rivera">
   <meta name="theme-color" content="#0E0E0F">
   <meta name="color-scheme" content="dark">
-  <meta property="og:title" content="Hakufu — Gestor de manga offline">
-  <meta property="og:description" content="Organiza y lee tu manga sin conexión. Gratis para Windows, macOS y Linux.">
-  <meta property="og:image" content="https://hakufuweb.vercel.app/img/real-library.webp">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Hakufu">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:url" content="https://hakufu.vercel.app/">
+  <meta property="og:title" content="Hakufu Manga Reader — lector de manga offline">
+  <meta property="og:description" content="Organiza y lee tu manga en PDF, CBR y CBZ sin conexión. Gratis para Windows, macOS y Linux.">
+  <meta property="og:image" content="https://hakufu.vercel.app/img/real-library.webp">
+  <meta property="og:image:alt" content="La biblioteca de Hakufu con colecciones de manga como montones de portadas.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hakufu Manga Reader — lector de manga offline">
+  <meta name="twitter:description" content="Organiza y lee tu manga en PDF, CBR y CBZ sin conexión. Gratis para Windows, macOS y Linux.">
+  <meta name="twitter:image" content="https://hakufu.vercel.app/img/real-library.webp">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://hakufu.vercel.app/#website",
+        "name": "Hakufu",
+        "alternateName": ["Hakufu Manga Reader", "Hakufu manga"],
+        "url": "https://hakufu.vercel.app/",
+        "inLanguage": "es"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://hakufu.vercel.app/#app",
+        "name": "Hakufu",
+        "alternateName": "Hakufu Manga Reader",
+        "description": "Lector y gestor de manga de escritorio, gratis y sin conexión. Lee y ordena manga en PDF, CBR y CBZ por colecciones.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Windows 10, Windows 11, macOS 12+, Linux",
+        "url": "https://hakufu.vercel.app/",
+        "downloadUrl": "https://github.com/dap0ry/Hakufu/releases/latest",
+        "image": "https://hakufu.vercel.app/img/real-library.webp",
+        "screenshot": [
+          "https://hakufu.vercel.app/img/real-home.webp",
+          "https://hakufu.vercel.app/img/real-library.webp",
+          "https://hakufu.vercel.app/img/real-reader-2.webp"
+        ],
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "author": { "@type": "Person", "name": "Daniel Poza Rivera", "url": "https://danielpozarivera.es/" },
+        "sameAs": ["https://github.com/dap0ry/Hakufu"]
+      }
+    ]
+  }
+  </script>
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,6 +160,7 @@
     }
 
     .hero h1 { font-size: clamp(76px, 9vw, 136px); }
+    .h1-sub { display: block; margin-top: .3em; font-size: .28em; letter-spacing: -.01em; color: #A1A1AA; }
     .hero-lead { margin-top: 24px; max-width: 30ch; font-size: 21px; line-height: 1.5; color: #D4D4D8; }
     .hero-actions { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 12px; }
     .hero-meta { margin-top: 16px; font-size: 14px; color: var(--muted-d); }
@@ -344,7 +392,7 @@
 
     <div class="wrap hero-grid">
       <div>
-        <h1 class="display">Hakufu</h1>
+        <h1 class="display">Hakufu <span class="h1-sub">Manga Reader</span></h1>
         <p class="hero-lead">El lector de manga sin conexión más simple, bonito y útil. Ordena tus PDF, CBR y CBZ en colecciones, sin cuentas y gratis.</p>
         <div class="hero-actions">
           <a class="btn light" id="hero-dl" href="#descargas">Descargar Hakufu</a>

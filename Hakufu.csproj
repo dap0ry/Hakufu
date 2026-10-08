@@ -1,19 +1,37 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <!-- Escritorio (Windows, macOS, Linux). Con -p:HakufuIos=true, iPhone/iPad en su
+         lugar: necesita macOS, Xcode y el workload "ios" (lo hace el CI). -->
     <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework Condition="'$(HakufuIos)' == 'true'">net10.0-ios</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Hakufu</AssemblyName>
     <RootNamespace>Hakufu</RootNamespace>
-    <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <Version>0.11.0</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- Bindings comprobados al compilar: cada vista declara x:DataType. -->
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net10.0-ios'">
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <!-- iPhone e iPad (ver docs/superpowers/specs/2026-10-08-ios-design.md). Lo propio de
+       iOS está en Platforms/iOS/. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <OutputType>Exe</OutputType>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <ApplicationId>com.dapory.hakufu</ApplicationId>
+    <ApplicationTitle>Hakufu</ApplicationTitle>
+    <!-- iOS solo admite números en la versión: 0.11.0-beta.4 → 0.11.0 -->
+    <ApplicationDisplayVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(Version)', '-.*$', ''))</ApplicationDisplayVersion>
+    <ApplicationVersion>$(ApplicationDisplayVersion)</ApplicationVersion>
   </PropertyGroup>
 
   <!-- El resto del repo (web/, tests/) no forma parte de la app. -->
@@ -21,6 +39,16 @@
     <Compile Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
     <AvaloniaXaml Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
     <None Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
+  </ItemGroup>
+
+  <!-- Cada plataforma compila solo lo suyo. -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0-ios'">
+    <Compile Remove="Platforms/**" />
+    <None Remove="Platforms/**" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <!-- Program.cs es el arranque de escritorio (Velopack + ventana); Docnet no tiene binarios para iOS. -->
+    <Compile Remove="Program.cs;Services/PdfDocument.Docnet.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,13 +66,20 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.22" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.22" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22" Condition="'$(Configuration)' == 'Debug'" />
-    <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="SharpCompress" Version="0.50.4" />
     <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0-ios'">
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22" Condition="'$(Configuration)' == 'Debug'" />
+    <PackageReference Include="Docnet.Core" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <PackageReference Include="Avalonia.iOS" Version="11.3.22" />
   </ItemGroup>
 
   <ItemGroup>

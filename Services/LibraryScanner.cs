@@ -184,9 +184,8 @@ public class LibraryScanner
                 CoverService.PdfLock.Wait();
                 try
                 {
-                    using var doc = Docnet.Core.DocLib.Instance.GetDocReader(
-                        path, new Docnet.Core.Models.PageDimensions(100, 150));
-                    return doc.GetPageCount();
+                    using var doc = PdfDocument.Open(path, 100, 150);
+                    return doc.PageCount;
                 }
                 finally { CoverService.PdfLock.Release(); }
             }

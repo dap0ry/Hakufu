@@ -1,8 +1,5 @@
 using System.Collections.Concurrent;
 using Avalonia.Media.Imaging;
-using Docnet.Core;
-using Docnet.Core.Models;
-using Docnet.Core.Readers;
 using Hakufu.MVVM.Model;
 using SharpCompress.Archives;
 using SharpCompress.Readers;
@@ -15,7 +12,7 @@ public class PageLoaderService : IPageLoaderService
     private readonly string _filePath;
 
     // PDF-specific
-    private IDocReader? _docReader;
+    private PdfDocument? _pdf;
 
     // CBR/CBZ-specific — sorted list of (entryKey) for index-based access
     private List<string>? _entryKeys;
@@ -49,8 +46,8 @@ public class PageLoaderService : IPageLoaderService
 
     private void InitPdf()
     {
-        _docReader = DocLib.Instance.GetDocReader(_filePath, new PageDimensions(1920, 2880));
-        TotalPages = _docReader.GetPageCount();
+        _pdf = PdfDocument.Open(_filePath, 1920, 2880);
+        TotalPages = _pdf.PageCount;
     }
 
     private void InitArchive()
@@ -117,10 +114,7 @@ public class PageLoaderService : IPageLoaderService
 
     private Bitmap? RenderPdfPage(int pageIndex)
     {
-        if (_docReader is null) return null;
-        using var pageReader = _docReader.GetPageReader(pageIndex);
-        return BitmapHelper.FromBgra(
-            pageReader.GetImage(), pageReader.GetPageWidth(), pageReader.GetPageHeight());
+        return _pdf?.RenderPage(pageIndex);
     }
 
     private Bitmap? RenderArchivePage(int pageIndex)
@@ -143,6 +137,6 @@ public class PageLoaderService : IPageLoaderService
     {
         _cache.Clear();
         _loadLock.Dispose();
-        _docReader?.Dispose();
+        _pdf?.Dispose();
     }
 }

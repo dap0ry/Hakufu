@@ -1,12 +1,11 @@
 using System.Globalization;
-using Avalonia.Platform;
 using System.Text.Json;
 
 namespace Hakufu.I18n;
 
 /// <summary>
 /// Textos de la app en español o inglés. Cada área tiene sus archivos
-/// Assets/i18n/&lt;area&gt;.es.json y .en.json (clave → texto, AvaloniaResource). Las vistas los usan con
+/// Assets/i18n/&lt;area&gt;.es.json y .en.json (clave → texto; se copian a &lt;app&gt;/i18n/ al compilar). Las vistas los usan con
 /// {i18n:T clave}; el código, con L.Get / L.Format. Cambiar de idioma avisa a todo
 /// lo que esté observando una clave, así que el cambio se ve al momento.
 /// </summary>
@@ -65,20 +64,19 @@ public sealed class Localizer
     {
         if (_byLanguage.TryGetValue(lang, out var cached)) return cached;
         var all = new Dictionary<string, string>();
-        IEnumerable<Uri> files;
-        try { files = AssetLoader.GetAssets(new Uri("avares://Hakufu/Assets/i18n/"), null); }
-        catch { files = []; }
-        foreach (var uri in files.Where(u => u.AbsolutePath.EndsWith($".{lang}.json", StringComparison.Ordinal)))
+        var dir = Path.Combine(AppContext.BaseDirectory, "i18n");
+        var files = Directory.Exists(dir) ? Directory.GetFiles(dir, $"*.{lang}.json") : [];
+        foreach (var file in files)
         {
             try
             {
-                using var s = AssetLoader.Open(uri);
+                using var s = File.OpenRead(file);
                 var map = JsonSerializer.Deserialize<Dictionary<string, string>>(s) ?? [];
                 foreach (var (k, v) in map) all[k] = v;
             }
-            catch (JsonException) { /* un archivo roto no tumba la app: esas claves caen al español */ }
+            catch (Exception e) when (e is JsonException or IOException)
+            { /* un archivo roto no tumba la app: esas claves caen al español */ }
         }
-        // Si Avalonia aún no podía leer recursos, no se guarda la carga vacía: se reintenta.
         if (all.Count > 0) _byLanguage[lang] = all;
         return all;
     }

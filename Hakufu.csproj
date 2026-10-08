@@ -29,7 +29,11 @@
     <AvaloniaResource Include="HakufuLogo.png" />
     <AvaloniaResource Include="Assets\Fonts\*.ttf" />
     <AvaloniaResource Include="Assets\Help\*.png" />
-    <AvaloniaResource Include="Assets\i18n\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Textos de la app (ver I18n/Localizer): archivos junto al ejecutable, sin depender de Avalonia. -->
+    <Content Include="Assets\i18n\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="i18n\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

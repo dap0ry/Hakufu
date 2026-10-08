@@ -42,6 +42,14 @@ public class LocalizerTests : IDisposable
         Assert.Equal("Version 1.2", L.Format("common.version", "1.2"));
     }
 
+    // Sin Avalonia arrancado (tests sencillos, código de servicios): los textos se leen igual.
+    [Fact]
+    public void Works_without_Avalonia()
+    {
+        Localizer.Instance.SetLanguage("en");
+        Assert.Equal("← Home", L.Get("common.back_home"));
+    }
+
     [Avalonia.Headless.XUnit.AvaloniaFact]
     public void Missing_key_shows_the_key()
         => Assert.Equal("nope.missing", L.Get("nope.missing"));

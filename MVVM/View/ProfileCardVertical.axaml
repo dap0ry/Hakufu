@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.ProfileCardVertical"
              x:DataType="vm:ProfileViewModel">
 
@@ -41,18 +42,18 @@
 
             <Grid ColumnDefinitions="*,*,*" Margin="0,36,0,0">
                 <Panel Grid.Column="0"><StackPanel>
-                        <TextBlock Classes="label" Text="Tiempo leyendo"/>
+                        <TextBlock Classes="label" Text="{i18n:T profile.card.reading_time}"/>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Classes="statValue" Text="{Binding ReadingTimeValue}"/>
                             <TextBlock Classes="statUnit" Text="{Binding ReadingTimeUnit}"/>
                         </StackPanel>
                     </StackPanel></Panel>
                 <Panel Grid.Column="1"><StackPanel>
-                        <TextBlock Classes="label" Text="Páginas"/>
+                        <TextBlock Classes="label" Text="{i18n:T profile.card.pages}"/>
                         <TextBlock Classes="statValue" Text="{Binding PagesText}"/>
                     </StackPanel></Panel>
                 <Panel Grid.Column="2"><StackPanel>
-                        <TextBlock Classes="label" Text="Tomos terminados"/>
+                        <TextBlock Classes="label" Text="{i18n:T profile.card.finished}"/>
                         <TextBlock Classes="statValue" Text="{Binding FinishedText}"/>
                     </StackPanel></Panel>
             </Grid>
@@ -60,7 +61,7 @@
             <Border Height="1" Background="{StaticResource CardLine}" Margin="0,30"/>
             <StackPanel>
                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,18">
-                    <TextBlock Grid.Column="0" Classes="sectionTitle" Text="Últimas 12 semanas"/>
+                    <TextBlock Grid.Column="0" Classes="sectionTitle" Text="{i18n:T profile.card.last_weeks}"/>
                     <TextBlock Grid.Column="1" Classes="label" Text="{Binding ThisWeekText}"
                                VerticalAlignment="Bottom" Margin="0,0,0,2"/>
                 </Grid>
@@ -85,17 +86,17 @@
                 <Border Height="1" Background="{StaticResource CardLine}"/>
                 <Grid ColumnDefinitions="*,Auto" Margin="4,8,4,0">
                     <TextBlock Grid.Column="0" Classes="label" Text="{Binding FirstWeekLabel}"/>
-                    <TextBlock Grid.Column="1" Classes="label" Text="esta semana"/>
+                    <TextBlock Grid.Column="1" Classes="label" Text="{i18n:T profile.card.this_week}"/>
                 </Grid>
                 <TextBlock Classes="label" Margin="0,10,0,0"
-                           Text="Lee un rato y aquí irán apareciendo tus semanas."
+                           Text="{i18n:T profile.card.no_weeks}"
                            IsVisible="{Binding !HasReadingLog}"/>
             </StackPanel>
             <Border Height="1" Background="{StaticResource CardLine}" Margin="0,30"/>
 
             <Grid ColumnDefinitions="Auto,*">
                     <StackPanel Grid.Column="0" Width="164" Margin="0,0,32,0">
-                        <TextBlock Classes="sectionTitle" Text="Manga favorito" Margin="0,0,0,14"/>
+                        <TextBlock Classes="sectionTitle" Text="{i18n:T profile.card.favorite}" Margin="0,0,0,14"/>
                         <Button Classes="cover"
                                 IsVisible="{Binding HasFavoriteManga}"
                                 Command="{Binding OpenMangaCommand}"
@@ -115,12 +116,12 @@
                                 IsVisible="{Binding !HasFavoriteManga}">
                             <TextBlock Classes="label" Margin="16" TextWrapping="Wrap"
                                        TextAlignment="Center" VerticalAlignment="Center"
-                                       Text="Elige tu favorito en Editar perfil"/>
+                                       Text="{i18n:T profile.card.pick_favorite}"/>
                         </Border>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1">
-                        <TextBlock Classes="sectionTitle" Text="Leyendo ahora" Margin="0,0,0,14"/>
+                        <TextBlock Classes="sectionTitle" Text="{i18n:T profile.card.reading_now}" Margin="0,0,0,14"/>
                         <ItemsControl ItemsSource="{Binding RecentCollections}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -149,7 +150,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Classes="label" TextWrapping="Wrap"
-                                   Text="Aún no has empezado ningún manga."
+                                   Text="{i18n:T profile.card.no_recent}"
                                    IsVisible="{Binding !HasRecentCollections}"/>
                     </StackPanel>
                 </Grid>

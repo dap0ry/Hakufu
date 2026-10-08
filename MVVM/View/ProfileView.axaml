@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
+             xmlns:i18n="using:Hakufu.I18n"
              xmlns:c="using:Hakufu.MVVM.View.Controls"
              xmlns:v="using:Hakufu.MVVM.View"
              x:Class="Hakufu.MVVM.View.ProfileView"
@@ -10,20 +11,20 @@
 
         <!-- ═══ CABECERA ═══ -->
         <c:PageHeader Grid.Row="0"
-                      Title="Perfil"
-                      Subtitle="Tu tarjeta de lector"
-                      BackText="← Inicio"
+                      Title="{i18n:T profile.title}"
+                      Subtitle="{i18n:T profile.subtitle}"
+                      BackText="{i18n:T common.back_home}"
                       BackCommand="{Binding GoBackCommand}">
             <c:PageHeader.Actions>
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button Classes="ghost" Content="Editar perfil" Padding="18,10"
+                    <Button Classes="ghost" Content="{i18n:T profile.edit}" Padding="18,10"
                             Command="{Binding EditProfileCommand}"/>
-                    <Button Classes="primary" Content="Guardar imagen" Padding="18,10"
-                            ToolTip.Tip="Guarda la tarjeta como PNG para compartirla">
+                    <Button Classes="primary" Content="{i18n:T profile.save_image}" Padding="18,10"
+                            ToolTip.Tip="{i18n:T profile.save_image_tip}">
                         <Button.Flyout>
                             <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                <MenuItem Header="Horizontal (ordenador, Twitter…)" Click="SaveHorizontal_Click"/>
-                                <MenuItem Header="Vertical (móvil, historias…)" Click="SaveVertical_Click"/>
+                                <MenuItem Header="{i18n:T profile.save_horizontal}" Click="SaveHorizontal_Click"/>
+                                <MenuItem Header="{i18n:T profile.save_vertical}" Click="SaveVertical_Click"/>
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>

@@ -329,3 +329,13 @@ public class UpdateRestartTests
         Assert.Equal($"Versión {AppVersion.Current}", vm.VersionText);
     }
 }
+
+public class UpdateChannelTests
+{
+    [Theory]
+    [InlineData("0.11.0-beta.1", true)]
+    [InlineData("0.11.0", false)]
+    [InlineData("0.10.1", false)]
+    public void Betas_follow_prereleases_and_stables_do_not(string version, bool expected)
+        => Assert.Equal(expected, UpdateService.IncludePrereleases(version));
+}

@@ -33,7 +33,7 @@ public sealed class UpdateService : IUpdateService
         if (http is not null) return;
         localSource ??= Environment.GetEnvironmentVariable("HAKUFU_UPDATE_SOURCE");
         IUpdateSource source = string.IsNullOrEmpty(localSource)
-            ? new GithubSource(RepoUrl, null, false)
+            ? new GithubSource(RepoUrl, null, IncludePrereleases(AppVersion.Current))
             : new SimpleFileSource(new DirectoryInfo(localSource));
         try
         {
@@ -45,6 +45,12 @@ public sealed class UpdateService : IUpdateService
             _velopack = null;
         }
     }
+
+    /// <summary>
+    /// Quien tiene una beta recibe también las betas (pre-releases); quien tiene una
+    /// estable, solo estables. La 0.9.7 (WPF) busca siempre solo estables.
+    /// </summary>
+    public static bool IncludePrereleases(string currentVersion) => currentVersion.Contains('-');
 
     public string CurrentVersion => _velopack?.CurrentVersion?.ToString() ?? AppVersion.Current;
 

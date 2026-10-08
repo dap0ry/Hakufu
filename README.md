@@ -37,9 +37,13 @@ dotnet test tests/Hakufu.Tests        # tests
 ./scripts/publish.sh                  # macOS/Linux: app autocontenida en publish/
 .\scripts\publish.ps1                 # Windows: publish\Hakufu-win-x64.zip
 ./scripts/install-linux.sh            # Linux: instala en ~/.local y lo añade al menú
+./scripts/pack-velopack.sh osx-arm64  # después de publish.sh: instalador + feed de Velopack en publish/velopack/
+.\scripts\pack-velopack.ps1           # Windows: Setup.exe + feed (canal win, el de la 0.9.7)
 ```
 
 - **macOS:** `./scripts/publish.sh` crea `publish/Hakufu.app`. Arrástralo a Aplicaciones. Hecho en tu propio Mac se abre sin más. Si lo descargas (p. ej. el zip de *Actions*), macOS lo bloquea porque no está firmado con cuenta de Apple: `xattr -dr com.apple.quarantine /Applications/Hakufu.app`, o Ajustes del Sistema → Privacidad y seguridad → *Abrir igualmente*.
+- **Actualizaciones:** la app instalada con el instalador (`Setup.exe`, `.pkg`, `.AppImage`) busca versión nueva al abrir (Velopack contra la última release de GitHub; se puede desactivar en Ajustes → Acerca de) y se actualiza con un clic. La copia portable (`.zip`/`.tar.gz`) solo avisa y abre la web. Es lo único de Hakufu que usa la red (`Services/UpdateService.cs`). Para probar sin publicar: `HAKUFU_UPDATE_SOURCE=<carpeta con publish/velopack de varias versiones>`.
+- **Publicar una versión:** subir `<Version>` en `Hakufu.csproj` y `git tag vX.Y.Z && git push origin vX.Y.Z`. El CI crea la release con los paquetes portables, los instaladores y los archivos de actualización. Con guion (`v0.11.0-beta.1`) sale como pre-release y no le llega a nadie.
 - **CI:** cada push compila, pasa los tests y genera la app para `win-x64`, `linux-x64`, `osx-arm64` y `osx-x64` (pestaña *Actions* → *Artifacts*).
 
 ### Dónde guarda los datos

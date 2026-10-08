@@ -19,7 +19,13 @@ dotnet run --project Hakufu.csproj    # launch app
 dotnet test tests/Hakufu.Tests        # tests (xUnit + Avalonia.Headless, real Skia)
 ./scripts/publish.sh [rid]            # macOS/Linux self-contained publish (.app on macOS)
 .\scripts\publish.ps1 [-Rid win-x64]  # Windows self-contained publish + zip
+./scripts/pack-velopack.sh <rid>     # after publish.sh: Velopack installer + update feed (publish/velopack)
+.\scripts\pack-velopack.ps1          # Windows: Setup.exe + feed, channel "win" (same packId/channel as 0.9.7)
 ```
+
+Releases: `git tag vX.Y.Z && git push origin vX.Y.Z` (must match `<Version>`); CI uploads portable zips + Velopack
+installers/feeds; a tag with `-` is a pre-release. Velopack: packId `Hakufu`, channels `win`, `osx-arm64`, `osx-x64`,
+`linux`; NuGet `Velopack` and the `vpk` tool must be the same version. macOS needs `--signAppIdentity "-"` (ad hoc).
 
 Data folder: `AppPaths.DataDir` = `Environment.SpecialFolder.ApplicationData/Hakufu`
 (`%APPDATA%\Hakufu` on Windows, `~/.config/Hakufu` on macOS/Linux), overridable with the

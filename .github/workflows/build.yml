@@ -3,8 +3,10 @@ name: build
 # Compila, pasa los tests y genera la app en los tres sistemas en cada push o PR.
 # Los paquetes quedan como "artifacts" de la ejecución (pestaña Actions).
 # Al subir un tag vX.Y.Z además publica la release en GitHub con los cuatro
-# paquetes (la landing de web/ enlaza a la última):
-#   git tag v0.10.0 && git push origin v0.10.0
+# paquetes portables, los instaladores de Velopack y sus archivos de
+# actualización (la landing de web/ y UpdateService leen la última):
+#   git tag v0.11.0 && git push origin v0.11.0
+# Un tag con guion (v0.11.0-beta.1) sale como pre-release: nadie la recibe.
 on:
   push:
     branches: [main, "feat/**"]
@@ -50,12 +52,26 @@ jobs:
         if: runner.os != 'Windows'
         run: bash ./scripts/publish.sh ${{ matrix.rid }}
 
+      - name: Instalar vpk
+        # Misma versión que el paquete NuGet Velopack de Hakufu.csproj.
+        run: dotnet tool install -g vpk --version 1.2.161
+
+      - name: Empaquetar con Velopack (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/pack-velopack.ps1 -Rid ${{ matrix.rid }}
+
+      - name: Empaquetar con Velopack (macOS / Linux)
+        if: runner.os != 'Windows'
+        run: bash ./scripts/pack-velopack.sh ${{ matrix.rid }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: Hakufu-${{ matrix.rid }}
           path: |
             publish/Hakufu-${{ matrix.rid }}.zip
             publish/Hakufu-${{ matrix.rid }}.tar.gz
+            publish/velopack/*
           if-no-files-found: error
 
   release:
@@ -83,4 +99,7 @@ jobs:
       - name: Crear la release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" dist/* --title "Hakufu ${GITHUB_REF_NAME#v}" --generate-notes
+        run: |
+          PRE=""
+          case "${GITHUB_REF_NAME}" in *-*) PRE="--prerelease" ;; esac
+          gh release create "${GITHUB_REF_NAME}" dist/* --title "Hakufu ${GITHUB_REF_NAME#v}" --generate-notes ${PRE}

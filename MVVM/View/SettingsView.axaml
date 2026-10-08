@@ -5,7 +5,6 @@
              xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.SettingsView"
              x:DataType="vm:SettingsViewModel">
-    <!-- i18n: pendiente (Task 4 traduce el resto de Ajustes y quita esta marca) -->
 
     <UserControl.Styles>
         <!-- Tecla de atajo: parece una tecla; vacía, discontinua; escuchando, invertida -->
@@ -73,9 +72,9 @@
 
         <!-- ═══ CABECERA ═══ -->
         <c:PageHeader Grid.Row="0"
-                      Title="Ajustes"
-                      Subtitle="Tema, lectura, atajos y la carpeta de tu biblioteca"
-                      BackText="← Inicio"
+                      Title="{i18n:T settings.title}"
+                      Subtitle="{i18n:T settings.subtitle}"
+                      BackText="{i18n:T common.back_home}"
                       BackCommand="{Binding GoBackCommand}">
         </c:PageHeader>
 
@@ -99,7 +98,7 @@
                                                FontSize="24" FontWeight="Medium"
                                                Foreground="#1A1A1A"
                                                HorizontalAlignment="Center"/>
-                                    <TextBlock Text="CLARO"
+                                    <TextBlock Text="{i18n:T settings.theme_light}"
                                                FontSize="9" FontWeight="SemiBold"
                                                Foreground="#999999"
                                                HorizontalAlignment="Center"
@@ -112,7 +111,7 @@
                                                FontSize="24" FontWeight="Medium"
                                                Foreground="#F0F0F0"
                                                HorizontalAlignment="Center"/>
-                                    <TextBlock Text="OSCURO"
+                                    <TextBlock Text="{i18n:T settings.theme_dark}"
                                                FontSize="9" FontWeight="SemiBold"
                                                Foreground="#555555"
                                                HorizontalAlignment="Center"
@@ -128,11 +127,11 @@
                                 BorderThickness="0,1,0,0">
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Tema oscuro"
+                                    <TextBlock Text="{i18n:T settings.dark_theme}"
                                                FontSize="14" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextPrimary}"
                                                Margin="0,0,0,3"/>
-                                    <TextBlock Text="Cambia entre modo claro y oscuro"
+                                    <TextBlock Text="{i18n:T settings.dark_theme_hint}"
                                                FontSize="11"
                                                Foreground="{DynamicResource TextMuted}"/>
                                 </StackPanel>
@@ -173,7 +172,7 @@
                 <Border Classes="card" Padding="0"
                         Margin="0,0,0,20" ClipToBounds="True">
                     <StackPanel>
-                        <TextBlock Text="Carpeta de la biblioteca"
+                        <TextBlock Text="{i18n:T settings.library_folder}"
                                    FontSize="11" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextMuted}"
                                    Margin="24,20,24,4"/>
@@ -184,7 +183,7 @@
                                                      FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"
                                                      Foreground="{DynamicResource TextPrimary}"
                                                      Margin="0,0,0,3"/>
-                                <TextBlock Text="Cada carpeta de dentro es una colección y sus PDF, CBR y CBZ son los tomos. Hakufu solo la lee: no copia, mueve ni borra nada."
+                                <TextBlock Text="{i18n:T settings.library_folder_hint}"
                                            FontSize="11" TextWrapping="Wrap"
                                            Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
@@ -193,11 +192,11 @@
                         <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0">
                             <StackPanel Spacing="10">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="primary" Content="Elegir carpeta…" Padding="16,9"
+                                    <Button Classes="primary" Content="{i18n:T settings.choose_folder}" Padding="16,9"
                                             Command="{Binding PickLibraryRootCommand}"/>
-                                    <Button Classes="ghost" Content="Abrir carpeta" Padding="16,9"
+                                    <Button Classes="ghost" Content="{i18n:T settings.open_folder}" Padding="16,9"
                                             Command="{Binding OpenLibraryRootCommand}"/>
-                                    <Button Classes="ghost" Content="Volver a leer" Padding="16,9"
+                                    <Button Classes="ghost" Content="{i18n:T settings.rescan}" Padding="16,9"
                                             Command="{Binding RescanLibraryCommand}"/>
                                 </StackPanel>
                                 <TextBlock Text="{Binding LibraryStatus}"
@@ -213,7 +212,7 @@
                 <Border Classes="card" Padding="0"
                         Margin="0,0,0,20" ClipToBounds="True">
                     <StackPanel>
-                        <TextBlock Text="Lectura"
+                        <TextBlock Text="{i18n:T settings.reading}"
                                    FontSize="11" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextMuted}"
                                    Margin="24,20,24,4"/>
@@ -221,11 +220,11 @@
                         <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0">
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <TextBlock Text="Doble página"
+                                    <TextBlock Text="{i18n:T settings.two_pages}"
                                                FontSize="14" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextPrimary}"
                                                Margin="0,0,0,3"/>
-                                    <TextBlock Text="Abrir los mangas mostrando dos páginas a la vez, como un libro abierto"
+                                    <TextBlock Text="{i18n:T settings.two_pages_hint}"
                                                FontSize="11" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextMuted}"/>
                                 </StackPanel>
@@ -239,11 +238,11 @@
                         <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0">
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <TextBlock Text="Abrir en modo zen"
+                                    <TextBlock Text="{i18n:T settings.zen}"
                                                FontSize="14" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextPrimary}"
                                                Margin="0,0,0,3"/>
-                                    <TextBlock Text="Empezar a leer a pantalla completa, sin barras. Sales con ESC"
+                                    <TextBlock Text="{i18n:T settings.zen_hint}"
                                                FontSize="11" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextMuted}"/>
                                 </StackPanel>
@@ -258,11 +257,11 @@
                                 IsVisible="{Binding ShowPageTurnSettings}">
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <TextBlock Text="Animación al pasar página"
+                                    <TextBlock Text="{i18n:T settings.page_turn}"
                                                FontSize="14" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextPrimary}"
                                                Margin="0,0,0,3"/>
-                                    <TextBlock Text="La hoja gira como en un manga de papel"
+                                    <TextBlock Text="{i18n:T settings.page_turn_hint}"
                                                FontSize="11" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextMuted}"/>
                                 </StackPanel>
@@ -280,22 +279,22 @@
                                 Opacity="{Binding PageTurnAnimation, Converter={StaticResource BoolToOpacity}}">
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Velocidad de la animación"
+                                    <TextBlock Text="{i18n:T settings.page_turn_speed}"
                                                FontSize="14" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextPrimary}"
                                                Margin="0,0,0,3"/>
-                                    <TextBlock Text="Cuánto tarda la hoja en pasar"
+                                    <TextBlock Text="{i18n:T settings.page_turn_speed_hint}"
                                                FontSize="11"
                                                Foreground="{DynamicResource TextMuted}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="ghost" Content="Rápida" Padding="12,7" FontSize="11"
+                                    <Button Classes="ghost" Content="{i18n:T settings.speed_fast}" Padding="12,7" FontSize="11"
                                             Command="{Binding SpeedFastCommand}"
                                             Opacity="{Binding IsSpeedFast, Converter={StaticResource BoolToOpacity}}"/>
-                                    <Button Classes="ghost" Content="Normal" Padding="12,7" FontSize="11"
+                                    <Button Classes="ghost" Content="{i18n:T settings.speed_normal}" Padding="12,7" FontSize="11"
                                             Command="{Binding SpeedNormalCommand}"
                                             Opacity="{Binding IsSpeedNormal, Converter={StaticResource BoolToOpacity}}"/>
-                                    <Button Classes="ghost" Content="Lenta" Padding="12,7" FontSize="11"
+                                    <Button Classes="ghost" Content="{i18n:T settings.speed_slow}" Padding="12,7" FontSize="11"
                                             Command="{Binding SpeedSlowCommand}"
                                             Opacity="{Binding IsSpeedSlow, Converter={StaticResource BoolToOpacity}}"/>
                                 </StackPanel>
@@ -311,14 +310,14 @@
                     <StackPanel>
                         <Grid ColumnDefinitions="*,Auto" Margin="24,20,24,4">
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Atajos de teclado"
+                                <TextBlock Text="{i18n:T shortcuts.title}"
                                            FontSize="11" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextMuted}"/>
-                                <TextBlock Text="Pulsa una tecla para cambiarla. Valen combinaciones como Ctrl + W."
+                                <TextBlock Text="{i18n:T shortcuts.hint}"
                                            FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"
                                            Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
-                            <Button Grid.Column="1" Classes="ghost" Content="Restablecer"
+                            <Button Grid.Column="1" Classes="ghost" Content="{i18n:T shortcuts.reset}"
                                     Padding="12,7" FontSize="11" VerticalAlignment="Top"
                                     Command="{Binding ResetShortcutsCommand}"/>
                         </Grid>
@@ -345,13 +344,13 @@
                                                                     Classes.capturing="{Binding IsCapturing}"
                                                                     Content="{Binding Text}"
                                                                     Command="{Binding ClickCommand}"
-                                                                    ToolTip.Tip="Cambiar tecla"/>
+                                                                    ToolTip.Tip="{i18n:T shortcuts.change_key}"/>
                                                             <Button Classes="keyClear"
                                                                     Content="×"
                                                                     IsVisible="{Binding IsAssigned}"
                                                                     Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).ClearShortcutCommand}"
                                                                     CommandParameter="{Binding}"
-                                                                    ToolTip.Tip="Quitar esta tecla"/>
+                                                                    ToolTip.Tip="{i18n:T shortcuts.remove_key}"/>
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -373,7 +372,7 @@
                 <Border Classes="card" Padding="24"
                         Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Espacio de disco usado"
+                        <TextBlock Text="{i18n:T settings.storage}"
                                    FontSize="11" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextMuted}"
                                    Margin="0,0,0,16"/>
@@ -381,7 +380,7 @@
                         <!-- Aplicación -->
                         <Grid Margin="0,0,0,10" ColumnDefinitions="*,Auto">
                             <TextBlock Grid.Column="0"
-                                       Text="Aplicación"
+                                       Text="{i18n:T settings.storage_app}"
                                        FontSize="13"
                                        Foreground="{DynamicResource TextPrimary}"
                                        VerticalAlignment="Center"/>
@@ -398,10 +397,10 @@
                         <!-- Archivos manga del usuario -->
                         <Grid Margin="0,0,0,10" ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Mangas"
+                                <TextBlock Text="{i18n:T settings.storage_mangas}"
                                            FontSize="13"
                                            Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Archivos PDF / CBR / CBZ de la carpeta de la biblioteca"
+                                <TextBlock Text="{i18n:T settings.storage_mangas_hint}"
                                            FontSize="11"
                                            Foreground="{DynamicResource TextMuted}"
                                            Margin="0,2,0,0"/>
@@ -419,10 +418,10 @@
                         <!-- Caché local Hakufu (ya no siempre es %APPDATA%: en macOS y Linux es ~/.config) -->
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Caché de Hakufu"
+                                <TextBlock Text="{i18n:T settings.storage_cache}"
                                            FontSize="13"
                                            Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Portadas y datos guardados en la carpeta de datos de Hakufu"
+                                <TextBlock Text="{i18n:T settings.storage_cache_hint}"
                                            FontSize="11"
                                            Foreground="{DynamicResource TextMuted}"
                                            Margin="0,2,0,0"/>
@@ -441,7 +440,7 @@
                     <Grid ColumnDefinitions="*,Auto">
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Acerca de"
+                            <TextBlock Text="{i18n:T settings.about}"
                                        FontSize="11" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,12"/>
@@ -449,7 +448,7 @@
                                        FontSize="22" FontWeight="Black"
                                        Foreground="{DynamicResource TextPrimary}"
                                        Margin="0,0,0,4"/>
-                            <TextBlock Text="Gestor de mangas offline"
+                            <TextBlock Text="{i18n:T settings.tagline}"
                                        FontSize="12"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,16"/>
@@ -457,31 +456,31 @@
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,3"/>
-                            <TextBlock Text=".NET 10 · Avalonia · Windows, macOS y Linux"
+                            <TextBlock Text="{i18n:T settings.platforms}"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,3"/>
-                            <TextBlock Text="Desarrollado por @dp0r1"
+                            <TextBlock Text="{i18n:T settings.developed_by}"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,0,3"/>
-                            <TextBlock Text="Diseño con la ayuda de @_.riscooo"
+                            <TextBlock Text="{i18n:T settings.design_by}"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"/>
                             <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,18,0,0">
                                 <Button Classes="ghost"
-                                        Content="Buscar actualizaciones"
+                                        Content="{i18n:T settings.check_updates}"
                                         Padding="16,9"
                                         Command="{Binding CheckUpdatesCommand}"/>
                                 <TextBlock Text="{Binding Updates.CheckStatus}"
                                            FontSize="12" VerticalAlignment="Center"
                                            Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
-                            <CheckBox Content="Buscar actualizaciones al abrir"
+                            <CheckBox Content="{i18n:T settings.check_updates_on_startup}"
                                       Margin="0,10,0,0"
                                       IsChecked="{Binding CheckUpdatesOnStartup}"/>
                             <Button Classes="ghost"
-                                    Content="Términos y aviso legal"
+                                    Content="{i18n:T settings.legal}"
                                     HorizontalAlignment="Left"
                                     Padding="16,9" Margin="0,18,0,0"
                                     Command="{Binding OpenLegalCommand}"/>
@@ -499,15 +498,15 @@
                 <!-- ── SALIR ── -->
                 <Border Classes="card" Padding="24" Margin="0,20,0,0">
                     <StackPanel>
-                        <TextBlock Text="Salir de Hakufu"
+                        <TextBlock Text="{i18n:T settings.quit}"
                                    FontSize="14" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimary}"
                                    Margin="0,0,0,8"/>
-                        <TextBlock Text="Cierra Hakufu del todo — lo mismo que darle a la X de la ventana."
+                        <TextBlock Text="{i18n:T settings.quit_hint}"
                                    FontSize="12" Foreground="{DynamicResource TextMuted}"
                                    TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,16"/>
                         <Button Classes="ghost"
-                                Content="Salir de Hakufu"
+                                Content="{i18n:T settings.quit}"
                                 HorizontalAlignment="Left" Padding="20,10"
                                 Command="{Binding ExitApplicationCommand}"/>
                     </StackPanel>

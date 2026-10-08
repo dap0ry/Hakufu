@@ -90,12 +90,18 @@ public class I18nFilesTests
     // "i18n: pendiente" (la quita quien termina de traducirla).
     public static IEnumerable<string> TranslatedViews() =>
         Directory.GetFiles(Repo.Root, "*.axaml", SearchOption.AllDirectories)
-                 .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}") &&
-                             !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") &&
-                             !f.Contains($"{Path.DirectorySeparatorChar}tests{Path.DirectorySeparatorChar}") &&
-                             !f.Contains($"{Path.DirectorySeparatorChar}.claude{Path.DirectorySeparatorChar}") &&
-                             File.ReadAllText(f) is var x && x.Contains("xmlns:i18n=") && !x.Contains("i18n: pendiente"))
-                 .Select(f => Path.GetRelativePath(Repo.Root, f));
+                 .Select(f => Path.GetRelativePath(Repo.Root, f))
+                 // Rutas relativas al repo: el repo puede vivir dentro de .claude/worktrees.
+                 .Where(rel => !new[] { "bin", "obj", "tests", ".claude", "promo", "web", "publish" }
+                                   .Contains(rel.Split(Path.DirectorySeparatorChar)[0]) &&
+                               File.ReadAllText(Path.Combine(Repo.Root, rel)) is var x &&
+                               x.Contains("xmlns:i18n=") && !x.Contains("i18n: pendiente"));
+
+    [Fact]
+    public void The_check_sees_the_views_of_this_repo()
+        => Assert.Contains(Path.Combine("MVVM", "View", "SettingsView.axaml"),
+                           Directory.GetFiles(Repo.Root, "*.axaml", SearchOption.AllDirectories)
+                                    .Select(f => Path.GetRelativePath(Repo.Root, f)));
 
     private static readonly Regex VisibleAttr = new(
         @"\s(Text|Content|ToolTip\.Tip|Watermark|PlaceholderText|BackText|Title|Header)=""([^""]*)""");

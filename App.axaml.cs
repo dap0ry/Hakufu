@@ -2,7 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using System.Globalization;
 using Hakufu.Data;
+using Hakufu.I18n;
 
 namespace Hakufu;
 
@@ -26,6 +28,13 @@ public partial class App : Application
             // el SynchronizationContext de Avalonia) es un deadlock en cuanto
             // alguna continuación intente volver a él.
             Task.Run(_repo.LoadAsync).GetAwaiter().GetResult();
+
+            // Idioma: el guardado, o el del sistema la primera vez (ver Localizer.ResolveInitial).
+            var store = _repo.Current;
+            var hasData = store.Mangas.Count > 0 || store.LibraryRoot != "" ||
+                          store.TotalUsageSeconds > 0 || store.ReadingLog.Count > 0;
+            store.Language = Localizer.ResolveInitial(store.Language, hasData, CultureInfo.CurrentUICulture);
+            Localizer.Instance.SetLanguage(store.Language);
 
             // Restos de "Personalizar" (retirado en la 0.10.1): copias de imágenes
             // que ya no usa nada.

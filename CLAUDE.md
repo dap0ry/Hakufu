@@ -112,6 +112,16 @@ corrupt file opens with 0 pages instead of throwing.
 `MainWindow` headless with a sample library; `AssertShows<TView>()` checks that a screen actually
 renders. Add one for every new view.
 
+## Languages (i18n)
+
+The UI is in Spanish or English (Ajustes → Idioma; first run follows the system, existing installs stay Spanish).
+Never write visible text by hand:
+- Views: `xmlns:i18n="using:Hakufu.I18n"` and `Text="{i18n:T area.key}"` (updates live on language change).
+- Code: `L.Get("area.key")`, `L.Format("area.key", n)` and `L.Culture` for numbers/dates (`using Hakufu.I18n;`).
+- Strings live in `Assets/i18n/<area>.es.json` + `<area>.en.json` (AvaloniaResource), keys prefixed with the area.
+  Tests check both files have the same keys and that translated views have no hand-written text.
+- Changing language calls `NavigationService.Reload()` so ViewModel-computed texts are rebuilt.
+
 ## Conventions
 
 - Every change is tied to a Jira **HMR** ticket: branches `feat/HMR-12-…`, commits `HMR-12 …`.

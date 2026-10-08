@@ -25,4 +25,7 @@ public class AppDataStore
     public ReaderSettings            Reader          { get; set; } = new();
 
     public UpdateSettings            Updates         { get; set; } = new();
+
+    /// <summary>"es" o "en"; vacío = decidir al arrancar (ver Localizer.ResolveInitial).</summary>
+    public string                    Language        { get; set; } = string.Empty;
 }

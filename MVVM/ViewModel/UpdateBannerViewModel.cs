@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -41,6 +42,13 @@ public class UpdateBannerViewModel : BaseViewModel
         PrimaryCommand = new AsyncRelayCommand(() => LastOperation = PrimaryAsync(),
             () => _state is not (UpdateBannerState.Hidden or UpdateBannerState.Downloading));
         LaterCommand = new RelayCommand(() => State = UpdateBannerState.Hidden);
+        // Vive toda la sesión: al cambiar de idioma, rehacer sus textos.
+        Localizer.Instance.LanguageChanged += () =>
+        {
+            OnPropertyChanged(nameof(Message));
+            OnPropertyChanged(nameof(PrimaryText));
+            OnPropertyChanged(nameof(CurrentVersion));
+        };
     }
 
     public UpdateBannerState State

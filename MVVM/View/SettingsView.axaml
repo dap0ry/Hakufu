@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
              xmlns:c="using:Hakufu.MVVM.View.Controls"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.SettingsView"
              x:DataType="vm:SettingsViewModel">
+    <!-- i18n: pendiente (Task 4 traduce el resto de Ajustes y quita esta marca) -->
 
     <UserControl.Styles>
         <!-- Tecla de atajo: parece una tecla; vacía, discontinua; escuchando, invertida -->
@@ -140,6 +142,29 @@
                                               VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ── IDIOMA ── -->
+                <Border Classes="card" Padding="24,18" Margin="0,0,0,20">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="{i18n:T language.title}"
+                                       FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       Margin="0,0,0,3"/>
+                            <TextBlock Text="{i18n:T language.subtitle}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                            <Button Classes="ghost" Content="Español" Padding="12,7" FontSize="11"
+                                    Command="{Binding SpanishCommand}"
+                                    Opacity="{Binding IsSpanish, Converter={StaticResource BoolToOpacity}}"/>
+                            <Button Classes="ghost" Content="English" Padding="12,7" FontSize="11"
+                                    Command="{Binding EnglishCommand}"
+                                    Opacity="{Binding IsEnglish, Converter={StaticResource BoolToOpacity}}"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
 

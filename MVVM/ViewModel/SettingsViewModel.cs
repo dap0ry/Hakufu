@@ -1,6 +1,7 @@
 using System.IO;
 using Hakufu.Data;
 using Hakufu.MVVM.Model;
+using Hakufu.I18n;
 using Hakufu.Services;
 using System.Collections.ObjectModel;
 using Avalonia.Input;
@@ -303,6 +304,24 @@ public class SettingsViewModel : BaseViewModel
     // ── Navigation ───────────────────────────────────────────────────────────
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
+
+    // ── Idioma ───────────────────────────────────────────────────────────────
+
+    public bool IsSpanish => Localizer.Instance.Language == "es";
+    public bool IsEnglish => Localizer.Instance.Language == "en";
+
+    public RelayCommand SpanishCommand => new(() => SetLanguage("es"));
+    public RelayCommand EnglishCommand => new(() => SetLanguage("en"));
+
+    private void SetLanguage(string lang)
+    {
+        if (Localizer.Instance.Language == lang) return;
+        Localizer.Instance.SetLanguage(lang);
+        _repo.Current.Language = lang;
+        _ = _repo.SaveAsync();
+        // Los textos que calculan los ViewModels se rehacen recreando la pantalla.
+        _nav.Reload();
+    }
 
     // ── Actualizaciones ──────────────────────────────────────────────────────
 

@@ -1,3 +1,4 @@
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
 using Hakufu.Services;
 
@@ -40,14 +41,14 @@ public class HelpViewModel : BaseViewModel
 
     public IReadOnlyList<HelpSection> Sections { get; } =
     [
-        new("SecStart",    "01", "Empezar"),
-        new("SecLibrary",  "02", "Biblioteca y colecciones"),
-        new("SecReader",   "03", "Leer"),
-        new("SecHome",     "04", "Inicio"),
-        new("SecProfile",  "05", "Tu perfil"),
-        new("SecSettings", "06", "Ajustes"),
-        new("SecBackup",   "07", "Copia de seguridad"),
-        new("SecFaq",      "08", "Preguntas frecuentes"),
+        new("SecStart",    "01", L.Get("help.s1.title")),
+        new("SecLibrary",  "02", L.Get("help.s2.title")),
+        new("SecReader",   "03", L.Get("help.s3.title")),
+        new("SecHome",     "04", L.Get("help.s4.title")),
+        new("SecProfile",  "05", L.Get("help.s5.title")),
+        new("SecSettings", "06", L.Get("help.s6.title")),
+        new("SecBackup",   "07", L.Get("help.s7.title")),
+        new("SecFaq",      "08", L.Get("help.s8.title")),
     ];
 
     /// <summary>Marca en el índice la sección que se está viendo.</summary>
@@ -58,30 +59,9 @@ public class HelpViewModel : BaseViewModel
 
     public IReadOnlyList<HelpShortcut> Shortcuts { get; }
 
+    /// <summary>Preguntas frecuentes: help.faq.q1/a1 … q8/a8 (se leen al crear el VM, que se rehace al cambiar de idioma).</summary>
     public IReadOnlyList<HelpQuestion> Questions { get; } =
-    [
-        new("¿Hakufu copia mis mangas?",
-            "No. Lee los archivos directamente de la carpeta de la biblioteca. Si mueves o borras un archivo " +
-            "ahí, Hakufu lo verá la próxima vez que actualices la biblioteca."),
-        new("¿Necesita internet?",
-            "No. Hakufu funciona entero sin conexión: no hay cuentas, ni servidores, ni nada que se envíe a ningún sitio."),
-        new("¿Dónde se guardan mis datos?",
-            "En tu ordenador, en la carpeta de datos de Hakufu: el progreso de lectura, los favoritos, el orden, " +
-            "las portadas en caché y tu perfil. Puedes abrirla desde Copia de seguridad → Abrir carpeta."),
-        new("¿Qué formatos lee?",
-            "PDF, CBZ y CBR. Las páginas de un CBZ o CBR se ordenan por el nombre de cada imagen."),
-        new("He añadido tomos y no salen",
-            "Comprueba que están dentro de una subcarpeta de la biblioteca (cada subcarpeta es una colección) " +
-            "y pulsa «Actualizar» en Biblioteca."),
-        new("¿Puedo cambiar las teclas del lector?",
-            "Sí, en Ajustes → Atajos de teclado. Cada acción admite hasta dos teclas, también combinaciones como Ctrl + W."),
-        new("¿Cómo me llevo todo a otro ordenador?",
-            "Exporta una copia de seguridad y llévatela junto con tu carpeta de mangas (la copia no incluye los " +
-            "archivos). En el otro equipo, elige la carpeta de la biblioteca en Ajustes e importa la copia. " +
-            "Funciona entre Windows, macOS y Linux."),
-        new("¿Dónde están los términos y el aviso legal?",
-            "En Ajustes → Acerca de → «Términos y aviso legal»."),
-    ];
+        Enumerable.Range(1, 8).Select(i => new HelpQuestion(L.Get($"help.faq.q{i}"), L.Get($"help.faq.a{i}"))).ToList();
 
     public RelayCommand GoBackCommand     => new(() => _nav.NavigateTo<HomeViewModel>());
     public RelayCommand OpenLibraryCommand  => new(() => _nav.NavigateTo<LibraryViewModel>());

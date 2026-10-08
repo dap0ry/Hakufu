@@ -34,8 +34,8 @@ Apple ID gratuito (la firma dura 7 días; se renueva reinstalando).
   Por debajo de **700 px** de ancho `MainView` tiene la clase `compact` y las vistas reordenan
   su contenido con estilos `.compact …` (una columna, márgenes y rótulos más pequeños). El iPad
   usa la disposición de escritorio (se revisa que quepa desde 744 px, el iPad mini en vertical).
-- **Lector táctil**: tocar el tercio izquierdo/derecho pasa página (respetando el sentido de
-  lectura), deslizar el dedo también, tocar en el centro muestra/oculta las barras (modo zen).
+- **Lector táctil**: tocar el tercio izquierdo/derecho pasa a la página anterior/siguiente
+  (como los botones del lector), deslizar el dedo también, tocar en el centro muestra/oculta las barras (modo zen).
   Pellizcar amplía y se arrastra la página ampliada; doble toque vuelve al tamaño normal.
 - **Modo zen en iOS**: oculta la barra de estado (no hay pantalla completa de ventana).
 - **Zonas seguras**: el contenido respeta muesca/isla y la barra de inicio
@@ -45,8 +45,10 @@ Apple ID gratuito (la firma dura 7 días; se renueva reinstalando).
   versión portable) y «Descargar» abre la página de la release; instalar es volver a hacer
   sideload.
 - **Selectores de archivos en iOS**: lo que se elige (foto de perfil, copia a restaurar) se copia a
-  una carpeta temporal antes de usarlo; lo que se guarda (copia de seguridad, perfil en PNG) se
-  escribe en temporal y se vuelca al archivo elegido con `OpenWriteAsync`. Así los servicios siguen
+  una carpeta temporal antes de usarlo (fuera de la app los archivos solo se pueden leer con permiso
+  temporal). Lo que se guarda (copia de seguridad, perfil en PNG) va **directo a la carpeta de
+  Hakufu en Archivos**, sin selector (el escáner solo mira `.cbz/.cbr/.pdf`, así que no molesta);
+  desde Archivos se comparte o se mueve. Así `IFilePickerService` no cambia y los servicios siguen
   trabajando con rutas.
 - **Guardar al salir**: iOS no cierra las apps, las suspende. Al pasar a segundo plano se apunta el
   rato de lectura y se guarda `data.json` (lo que en escritorio hace `desktop.Exit`).

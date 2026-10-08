@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Avalonia.Input;
+using Hakufu.I18n;
 using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
@@ -54,9 +55,9 @@ public class ShortcutSlotViewModel : BaseViewModel
     }
 
     public bool   IsAssigned => Gesture is not null;
-    public string Text => IsCapturing ? "Pulsa una tecla…"
+    public string Text => IsCapturing ? L.Get("shortcuts.press_key")
                         : Gesture is { } g ? ShortcutService.Display(g)
-                        : "+ Añadir";
+                        : L.Get("shortcuts.add");
 
     public RelayCommand ClickCommand { get; }
 }

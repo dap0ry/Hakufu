@@ -53,7 +53,7 @@ public class SettingsViewModel : BaseViewModel
     // ── Carpeta de la biblioteca ─────────────────────────────────────────────
 
     /// <summary>Ruta de la carpeta, o un aviso si aún no hay ninguna.</summary>
-    public string LibraryRootText => _scanner.Root ?? "Ninguna todavía";
+    public string LibraryRootText => _scanner.Root ?? L.Get("settings.library_none");
     public bool   HasLibraryRoot  => _scanner.Root is not null;
 
     private string _libraryStatus = "";
@@ -65,7 +65,7 @@ public class SettingsViewModel : BaseViewModel
 
     public AsyncRelayCommand PickLibraryRootCommand => new(async () =>
     {
-        var folder = await _files.PickFolderAsync("Carpeta de la biblioteca");
+        var folder = await _files.PickFolderAsync(L.Get("settings.library_folder"));
         if (folder is not null) await ScanAsync(_scanner.SetRootAsync(folder));
     }, () => !IsScanning);
 
@@ -80,14 +80,16 @@ public class SettingsViewModel : BaseViewModel
     private async Task ScanAsync(Task<ScanResult> scan)
     {
         IsScanning = true;
-        LibraryStatus = "Leyendo la carpeta…";
+        LibraryStatus = L.Get("settings.reading_folder");
         var result = await scan;
         IsScanning = false;
         if (result.Ok)
         {
             var cols  = _repo.Current.Collections.Count;
             var tomos = _repo.Current.Mangas.Count;
-            LibraryStatus = $"{cols} {(cols == 1 ? "colección" : "colecciones")} · {tomos} {(tomos == 1 ? "tomo" : "tomos")}";
+            LibraryStatus = L.Format("settings.scan_summary",
+                L.Format(cols  == 1 ? "settings.collections_one" : "settings.collections_other", cols),
+                L.Format(tomos == 1 ? "settings.volumes_one"     : "settings.volumes_other",     tomos));
         }
         else LibraryStatus = result.Message ?? "";
         OnPropertyChanged(nameof(LibraryRootText));
@@ -195,7 +197,7 @@ public class SettingsViewModel : BaseViewModel
             {
                 other.Gesture = null;
                 if (other.Row != slot.Row)
-                    notice = $"{ShortcutService.Display(gesture)} ya no hace «{other.Row.Label}».";
+                    notice = L.Format("shortcuts.conflict", ShortcutService.Display(gesture), other.Row.Label);
                 Save(other.Row);
             }
 
@@ -220,7 +222,7 @@ public class SettingsViewModel : BaseViewModel
     {
         ShortcutService.ResetAll(Reader);
         LoadShortcuts();
-        ShortcutNotice = "Atajos de fábrica restaurados.";
+        ShortcutNotice = L.Get("shortcuts.restored");
         _ = _repo.SaveAsync();
     });
 
@@ -229,21 +231,21 @@ public class SettingsViewModel : BaseViewModel
 
     // ── Storage ──────────────────────────────────────────────────────────────
 
-    private string _appSizeText = "Calculando...";
+    private string _appSizeText = L.Get("settings.calculating");
     public string AppSizeText
     {
         get => _appSizeText;
         private set => SetProperty(ref _appSizeText, value);
     }
 
-    private string _mangasSizeText = "Calculando...";
+    private string _mangasSizeText = L.Get("settings.calculating");
     public string MangasSizeText
     {
         get => _mangasSizeText;
         private set => SetProperty(ref _mangasSizeText, value);
     }
 
-    private string _cachesSizeText = "Calculando...";
+    private string _cachesSizeText = L.Get("settings.calculating");
     public string CachesSizeText
     {
         get => _cachesSizeText;
@@ -277,10 +279,11 @@ public class SettingsViewModel : BaseViewModel
 
     private static string FormatSize(long bytes)
     {
-        if (bytes >= 1_073_741_824) return $"{bytes / 1_073_741_824.0:F1} GB";
-        if (bytes >= 1_048_576)     return $"{bytes / 1_048_576.0:F1} MB";
-        if (bytes >= 1_024)         return $"{bytes / 1_024.0:F1} KB";
-        return $"{bytes} B";
+        var c = L.Culture; // "1,5 MB" en español, "1.5 MB" en inglés
+        if (bytes >= 1_073_741_824) return string.Format(c, "{0:F1} GB", bytes / 1_073_741_824.0);
+        if (bytes >= 1_048_576)     return string.Format(c, "{0:F1} MB", bytes / 1_048_576.0);
+        if (bytes >= 1_024)         return string.Format(c, "{0:F1} KB", bytes / 1_024.0);
+        return string.Format(c, "{0} B", bytes);
     }
 
     private static long GetDirSize(string path)
@@ -299,7 +302,7 @@ public class SettingsViewModel : BaseViewModel
     }
 
     public string VersionText =>
-        $"Versión {AppVersion.Current}"; // con su -beta.N, si lo tiene
+        L.Format("common.version", AppVersion.Current); // con su -beta.N, si lo tiene
 
     // ── Navigation ───────────────────────────────────────────────────────────
 

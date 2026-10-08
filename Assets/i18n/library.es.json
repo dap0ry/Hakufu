@@ -11,6 +11,7 @@
   "library.pick_other": "Elegir otra carpeta…",
   "library.empty_title": "Tu estantería está vacía",
   "library.empty_body": "Crea una carpeta por serie dentro de la carpeta de la biblioteca, mete ahí tus tomos en PDF, CBR o CBZ y dale a «Actualizar».",
+  "library.empty_body_ios": "Abre la app Archivos, entra en «En mi iPhone/iPad → Hakufu», crea una carpeta por serie y mete ahí tus tomos en PDF, CBR o CBZ. Luego vuelve y toca «Actualizar».",
   "library.favorite_tip": "Colección favorita",
   "library.reading_folder": "Leyendo la carpeta…",
   "library.summary": "{0} · {1}",

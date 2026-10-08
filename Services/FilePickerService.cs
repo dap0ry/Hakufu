@@ -64,6 +64,7 @@ public class FilePickerService : IFilePickerService
     {
         // No se crea nada: puede ser la carpeta del usuario (o un disco sin conectar).
         if (!Directory.Exists(path)) return;
+        if (AppPlatform.OpenFolder is { } open) { open(path); return; } // iOS: la app Archivos
         var opener = OperatingSystem.IsWindows() ? "explorer.exe"
                    : OperatingSystem.IsMacOS()   ? "open"
                    : "xdg-open";

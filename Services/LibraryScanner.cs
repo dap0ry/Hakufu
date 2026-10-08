@@ -49,6 +49,7 @@ public class LibraryScanner
     {
         get
         {
+            if (AppPaths.FixedLibraryRoot is { } fixedRoot) return fixedRoot;
             if (_repo.Current.LibraryRoot is { Length: > 0 } root) return root;
             return HasAnyFile(AppPaths.LibraryDir) ? AppPaths.LibraryDir : null;
         }
@@ -100,7 +101,8 @@ public class LibraryScanner
         // perder el progreso por un USB sin enchufar.
         if (folder is null) return new(ScanStatus.Unreadable, root);
         // Se eligió otra carpeta mientras se leía esta: ya la leerá la lectura siguiente.
-        if (_repo.Current.LibraryRoot is { Length: > 0 } chosen && chosen != root) return new(ScanStatus.Ok, chosen);
+        if (AppPaths.FixedLibraryRoot is null &&
+            _repo.Current.LibraryRoot is { Length: > 0 } chosen && chosen != root) return new(ScanStatus.Ok, chosen);
 
         _repo.Current.LibraryRoot = root; // la antigua "biblioteca" queda fijada como carpeta
         Apply(_repo.Current, root, folder);

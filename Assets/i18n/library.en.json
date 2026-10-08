@@ -11,6 +11,7 @@
   "library.pick_other": "Choose another folder…",
   "library.empty_title": "Your shelf is empty",
   "library.empty_body": "Create a folder for each series inside your library folder, put your PDF, CBR or CBZ volumes in it and click “Refresh”.",
+  "library.empty_body_ios": "Open the Files app, go to “On My iPhone/iPad → Hakufu”, create a folder for each series and put your PDF, CBR or CBZ volumes in it. Then come back and tap “Refresh”.",
   "library.favorite_tip": "Favorite collection",
   "library.reading_folder": "Reading the folder…",
   "library.summary": "{0} · {1}",

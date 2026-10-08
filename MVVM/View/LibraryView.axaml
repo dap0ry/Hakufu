@@ -141,6 +141,7 @@
                         <Button Classes="primary" Content="{i18n:T library.reread}" Padding="22,11"
                                 Command="{Binding RefreshCommand}"/>
                         <Button Classes="ghost" Content="{i18n:T library.pick_other}" Padding="18,11"
+                                IsVisible="{Binding !IsMobile}"
                                 Command="{Binding PickRootCommand}"/>
                     </StackPanel>
                 </StackPanel>
@@ -154,6 +155,11 @@
                                FontSize="48" LineHeight="46" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextPrimary}"/>
                     <TextBlock Text="{i18n:T library.empty_body}"
+                               IsVisible="{Binding !IsMobile}"
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <TextBlock Text="{i18n:T library.empty_body_ios}"
+                               IsVisible="{Binding IsMobile}"
                                TextWrapping="Wrap" FontSize="14"
                                Foreground="{DynamicResource TextSecondary}"/>
                     <Button Classes="primary" Content="{i18n:T library.open_folder}" HorizontalAlignment="Left"

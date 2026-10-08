@@ -10,7 +10,20 @@ public static class AppPaths
     public static string DataDir =>
         Environment.GetEnvironmentVariable("HAKUFU_DATA_DIR") is { Length: > 0 } overrideDir
             ? overrideDir
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
+            : DataDirOverride
+              ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hakufu");
+
+    /// <summary>
+    /// iOS: Library/Application Support/Hakufu (lo fija Platforms/iOS/AppDelegate). Allí
+    /// ApplicationData cae dentro de Documentos, que es la biblioteca visible en Archivos.
+    /// </summary>
+    public static string? DataDirOverride { get; set; }
+
+    /// <summary>
+    /// iOS: la carpeta Documentos de la app («En mi iPhone → Hakufu» en Archivos) es
+    /// siempre la biblioteca. Null en escritorio: la elige el usuario.
+    /// </summary>
+    public static string? FixedLibraryRoot { get; set; }
 
     public static string DataFile         => Path.Combine(DataDir, "data.json");
     public static string CoversDir        => Path.Combine(DataDir, "covers");

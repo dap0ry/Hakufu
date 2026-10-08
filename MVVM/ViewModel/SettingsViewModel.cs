@@ -53,7 +53,12 @@ public class SettingsViewModel : BaseViewModel
     // ── Carpeta de la biblioteca ─────────────────────────────────────────────
 
     /// <summary>Ruta de la carpeta, o un aviso si aún no hay ninguna.</summary>
-    public string LibraryRootText => _scanner.Root ?? L.Get("settings.library_none");
+    /// <summary>En iOS la biblioteca es siempre la carpeta de Hakufu en Archivos.</summary>
+    public bool CanPickLibraryRoot => !AppPlatform.IsMobile;
+    /// <summary>iOS no deja cerrar las apps desde dentro.</summary>
+    public bool CanExit => !AppPlatform.IsMobile;
+
+    public string LibraryRootText => AppPlatform.IsMobile ? L.Get("settings.library_ios_location") : _scanner.Root ?? L.Get("settings.library_none");
     public bool   HasLibraryRoot  => _scanner.Root is not null;
 
     private string _libraryStatus = "";

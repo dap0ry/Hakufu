@@ -184,6 +184,11 @@
                                                      Foreground="{DynamicResource TextPrimary}"
                                                      Margin="0,0,0,3"/>
                                 <TextBlock Text="{i18n:T settings.library_folder_hint}"
+                                           IsVisible="{Binding CanPickLibraryRoot}"
+                                           FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextMuted}"/>
+                                <TextBlock Text="{i18n:T settings.library_ios_hint}"
+                                           IsVisible="{Binding !CanPickLibraryRoot}"
                                            FontSize="11" TextWrapping="Wrap"
                                            Foreground="{DynamicResource TextMuted}"/>
                             </StackPanel>
@@ -191,14 +196,15 @@
 
                         <Border Padding="24,16" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0">
                             <StackPanel Spacing="10">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="primary" Content="{i18n:T settings.choose_folder}" Padding="16,9"
+                                <WrapPanel Name="LibraryButtons">
+                                    <Button Classes="primary" Content="{i18n:T settings.choose_folder}" Padding="16,9" Margin="0,0,8,8"
+                                            IsVisible="{Binding CanPickLibraryRoot}"
                                             Command="{Binding PickLibraryRootCommand}"/>
-                                    <Button Classes="ghost" Content="{i18n:T settings.open_folder}" Padding="16,9"
+                                    <Button Classes="ghost" Content="{i18n:T settings.open_folder}" Padding="16,9" Margin="0,0,8,8"
                                             Command="{Binding OpenLibraryRootCommand}"/>
-                                    <Button Classes="ghost" Content="{i18n:T settings.rescan}" Padding="16,9"
+                                    <Button Classes="ghost" Content="{i18n:T settings.rescan}" Padding="16,9" Margin="0,0,8,8"
                                             Command="{Binding RescanLibraryCommand}"/>
-                                </StackPanel>
+                                </WrapPanel>
                                 <TextBlock Text="{Binding LibraryStatus}"
                                            IsVisible="{Binding LibraryStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                            FontSize="11" TextWrapping="Wrap"
@@ -495,8 +501,8 @@
                     </Grid>
                 </Border>
 
-                <!-- ── SALIR ── -->
-                <Border Classes="card" Padding="24" Margin="0,20,0,0">
+                <!-- ── SALIR (no en iOS: allí las apps no se cierran desde dentro) ── -->
+                <Border Classes="card" Padding="24" Margin="0,20,0,0" IsVisible="{Binding CanExit}">
                     <StackPanel>
                         <TextBlock Text="{i18n:T settings.quit}"
                                    FontSize="14" FontWeight="SemiBold"

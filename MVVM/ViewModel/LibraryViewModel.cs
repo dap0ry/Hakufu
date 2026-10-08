@@ -43,6 +43,8 @@ public class LibraryViewModel : BaseViewModel
     public bool HasError => _hasRoot && _errorText is not null;
     /// <summary>Carpeta leída y sin colecciones.</summary>
     public bool IsEmpty => _hasRoot && _errorText is null && !IsScanning && Collections.Count == 0;
+    /// <summary>iPhone/iPad: los mangas se meten con la app Archivos (texto de la biblioteca vacía).</summary>
+    public bool IsMobile => AppPlatform.IsMobile;
     public bool IsScanning { get => _isScanning; private set { SetProperty(ref _isScanning, value); RaiseState(); } }
 
     public LibraryViewModel(LibraryService library, LibraryScanner scanner, ICoverService cover,

@@ -7,6 +7,8 @@
   "settings.dark_theme_hint": "Cambia entre modo claro y oscuro",
   "settings.library_folder": "Carpeta de la biblioteca",
   "settings.library_folder_hint": "Cada carpeta de dentro es una colección y sus PDF, CBR y CBZ son los tomos. Hakufu solo la lee: no copia, mueve ni borra nada.",
+  "settings.library_ios_location": "Archivos → En mi iPhone/iPad → Hakufu",
+  "settings.library_ios_hint": "En iPhone y iPad la biblioteca es la carpeta de Hakufu en la app Archivos. Cada carpeta de dentro es una colección y sus PDF, CBR y CBZ son los tomos.",
   "settings.library_none": "Ninguna todavía",
   "settings.choose_folder": "Elegir carpeta…",
   "settings.open_folder": "Abrir carpeta",

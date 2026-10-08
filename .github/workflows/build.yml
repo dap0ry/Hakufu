@@ -106,4 +106,6 @@ jobs:
         run: |
           PRE=""
           case "${GITHUB_REF_NAME}" in *-*) PRE="--prerelease" ;; esac
-          gh release create "${GITHUB_REF_NAME}" dist/* --title "Hakufu ${GITHUB_REF_NAME#v}" --generate-notes ${PRE}
+          # Los de Velopack llegan en dist/velopack/: se suben todos los archivos, sueltos.
+          find dist -type f -print0 | xargs -0 gh release create "${GITHUB_REF_NAME}" \
+            --title "Hakufu ${GITHUB_REF_NAME#v}" --generate-notes ${PRE}

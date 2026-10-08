@@ -34,3 +34,11 @@ public class ShellTests
         Assert.IsType<BackupViewModel>(nav.CurrentViewModel);
     }
 }
+
+public class AppNameTests
+{
+    // macOS enseña Application.Name en la barra de menús ("Avalonia Application" si no se pone).
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void The_app_is_called_Hakufu_in_the_menu_bar()
+        => Assert.Equal("Hakufu", Avalonia.Application.Current!.Name);
+}

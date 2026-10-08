@@ -23,4 +23,12 @@
 ## Páginas
 
 - [Inicio y descargas](https://hakufu.vercel.app/)
+- [English version](https://hakufu.vercel.app/en/)
 - [Términos y condiciones](https://hakufu.vercel.app/terminos.html)
+
+## In English
+
+Hakufu (Hakufu Manga Reader) is a free, offline desktop manga reader and manager for Windows, macOS and Linux. It reads PDF, CBR and CBZ files and organizes them into collections (each subfolder of the chosen library folder is a collection). No accounts, no ads, no servers: everything stays on the user's computer.
+
+- English page: https://hakufu.vercel.app/en/
+- Downloads: https://github.com/dap0ry/Hakufu/releases/latest

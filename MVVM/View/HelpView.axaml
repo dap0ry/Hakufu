@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Hakufu.MVVM.ViewModel"
              xmlns:c="using:Hakufu.MVVM.View.Controls"
+             xmlns:i18n="using:Hakufu.I18n"
              x:Class="Hakufu.MVVM.View.HelpView"
              x:DataType="vm:HelpViewModel">
 
@@ -189,9 +190,9 @@
 
         <!-- ═══ CABECERA ═══ -->
         <c:PageHeader Grid.Row="0"
-                      Title="Ayuda"
-                      Subtitle="Cómo usar Hakufu, en ocho pasos"
-                      BackText="← Inicio"
+                      Title="{i18n:T help.title}"
+                      Subtitle="{i18n:T help.subtitle}"
+                      BackText="{i18n:T common.back_home}"
                       BackCommand="{Binding GoBackCommand}">
         </c:PageHeader>
 
@@ -231,83 +232,83 @@
                     <!-- ── 01 EMPEZAR ── -->
                     <StackPanel Name="SecStart" Classes="section">
                         <TextBlock Classes="kicker" Text="01"/>
-                        <TextBlock Classes="h2" Text="Empezar"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s1.title}"/>
                         <TextBlock Classes="lead"
-                                   Text="Hakufu ordena y lee los mangas que ya tienes en tu ordenador. Solo necesita saber en qué carpeta están."/>
+                                   Text="{i18n:T help.s1.intro}"/>
 
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="1 · Elige la carpeta de la biblioteca"/>
-                                <TextBlock Classes="p" Text="Ve a Ajustes → Carpeta de la biblioteca y pulsa «Elegir carpeta…». Elige la carpeta donde guardas tus mangas."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s1.t1.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s1.t1.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="2 · Carpetas = colecciones, archivos = tomos"/>
-                                <TextBlock Classes="p" Text="Cada subcarpeta es una colección (una serie) y los archivos PDF, CBR o CBZ que hay dentro son sus tomos."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s1.t2.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s1.t2.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature" BorderThickness="0,1,0,1" Margin="0,0,0,28">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="3 · Abre Biblioteca"/>
-                                <TextBlock Classes="p" Text="Ahí aparecen todas tus colecciones con sus portadas. Ya puedes leer."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s1.t3.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s1.t3.text}"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Árbol de ejemplo -->
                         <Border Classes="card" Padding="28,22" HorizontalAlignment="Left" MinWidth="440">
                             <StackPanel>
-                                <TextBlock Classes="label" Text="EJEMPLO" Margin="0,0,0,12"/>
+                                <TextBlock Classes="label" Text="{i18n:T help.s1.example}" Margin="0,0,0,12"/>
 
                                 <StackPanel Classes="treeRow">
                                     <ContentControl Classes="folder"/>
-                                    <TextBlock Classes="folderName" Text="Mangas"/>
-                                    <TextBlock Classes="note" Text="← la carpeta de la biblioteca"/>
+                                    <TextBlock Classes="folderName" Text="{i18n:T help.s1.tree.root}"/>
+                                    <TextBlock Classes="note" Text="{i18n:T help.s1.tree.root_note}"/>
                                 </StackPanel>
                                 <Border Classes="branch">
                                     <StackPanel>
                                         <StackPanel Classes="treeRow">
                                             <ContentControl Classes="folder"/>
-                                            <TextBlock Classes="folderName" Text="Kurogane"/>
-                                            <TextBlock Classes="note" Text="← una colección"/>
+                                            <TextBlock Classes="folderName" Text="{i18n:T help.s1.tree.series1}"/>
+                                            <TextBlock Classes="note" Text="{i18n:T help.s1.tree.collection_note}"/>
                                         </StackPanel>
                                         <Border Classes="branch">
                                             <StackPanel>
                                                 <StackPanel Classes="treeRow">
-                                                    <Border Classes="ext"><TextBlock Text="CBZ"/></Border>
-                                                    <TextBlock Classes="fileName" Text="Kurogane 1.cbz"/>
-                                                    <TextBlock Classes="note" Text="← un tomo"/>
+                                                    <Border Classes="ext"><TextBlock Text="{i18n:T help.s1.tree.ext_cbz}"/></Border>
+                                                    <TextBlock Classes="fileName" Text="{i18n:T help.s1.tree.series1_vol1}"/>
+                                                    <TextBlock Classes="note" Text="{i18n:T help.s1.tree.volume_note}"/>
                                                 </StackPanel>
                                                 <StackPanel Classes="treeRow">
-                                                    <Border Classes="ext"><TextBlock Text="CBZ"/></Border>
-                                                    <TextBlock Classes="fileName" Text="Kurogane 2.cbz"/>
+                                                    <Border Classes="ext"><TextBlock Text="{i18n:T help.s1.tree.ext_cbz}"/></Border>
+                                                    <TextBlock Classes="fileName" Text="{i18n:T help.s1.tree.series1_vol2}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </Border>
                                         <StackPanel Classes="treeRow">
                                             <ContentControl Classes="folder"/>
-                                            <TextBlock Classes="folderName" Text="Marea Roja"/>
+                                            <TextBlock Classes="folderName" Text="{i18n:T help.s1.tree.series2}"/>
                                         </StackPanel>
                                         <Border Classes="branch">
                                             <StackPanel>
                                                 <StackPanel Classes="treeRow">
-                                                    <Border Classes="ext"><TextBlock Text="PDF"/></Border>
-                                                    <TextBlock Classes="fileName" Text="Marea Roja 1.pdf"/>
+                                                    <Border Classes="ext"><TextBlock Text="{i18n:T help.s1.tree.ext_pdf}"/></Border>
+                                                    <TextBlock Classes="fileName" Text="{i18n:T help.s1.tree.series2_vol1}"/>
                                                 </StackPanel>
                                                 <StackPanel Classes="treeRow">
-                                                    <Border Classes="ext"><TextBlock Text="CBR"/></Border>
-                                                    <TextBlock Classes="fileName" Text="Marea Roja 2.cbr"/>
+                                                    <Border Classes="ext"><TextBlock Text="{i18n:T help.s1.tree.ext_cbr}"/></Border>
+                                                    <TextBlock Classes="fileName" Text="{i18n:T help.s1.tree.series2_vol2}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </Border>
                                         <StackPanel Classes="treeRow">
                                             <ContentControl Classes="folder"/>
-                                            <TextBlock Classes="folderName" Text="Último Tren"/>
+                                            <TextBlock Classes="folderName" Text="{i18n:T help.s1.tree.series3}"/>
                                         </StackPanel>
                                         <Border Classes="branch" Margin="7,0,0,0">
                                             <StackPanel Classes="treeRow">
-                                                <Border Classes="ext"><TextBlock Text="CBZ"/></Border>
-                                                <TextBlock Classes="fileName" Text="Último Tren 1.cbz"/>
+                                                <Border Classes="ext"><TextBlock Text="{i18n:T help.s1.tree.ext_cbz}"/></Border>
+                                                <TextBlock Classes="fileName" Text="{i18n:T help.s1.tree.series3_vol1}"/>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -316,12 +317,12 @@
                         </Border>
 
                         <TextBlock Classes="p" Margin="0,24,0,0"
-                                   Text="Hakufu no copia ni mueve nada: lee la carpeta tal cual. Para añadir mangas, mete los archivos en esas carpetas (o crea una carpeta nueva para una serie nueva) y pulsa «Actualizar» en Biblioteca. Al abrir Biblioteca también se pone al día sola. Los archivos sueltos en la carpeta principal salen en «Sin colección»."/>
+                                   Text="{i18n:T help.s1.outro}"/>
                         <Border Classes="tip">
                             <TextBlock Classes="p"
-                                       Text="En Ajustes → Carpeta de la biblioteca también están «Abrir carpeta», que la abre en tu explorador de archivos, y «Volver a leer», que la recorre otra vez entera."/>
+                                       Text="{i18n:T help.s1.tip}"/>
                         </Border>
-                        <Button Classes="primary" Content="Ir a Ajustes" HorizontalAlignment="Left"
+                        <Button Classes="primary" Content="{i18n:T help.s1.go_settings}" HorizontalAlignment="Left"
                                 Padding="20,10" Margin="0,28,0,0"
                                 Command="{Binding OpenSettingsCommand}"/>
                     </StackPanel>
@@ -329,41 +330,41 @@
                     <!-- ── 02 BIBLIOTECA ── -->
                     <StackPanel Name="SecLibrary" Classes="section">
                         <TextBlock Classes="kicker" Text="02"/>
-                        <TextBlock Classes="h2" Text="Biblioteca y colecciones"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s2.title}"/>
                         <TextBlock Classes="lead"
-                                   Text="Cada colección es un montón de portadas, como los tomos apilados en la estantería. Debajo, cuántos tomos tiene y cuánto llevas leído."/>
+                                   Text="{i18n:T help.s2.intro}"/>
                         <Border Classes="shot">
                             <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/library.png"/>
                         </Border>
 
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Abrir una colección"/>
-                                <TextBlock Classes="p" Text="Haz clic en su montón. Dentro ves sus tomos con lo que llevas de cada uno: «Pág. 12 de 180», «Terminado»…"/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s2.t1.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s2.t1.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Favoritos"/>
-                                <TextBlock Classes="p" Text="Pasa el ratón por una portada y pulsa la estrella. En las favoritas la estrella se queda siempre a la vista. Vale para colecciones y para tomos."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s2.t2.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s2.t2.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Ordenar"/>
-                                <TextBlock Classes="p" Text="Dentro de una colección: por Nombre, por Fecha o A mano (subes y bajas cada tomo con las flechas y pulsas «Guardar orden»). Hakufu recuerda el orden que elijas."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s2.t3.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s2.t3.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Tamaño"/>
-                                <TextBlock Classes="p" Text="El deslizador «Tamaño» hace las portadas más grandes o más pequeñas."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s2.t4.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s2.t4.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature" BorderThickness="0,1,0,1" Margin="0,0,0,28">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Abrir carpeta y Actualizar"/>
-                                <TextBlock Classes="p" Text="En la cabecera de Biblioteca, «Abrir carpeta» abre la carpeta de la biblioteca en tu explorador y «Actualizar» la vuelve a leer para que aparezcan los tomos nuevos. Dentro de una colección, «Abrir carpeta» abre la de esa colección."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s2.t5.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s2.t5.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="shot">
@@ -374,35 +375,35 @@
                     <!-- ── 03 LEER ── -->
                     <StackPanel Name="SecReader" Classes="section">
                         <TextBlock Classes="kicker" Text="03"/>
-                        <TextBlock Classes="h2" Text="Leer"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s3.title}"/>
                         <TextBlock Classes="lead"
-                                   Text="Haz clic en un tomo para abrirlo. Se abre por la página en la que lo dejaste."/>
+                                   Text="{i18n:T help.s3.intro}"/>
                         <Border Classes="shot">
                             <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/reader.png"/>
                         </Border>
 
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Pasar página"/>
-                                <TextBlock Classes="p" Text="Con las flechas de la barra de abajo o con el teclado (mira los atajos más abajo)."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s3.t1.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s3.t1.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Una o dos páginas"/>
-                                <TextBlock Classes="p" Text="«1 pág.» y «2 págs.» en la barra de abajo. A doble página ves dos hojas juntas, como un libro abierto."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s3.t2.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s3.t2.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Modo zen"/>
-                                <TextBlock Classes="p" Text="«Zen» pone el lector a pantalla completa, sin barras, solo el manga. Sales con Esc."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s3.t3.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s3.t3.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature" BorderThickness="0,1,0,1" Margin="0,0,0,28">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="El progreso se guarda solo"/>
-                                <TextBlock Classes="p" Text="Cada vez que pasas página Hakufu apunta por dónde vas. Cierra cuando quieras con «Cerrar»: la próxima vez sigues ahí."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s3.t4.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s3.t4.text}"/>
                             </StackPanel>
                         </Border>
 
@@ -410,10 +411,10 @@
                         <Border Classes="card" Padding="0" ClipToBounds="True">
                             <StackPanel>
                                 <StackPanel Margin="24,20,24,12">
-                                    <TextBlock Classes="label" Text="Atajos de teclado"/>
+                                    <TextBlock Classes="label" Text="{i18n:T help.s3.shortcuts}"/>
                                     <TextBlock FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextMuted}"
-                                               Text="Así están ahora. Puedes cambiarlos en Ajustes → Atajos de teclado."/>
+                                               Text="{i18n:T help.s3.shortcuts_hint}"/>
                                 </StackPanel>
                                 <ItemsControl ItemsSource="{Binding Shortcuts}">
                                     <ItemsControl.ItemTemplate>
@@ -450,16 +451,16 @@
                     <!-- ── 04 INICIO ── -->
                     <StackPanel Name="SecHome" Classes="section">
                         <TextBlock Classes="kicker" Text="04"/>
-                        <TextBlock Classes="h2" Text="Inicio"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s4.title}"/>
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Margin="0,0,32,0">
                                 <TextBlock Classes="lead"
-                                           Text="Inicio te espera con el último tomo que estabas leyendo."/>
+                                           Text="{i18n:T help.s4.intro}"/>
                                 <TextBlock Classes="p"
-                                           Text="Pulsa «Seguir leyendo» y vuelves justo a esa página. Si aún no has empezado ninguno, verás un botón para ir a la biblioteca."/>
+                                           Text="{i18n:T help.s4.p1}"/>
                                 <TextBlock Classes="p" Margin="0,14,0,0"
-                                           Text="Desde el menú de la izquierda llegas a Biblioteca, Perfil, Copia de seguridad, Ajustes y esta Ayuda."/>
-                                <Button Classes="ghost" Content="Ir a la biblioteca" HorizontalAlignment="Left"
+                                           Text="{i18n:T help.s4.p2}"/>
+                                <Button Classes="ghost" Content="{i18n:T help.s4.go_library}" HorizontalAlignment="Left"
                                         Padding="18,10" Margin="0,24,0,0"
                                         Command="{Binding OpenLibraryCommand}"/>
                             </StackPanel>
@@ -473,35 +474,35 @@
                     <!-- ── 05 PERFIL ── -->
                     <StackPanel Name="SecProfile" Classes="section">
                         <TextBlock Classes="kicker" Text="05"/>
-                        <TextBlock Classes="h2" Text="Tu perfil"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s5.title}"/>
                         <TextBlock Classes="lead"
-                                   Text="Tu tarjeta de lector: cuánto lees, qué estás leyendo y qué es lo que más te gusta."/>
+                                   Text="{i18n:T help.s5.intro}"/>
                         <Border Classes="shot">
                             <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/profile.png"/>
                         </Border>
 
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Editar perfil"/>
-                                <TextBlock Classes="p" Text="Pon tu foto, tu nombre y tu manga favorito."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s5.t1.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s5.t1.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Estadísticas y gráfica"/>
-                                <TextBlock Classes="p" Text="Tiempo leyendo, páginas, tomos terminados y los días seguidos que llevas leyendo. La gráfica enseña las horas de cada semana de las últimas doce; la barra destacada es la semana actual."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s5.t2.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s5.t2.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Leyendo ahora"/>
-                                <TextBlock Classes="p" Text="Las tres colecciones que has leído más recientemente, con lo que llevas de cada una. Haz clic en una para abrirla."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s5.t3.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s5.t3.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature" BorderThickness="0,1,0,1">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Guardar imagen"/>
-                                <TextBlock Classes="p" Text="Guarda la tarjeta como imagen PNG para compartirla: en horizontal (ordenador) o en vertical (móvil, historias)."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s5.t4.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s5.t4.text}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -509,47 +510,47 @@
                     <!-- ── 06 AJUSTES ── -->
                     <StackPanel Name="SecSettings" Classes="section">
                         <TextBlock Classes="kicker" Text="06"/>
-                        <TextBlock Classes="h2" Text="Ajustes"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s6.title}"/>
                         <TextBlock Classes="lead"
-                                   Text="Lo que puedes cambiar a tu gusto. Todo se guarda al momento."/>
+                                   Text="{i18n:T help.s6.intro}"/>
                         <Border Classes="shot" MaxWidth="560">
                             <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/settings.png"/>
                         </Border>
 
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Tema"/>
-                                <TextBlock Classes="p" Text="Claro u oscuro."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s6.t1.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s6.t1.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Lectura"/>
-                                <TextBlock Classes="p" Text="«Doble página» abre los tomos a dos páginas de entrada. «Abrir en modo zen» empieza a leer directamente a pantalla completa."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s6.t2.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s6.t2.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Atajos de teclado"/>
-                                <TextBlock Classes="p" Text="Haz clic en una tecla y pulsa la nueva; valen combinaciones como Ctrl + W. Cada acción puede tener dos teclas. La × quita una y «Restablecer» vuelve a las de fábrica."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s6.t3.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s6.t3.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Carpeta de la biblioteca"/>
-                                <TextBlock Classes="p" Text="«Elegir carpeta…» para cambiarla, «Abrir carpeta» para verla en tu explorador y «Volver a leer» para recorrerla otra vez."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s6.t4.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s6.t4.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Espacio de disco"/>
-                                <TextBlock Classes="p" Text="Cuánto ocupan la aplicación, tus mangas y la caché de Hakufu (portadas y datos)."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s6.t5.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s6.t5.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature" BorderThickness="0,1,0,1">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Acerca de"/>
-                                <TextBlock Classes="p" Text="La versión de Hakufu y los términos y aviso legal."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s6.t6.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s6.t6.text}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -557,30 +558,30 @@
                     <!-- ── 07 COPIA DE SEGURIDAD ── -->
                     <StackPanel Name="SecBackup" Classes="section">
                         <TextBlock Classes="kicker" Text="07"/>
-                        <TextBlock Classes="h2" Text="Copia de seguridad"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s7.title}"/>
                         <TextBlock Classes="lead"
-                                   Text="Guarda en un archivo .zip todo lo que Hakufu sabe de tu biblioteca, y recupéralo aquí o en otro ordenador."/>
+                                   Text="{i18n:T help.s7.intro}"/>
                         <Border Classes="shot" MaxWidth="560">
                             <Image RenderOptions.BitmapInterpolationMode="HighQuality" Source="avares://Hakufu/Assets/Help/backup.png"/>
                         </Border>
 
                         <Border Classes="feature">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Exportar"/>
-                                <TextBlock Classes="p" Text="«Exportar copia…» crea un .zip con tu perfil (nombre, foto, estadísticas, tema y ajustes) y, si activas «Incluir colecciones», el progreso, los favoritos y el historial de las colecciones que marques. Se queda en tu equipo, donde lo guardes: un disco externo, un pendrive u otra carpeta."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s7.t1.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s7.t1.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="feature" BorderThickness="0,1,0,1">
                             <StackPanel>
-                                <TextBlock Classes="term" Text="Pasarlo a otro ordenador"/>
-                                <TextBlock Classes="p" Text="Instala Hakufu en el otro equipo, elige allí la carpeta de la biblioteca (con tus mangas, en las mismas subcarpetas) y ve a Copia de seguridad → «Elegir copia…». Funciona entre Windows, macOS y Linux. La copia no lleva los archivos de manga: cópialos aparte."/>
+                                <TextBlock Classes="term" Text="{i18n:T help.s7.t2.term}"/>
+                                <TextBlock Classes="p" Text="{i18n:T help.s7.t2.text}"/>
                             </StackPanel>
                         </Border>
                         <Border Classes="tip">
                             <TextBlock Classes="p"
-                                       Text="Restaurar aplica tu perfil y el progreso de los tomos que vengan en la copia; lo demás se queda como está. Tus archivos de manga no se tocan."/>
+                                       Text="{i18n:T help.s7.tip}"/>
                         </Border>
-                        <Button Classes="ghost" Content="Ir a Copia de seguridad" HorizontalAlignment="Left"
+                        <Button Classes="ghost" Content="{i18n:T help.s7.go_backup}" HorizontalAlignment="Left"
                                 Padding="18,10" Margin="0,28,0,0"
                                 Command="{Binding OpenBackupCommand}"/>
                     </StackPanel>
@@ -588,7 +589,7 @@
                     <!-- ── 08 PREGUNTAS FRECUENTES ── -->
                     <StackPanel Name="SecFaq" Classes="section" Margin="0">
                         <TextBlock Classes="kicker" Text="08"/>
-                        <TextBlock Classes="h2" Text="Preguntas frecuentes"/>
+                        <TextBlock Classes="h2" Text="{i18n:T help.s8.title}"/>
                         <ItemsControl ItemsSource="{Binding Questions}" Margin="0,10,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:HelpQuestion">

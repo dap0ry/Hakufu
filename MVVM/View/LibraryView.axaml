@@ -187,7 +187,8 @@
                             Command="{Binding OpenFolderCommand}"/>
                 </StackPanel>
 
-                <ItemsControl ItemsSource="{Binding Collections}" Margin="34,36,34,40">
+                <ItemsControl ItemsSource="{Binding Collections}" Margin="34,36,34,40"
+                              IsVisible="{Binding ShowCollections}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"/>

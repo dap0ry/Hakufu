@@ -190,7 +190,7 @@ public class ReaderViewModel : BaseViewModel, IDisposable
             _             => null,
         };
     public RelayCommand ToggleZenModeCommand => new(() => IsZenMode = !IsZenMode);
-    public RelayCommand ExitZenModeCommand   => new(() => { if (IsZenMode) IsZenMode = false; });
+    public RelayCommand ExitZenModeCommand   => new(() => IsZenMode = false, () => IsZenMode);
 
     public RelayCommand CloseReaderCommand => new(async () =>
     {

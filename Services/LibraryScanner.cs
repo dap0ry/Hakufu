@@ -94,6 +94,9 @@ public class LibraryScanner
     {
         var root = Root;
         if (root is null) return new(ScanStatus.NoRoot);
+        // Android sin permiso: se ven las carpetas pero no sus archivos. Leer así quitaría todos
+        // los tomos y su progreso: como con un disco desconectado, no se toca nada.
+        if (AppPlatform.HasLibraryAccess is { } hasAccess && !hasAccess()) return new(ScanStatus.Unreadable, root);
         // Android: la carpeta por defecto es de Hakufu y se crea vacía (al dar el permiso aún no
         // existe). Una carpeta elegida que falta no se crea: puede ser una tarjeta SD quitada.
         if (root == AppPaths.DefaultLibraryRoot)

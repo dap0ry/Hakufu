@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 using Hakufu.Data;
 using Hakufu.I18n;
@@ -177,6 +178,71 @@ public class AndroidTests
 
         Assert.True(back.Handled);
         Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
+    }
+
+    // Android: el botón de atrás llega antes como tecla Escape (Avalonia: Keycode.Back → Key.Escape).
+    // El lector se la quedaba siempre (atajo «salir del modo zen») y atrás no salía del lector.
+    // Fuera del modo zen tiene que pasar; dentro, sale del modo zen.
+    [AvaloniaFact]
+    public void Back_key_reaches_android_unless_it_exits_zen()
+    {
+        using var app = ViewSmoke.StartMobile(390, 844);
+        app.Root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
+        app.AssertShows<ReaderView>();
+        var reader = Assert.IsType<ReaderViewModel>(app.Root.Navigation.CurrentViewModel);
+
+        Assert.False(PressEscape(app.Host).Handled);
+
+        reader.IsZenMode = true;
+        Assert.True(PressEscape(app.Host).Handled);
+        Assert.False(reader.IsZenMode);
+    }
+
+    private static KeyEventArgs PressEscape(TopLevel top)
+    {
+        var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape };
+        top.RaiseEvent(e);
+        return e;
+    }
+
+    // Review Focus #1: sin permiso, Android deja ver las carpetas pero no sus archivos. Leer así
+    // quitaría de data.json todos los tomos (y su progreso): sin permiso no se lee nada.
+    [Fact]
+    public async Task Without_permission_the_scan_touches_nothing()
+    {
+        using var tmp = new TempDataDir();
+        using var android = new AndroidMode(tmp.Root);
+        var repo = NewRepo();
+        var serie = Path.Combine(tmp.Root, "Hakufu", "Serie");
+        var tomo = Fixtures.MakeCbz(serie, "Tomo 1.cbz", "1.png");
+        var scanner = new LibraryScanner(repo);
+        Assert.Equal(ScanStatus.Ok, (await scanner.ScanAsync()).Status);
+        Assert.Single(repo.Current.Mangas);
+
+        android.HasAccess = false;
+        File.Delete(tomo); // lo que «ve» Android sin permiso: la carpeta, sin sus archivos
+        Assert.Equal(ScanStatus.Unreadable, (await scanner.ScanAsync()).Status);
+        Assert.Single(repo.Current.Mangas);
+    }
+
+    [Fact]
+    public async Task Without_permission_the_collections_hide_behind_the_notice()
+    {
+        using var tmp = new TempDataDir();
+        using var android = new AndroidMode(tmp.Root);
+        var repo = NewRepo();
+        Fixtures.MakeCbz(Path.Combine(tmp.Root, "Hakufu", "Serie"), "Tomo 1.cbz", "1.png");
+        var root = new CompositionRoot(repo, new FakeUpdateService());
+        await root.Scanner.ScanAsync();
+
+        android.HasAccess = false;
+        root.Navigation.NavigateTo<LibraryViewModel>();
+        var vm = Assert.IsType<LibraryViewModel>(root.Navigation.CurrentViewModel);
+        await vm.RefreshAsync();
+
+        Assert.True(vm.NeedsPermission);
+        Assert.False(vm.ShowCollections);
+        Assert.False(vm.HasError);
     }
 
     // Los iconos de la barra de estado tienen que verse: claros sobre el lector (siempre oscuro)

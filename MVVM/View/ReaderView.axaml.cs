@@ -99,6 +99,9 @@ public partial class ReaderView : UserControl
         // Teclas configurables en Ajustes → Atajos de teclado.
         var command = vm.CommandForKey(e);
         if (command is null) return;
+        // Android: el botón de atrás llega como Escape. Si no hay nada que hacer con él (fuera
+        // del modo zen), se deja pasar y Android lo trata como atrás (sale del lector).
+        if (e.Key == Key.Escape && !command.CanExecute(null)) return;
 
         if (command.CanExecute(null)) command.Execute(null);
         e.Handled = true;

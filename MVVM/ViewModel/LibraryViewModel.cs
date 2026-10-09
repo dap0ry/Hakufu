@@ -39,6 +39,8 @@ public class LibraryViewModel : BaseViewModel, IGoBack
 
     /// <summary>Android sin permiso para leer el almacenamiento: se explica y se ofrece darlo.</summary>
     public bool NeedsPermission => AppPlatform.HasLibraryAccess is { } hasAccess && !hasAccess();
+    /// <summary>Sin permiso, el aviso va solo: lo que se recuerde de la carpeta no se puede abrir.</summary>
+    public bool ShowCollections => !NeedsPermission;
     /// <summary>No hay carpeta de biblioteca: se pide elegirla.</summary>
     public bool NeedsRoot => !NeedsPermission && !_hasRoot;
     /// <summary>La carpeta no se puede leer (disco desconectado, sin permiso…).</summary>
@@ -73,6 +75,7 @@ public class LibraryViewModel : BaseViewModel, IGoBack
     private void RaiseState()
     {
         OnPropertyChanged(nameof(NeedsPermission));
+        OnPropertyChanged(nameof(ShowCollections));
         OnPropertyChanged(nameof(NeedsRoot));
         OnPropertyChanged(nameof(HasError));
         OnPropertyChanged(nameof(IsEmpty));

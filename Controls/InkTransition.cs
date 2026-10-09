@@ -171,8 +171,9 @@ public sealed class InkTransition : Control
         _running  = false;
         IsVisible = false;
         Progress  = 0;
-        // El SKImage no se libera a mano: puede quedar un fotograma en cola en el
-        // hilo de render que aún lo usa. Lo recoge el GC.
+        // La foto no se libera aquí: puede quedar un fotograma en cola en el hilo
+        // de render que aún la usa. Su copia en la GPU se libera allí (PhotoHolder).
+        _image?.Retire();
         _image = null;
         _fallback?.Dispose();
         _fallback = null;
@@ -234,22 +235,55 @@ public sealed class InkTransition : Control
     /// <summary>
     /// La foto, y su copia en la GPU: subirla (unos 16 MB en una pantalla
     /// retina) en cada fotograma dejaba la animación a tirones.
+    /// La copia de la GPU nunca se deja al GC: el finalizador la liberaría en su
+    /// hilo mientras se dibuja con el mismo contexto, y la app se cae (iPhone,
+    /// Metal, al cambiar de tema). Al acabar, <see cref="Retire"/> la aparta y se
+    /// libera en el hilo de render al subir la foto siguiente.
     /// </summary>
     private sealed class PhotoHolder(SKImage raster)
     {
+        // Copias en la GPU ya retiradas, por liberar en el hilo de render. La de
+        // la última transición sigue viva hasta la siguiente.
+        private static readonly List<SKImage> Retired = [];
+
         public SKImage Raster { get; } = raster;
         private SKImage?   _texture;
         private GRContext? _context;
+        private bool       _retired;
 
+        /// <summary>Hilo de render, con el contexto prestado.</summary>
         public SKImage For(GRContext? context)
         {
             if (context is null) return Raster;
-            if (_texture is null || _context != context)
+            lock (Retired)
             {
-                _texture = Raster.ToTextureImage(context) ?? Raster;
-                _context = context;
+                if (_retired) return Raster;
+                if (_texture is null || _context != context)
+                {
+                    RetireTexture();
+                    foreach (var old in Retired) old.Dispose();
+                    Retired.Clear();
+                    _texture = Raster.ToTextureImage(context) ?? Raster;
+                    _context = context;
+                }
+                return _texture;
             }
-            return _texture;
+        }
+
+        /// <summary>Hilo de la interfaz: la foto ya no se va a dibujar con su copia.</summary>
+        public void Retire()
+        {
+            lock (Retired)
+            {
+                _retired = true;
+                RetireTexture();
+            }
+        }
+
+        private void RetireTexture()
+        {
+            if (_texture is not null && _texture != Raster) Retired.Add(_texture);
+            _texture = null;
         }
     }
 

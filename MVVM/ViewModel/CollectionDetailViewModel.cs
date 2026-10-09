@@ -5,7 +5,7 @@ using Hakufu.Services;
 
 namespace Hakufu.MVVM.ViewModel;
 
-public class CollectionDetailViewModel : BaseViewModel
+public class CollectionDetailViewModel : BaseViewModel, IGoBack
 {
     private readonly Guid               _collectionId;
     private readonly LibraryService     _library;

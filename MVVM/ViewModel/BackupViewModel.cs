@@ -10,7 +10,7 @@ namespace Hakufu.MVVM.ViewModel;
 /// usuario, con su perfil y, si quiere, las colecciones que elija (progreso,
 /// favoritos…); los mangas no, son su carpeta. Al restaurar se combina.
 /// </summary>
-public class BackupViewModel : BaseViewModel
+public class BackupViewModel : BaseViewModel, IGoBack
 {
     private readonly IBackupService     _backup;
     private readonly IFilePickerService _files;

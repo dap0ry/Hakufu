@@ -8,7 +8,7 @@ using Avalonia.Input;
 
 namespace Hakufu.MVVM.ViewModel;
 
-public class SettingsViewModel : BaseViewModel
+public class SettingsViewModel : BaseViewModel, IGoBack
 {
     private readonly IThemeService      _theme;
     private readonly IDataRepository    _repo;

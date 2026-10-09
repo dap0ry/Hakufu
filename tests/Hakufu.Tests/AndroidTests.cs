@@ -1,5 +1,7 @@
+using Avalonia.Headless.XUnit;
 using Hakufu.Data;
 using Hakufu.I18n;
+using Hakufu.MVVM.View;
 using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
 
@@ -145,6 +147,38 @@ public class AndroidTests
         var root = new CompositionRoot(NewRepo(), new FakeUpdateService());
         root.Navigation.NavigateTo<LibraryViewModel>();
         Assert.False(Assert.IsType<LibraryViewModel>(root.Navigation.CurrentViewModel).NeedsPermission);
+    }
+
+    [AvaloniaFact]
+    public void Back_closes_the_dialog_first_then_the_reader_then_goes_up()
+    {
+        using var app = ViewSmoke.StartMobile(390, 844);
+        var main = Assert.IsType<MainWindowViewModel>(app.View.DataContext);
+
+        // Inicio: que lo resuelva Android (sale de la app).
+        app.AssertShows<HomeView>();
+        Assert.False(app.View.HandleBack());
+
+        // Colección → su flecha lleva a Biblioteca.
+        app.Root.Navigation.NavigateTo<CollectionDetailViewModel>(app.SampleCollection.Id);
+        app.AssertShows<CollectionDetailView>();
+        Assert.True(app.View.HandleBack());
+        Assert.IsType<LibraryViewModel>(app.Root.Navigation.CurrentViewModel);
+
+        // Review Focus #3: diálogo encima del lector → solo se cierra el diálogo.
+        app.Root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
+        app.AssertShows<ReaderView>();
+        app.Root.Dialog.ShowModal(new LegalViewModel(app.Root.Navigation));
+        Assert.True(main.IsModalOpen);
+        Assert.True(app.View.HandleBack());
+        Assert.False(main.IsModalOpen);
+        Assert.IsType<ReaderViewModel>(app.Root.Navigation.CurrentViewModel);
+
+        // Lector → se cierra (guarda el progreso y vuelve a Inicio).
+        Assert.True(app.View.HandleBack());
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (app.Root.Navigation.CurrentViewModel is not HomeViewModel && sw.ElapsedMilliseconds < 3000) app.Pump();
+        Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
     }
 
     private sealed class NotOnDevicePicker : IFilePickerService

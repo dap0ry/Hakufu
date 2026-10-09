@@ -84,6 +84,12 @@ public partial class App : Application
         view.ZenModeChanged += (_, zen) => SetSystemBarVisible(view, !zen);
         view.ReaderClosed   += (_, _) => SetSystemBarVisible(view, true);
         view.AttachedToVisualTree += (_, _) => FollowSafeArea(view);
+        // Botón o gesto de atrás (Android): lo que no resuelve Hakufu lo hace el sistema (salir).
+        view.AttachedToVisualTree += (_, _) =>
+        {
+            if (TopLevel.GetTopLevel(view) is { } top)
+                top.BackRequested += (_, e) => e.Handled = view.HandleBack();
+        };
 
         if (TryGetFeature(typeof(IActivatableLifetime)) is IActivatableLifetime activatable)
         {

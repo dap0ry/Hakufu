@@ -9,7 +9,7 @@ namespace Hakufu.MVVM.ViewModel;
 /// Biblioteca: las colecciones son las subcarpetas de la carpeta que eligió el
 /// usuario (ver LibraryScanner). Se vuelve a leer la carpeta al entrar.
 /// </summary>
-public class LibraryViewModel : BaseViewModel
+public class LibraryViewModel : BaseViewModel, IGoBack
 {
     private readonly LibraryService     _library;
     private readonly LibraryScanner     _scanner;

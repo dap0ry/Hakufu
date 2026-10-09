@@ -6,7 +6,7 @@ namespace Hakufu.MVVM.ViewModel;
 public record LegalSection(string Title, string Body);
 
 /// <summary>Términos, condiciones y aviso legal (Ajustes → Acerca de).</summary>
-public class LegalViewModel : BaseViewModel
+public class LegalViewModel : BaseViewModel, IGoBack
 {
     private readonly INavigationService _nav;
 

@@ -74,6 +74,27 @@ public partial class MainView : UserControl
         Classes.Set("narrow", e.NewSize.Width < NarrowWidth);
     }
 
+    /// <summary>
+    /// Botón o gesto de atrás (Android): cierra el diálogo; si no hay, sale del lector; si no, hace
+    /// lo de la flecha «←» de la pantalla. En Inicio devuelve false: que el sistema cierre la app.
+    /// </summary>
+    public bool HandleBack()
+    {
+        if (_vm is null) return false;
+        if (_vm.IsModalOpen) { _vm.CloseModalCommand.Execute(null); return true; }
+        switch (_vm.CurrentView)
+        {
+            case ReaderViewModel reader:
+                reader.CloseReaderCommand.Execute(null);
+                return true;
+            case IGoBack page:
+                page.GoBackCommand.Execute(null);
+                return true;
+            default:
+                return false;
+        }
+    }
+
     /// <summary>Apunta el rato leído (al cerrar la app o pasar a segundo plano).</summary>
     public void FlushReader() => _reader?.FlushReadingTime();
 

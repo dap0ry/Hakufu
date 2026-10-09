@@ -17,4 +17,10 @@ public static class AppPlatform
 
     /// <summary>Abre una página https en el navegador; null = el de escritorio.</summary>
     public static Action<string>? OpenUrl { get; set; }
+
+    /// <summary>
+    /// Elige una foto de la galería (iOS: Fotos) y devuelve la ruta de una copia
+    /// local, o null si se cancela; null = el selector de archivos de siempre.
+    /// </summary>
+    public static Func<Task<string?>>? PickPhotoAsync { get; set; }
 }

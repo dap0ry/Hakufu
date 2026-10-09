@@ -22,6 +22,7 @@ internal static class IosPlatform
         AppPlatform.IsMobile = true;
         AppPlatform.OpenFolder = OpenInFiles;
         AppPlatform.OpenUrl = url => Open(new NSUrl(url));
+        AppPlatform.PickPhotoAsync = PhotoPicker.PickAsync;
     }
 
     // shareddocuments:// abre la app Archivos en esa carpeta.

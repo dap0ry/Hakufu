@@ -17,6 +17,9 @@ public interface IFilePickerService
     /// <summary>Rutas elegidas, o array vacío si se cancela.</summary>
     Task<string[]> PickFilesAsync(string title, FileFilter filter, bool multiSelect = true);
 
+    /// <summary>Una imagen (en iOS, de Fotos), o null si se cancela.</summary>
+    Task<string?> PickImageAsync(string title);
+
     /// <summary>Carpeta elegida, o null si se cancela.</summary>
     Task<string?> PickFolderAsync(string title);
 

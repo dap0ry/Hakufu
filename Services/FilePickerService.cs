@@ -20,7 +20,7 @@ public class FilePickerService : IFilePickerService
 
     // iOS: lo elegido fuera de la app solo se puede leer con permiso temporal; se
     // copia aquí y los servicios trabajan con la copia.
-    private static string PickedDir => Path.Combine(Path.GetTempPath(), "Hakufu-picked");
+    internal static string PickedDir => Path.Combine(Path.GetTempPath(), "Hakufu-picked");
 
     // Los selectores de GTK (Linux) distinguen mayúsculas en los patrones:
     // sin "*.CBZ" no se verían "Tomo 01.CBZ" ni "foto.JPG".
@@ -53,6 +53,13 @@ public class FilePickerService : IFilePickerService
         return files.Select(f => f.TryGetLocalPath())
                     .OfType<string>()
                     .ToArray();
+    }
+
+    public async Task<string?> PickImageAsync(string title)
+    {
+        if (AppPlatform.PickPhotoAsync is { } pickPhoto) return await pickPhoto(); // iOS: Fotos
+        var files = await PickFilesAsync(title, FileFilter.Images, multiSelect: false);
+        return files.FirstOrDefault();
     }
 
     /// <summary>Copia un archivo que solo se puede abrir como stream a <paramref name="dir"/>.</summary>

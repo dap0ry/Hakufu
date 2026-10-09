@@ -59,11 +59,11 @@ public class EditProfileViewModel : BaseViewModel
 
     public RelayCommand ChooseAvatarCommand => new(async () =>
     {
-        var picked = await _files.PickFilesAsync(L.Get("profile.edit.pick_photo_title"), FileFilter.Images, multiSelect: false);
-        if (picked.Length == 0) return;
-        var bmp = BitmapHelper.TryLoad(picked[0]);
+        var picked = await _files.PickImageAsync(L.Get("profile.edit.pick_photo_title"));
+        if (picked is null) return;
+        var bmp = BitmapHelper.TryLoad(picked);
         if (bmp is null) return;
-        _newAvatarSource = picked[0];
+        _newAvatarSource = picked;
         _removeAvatar    = false;
         Avatar = bmp;
     });

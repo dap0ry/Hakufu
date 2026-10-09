@@ -141,6 +141,43 @@ public class ProfileTests
     }
 
     [AvaloniaFact]
+    public void Choose_photo_uses_the_photos_picker_when_the_platform_has_one()
+    {
+        using var app = ViewSmoke.Start(darkTheme: false);
+        app.Root.Navigation.NavigateTo<ProfileViewModel>();
+        app.AssertShows<ProfileView>();
+        Assert.IsType<ProfileViewModel>(app.Root.Navigation.CurrentViewModel).EditProfileCommand.Execute(null);
+        app.AssertShows<EditProfileView>();
+        var edit = Assert.IsType<EditProfileViewModel>(
+            app.Window.GetVisualDescendants().OfType<EditProfileView>().Single().DataContext);
+
+        var photo = Path.Combine(Path.GetTempPath(), $"hakufu-foto-{Guid.NewGuid():N}.png");
+        File.WriteAllBytes(photo, Fixtures.TinyPng);
+        string? chosen = null; // null: se cancela en Fotos
+        var asked = 0;
+        AppPlatform.PickPhotoAsync = () => { asked++; return Task.FromResult(chosen); };
+        try
+        {
+            edit.ChooseAvatarCommand.Execute(null);
+            app.Pump();
+            Assert.Equal(1, asked);
+            Assert.Null(edit.Avatar);
+
+            chosen = photo;
+            edit.ChooseAvatarCommand.Execute(null);
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            while (edit.Avatar is null && sw.ElapsedMilliseconds < 3000) app.Pump();
+            Assert.Equal(2, asked);
+            Assert.NotNull(edit.Avatar);
+        }
+        finally
+        {
+            AppPlatform.PickPhotoAsync = null;
+            File.Delete(photo);
+        }
+    }
+
+    [AvaloniaFact]
     public void The_profile_card_exports_horizontal_and_vertical()
     {
         using var app = ViewSmoke.Start(darkTheme: false);

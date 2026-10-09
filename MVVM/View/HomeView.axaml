@@ -89,6 +89,15 @@
             <Setter Property="FontSize"   Value="76"/>
             <Setter Property="LineHeight" Value="76"/>
         </Style>
+        <Style Selector="TextBlock#MenuTitle">
+            <Setter Property="FontSize" Value="44"/>
+        </Style>
+        <Style Selector="StackPanel#MenuItems">
+            <Setter Property="Margin" Value="-18,24,0,24"/>
+        </Style>
+        <Style Selector="TextBlock.menuCredit">
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
 
 
         <!-- ── Continuar leyendo: grande a la derecha; en iPhone, barra abajo ── -->
@@ -142,6 +151,31 @@
             <Setter Property="FontSize"   Value="52"/>
             <Setter Property="LineHeight" Value="52"/>
         </Style>
+        <!-- Móvil en horizontal (MainView.short, poca altura): el menú entero tiene que caber
+             entre el título y los créditos. Después de .compact para ganarle. -->
+        <Style Selector=".short Grid#MenuGrid">
+            <Setter Property="Margin" Value="32,14,24,10"/>
+        </Style>
+        <Style Selector=".short TextBlock#MenuTitle">
+            <Setter Property="FontSize" Value="28"/>
+        </Style>
+        <Style Selector=".short StackPanel#MenuItems">
+            <Setter Property="Margin" Value="-18,6,0,6"/>
+        </Style>
+        <Style Selector=".short Button.menuItem">
+            <Setter Property="Padding" Value="18,2,26,3"/>
+        </Style>
+        <Style Selector=".short TextBlock.menuLabel">
+            <Setter Property="FontSize"   Value="26"/>
+            <Setter Property="LineHeight" Value="28"/>
+        </Style>
+        <Style Selector=".short Button.big TextBlock.menuLabel">
+            <Setter Property="FontSize"   Value="38"/>
+            <Setter Property="LineHeight" Value="38"/>
+        </Style>
+        <Style Selector=".short TextBlock.menuCredit">
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
         <!-- Sin nada empezado no hay barra (Biblioteca ya está en el menú) -->
         <Style Selector=".narrow Grid#ContinuePanel" x:DataType="vm:HomeViewModel">
             <Setter Property="IsVisible" Value="{Binding HasLastManga}"/>
@@ -194,13 +228,13 @@
             <Grid Name="MenuGrid" RowDefinitions="Auto,*,Auto">
 
                 <!-- Título -->
-                <TextBlock Grid.Row="0"
+                <TextBlock Grid.Row="0" Name="MenuTitle"
                            Text="Hakufu"
-                           FontSize="44" FontWeight="Black"
+                           FontWeight="Black"
                            LetterSpacing="-1.5"
                            Foreground="{DynamicResource TextPrimary}"/>
 
-                <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2" Margin="-18,24,0,24">
+                <StackPanel Grid.Row="1" Name="MenuItems" VerticalAlignment="Center" Spacing="2">
                     <!-- Biblioteca -->
                     <Button Classes="menuItem big" Command="{Binding NavLibraryCommand}">
                         <StackPanel>
@@ -247,13 +281,11 @@
 
                 <!-- Sin enlace: la app no abre URLs de red -->
                 <StackPanel Grid.Row="2" Spacing="2">
-                    <TextBlock Text="{i18n:T home.credit_dev}"
+                    <TextBlock Classes="menuCredit" Text="{i18n:T home.credit_dev}"
                                FontFamily="{DynamicResource DisplayFont}"
-                               FontSize="16"
                                Foreground="{DynamicResource TextMuted}"/>
-                    <TextBlock Text="{i18n:T home.credit_design}"
+                    <TextBlock Classes="menuCredit" Text="{i18n:T home.credit_design}"
                                FontFamily="{DynamicResource DisplayFont}"
-                               FontSize="16"
                                Foreground="{DynamicResource TextMuted}"/>
                 </StackPanel>
             </Grid>

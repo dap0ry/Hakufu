@@ -4,7 +4,11 @@ import random, math, zipfile, io, os, sys
 from PIL import Image, ImageDraw, ImageFont
 OUT=sys.argv[1]
 W,H=600,900
+# La de macOS (capturas de la landing y del simulador de iOS); en Linux (emulador de Android),
+# la letra de títulos de la propia app.
 IMPACT="/System/Library/Fonts/Supplemental/DIN Condensed Bold.ttf"
+if not os.path.exists(IMPACT):
+    IMPACT=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","Assets","Fonts","HakufuDisplay-Black.ttf")
 SERIES=[ # name, bg, ink, accent, vols
  ("KUROGANE",   (20,20,20),   (240,240,240),(229,0,26),  3),
  ("MAREA ROJA", (229,0,26),   (255,255,255),(20,20,20),  2),

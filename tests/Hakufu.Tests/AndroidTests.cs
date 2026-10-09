@@ -1,4 +1,7 @@
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using Hakufu.Data;
 using Hakufu.I18n;
 using Hakufu.MVVM.View;
@@ -174,6 +177,57 @@ public class AndroidTests
 
         Assert.True(back.Handled);
         Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
+    }
+
+    // Los iconos de la barra de estado tienen que verse: claros sobre el lector (siempre oscuro)
+    // y con el tema oscuro; oscuros con el claro. Antes, en el lector salían negros sobre negro.
+    [AvaloniaFact]
+    public void System_bar_icons_follow_what_is_underneath()
+    {
+        bool? overDark = null;
+        AppPlatform.SetSystemBarsOverDark = dark => overDark = dark;
+        try
+        {
+            using var app = ViewSmoke.StartMobile(390, 844);
+            app.AssertShows<HomeView>();
+            app.View.RefreshSystemBars();
+            Assert.False(overDark);
+
+            app.Root.Navigation.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(app.SampleManga, 0));
+            app.AssertShows<ReaderView>();
+            Assert.True(overDark);
+
+            app.Root.Navigation.NavigateTo<HomeViewModel>();
+            app.AssertShows<HomeView>();
+            Assert.False(overDark);
+
+            app.Root.Theme.SetTheme(AppTheme.Dark);
+            app.Pump();
+            Assert.True(overDark);
+            app.Root.Theme.SetTheme(AppTheme.Light);
+        }
+        finally
+        {
+            AppPlatform.SetSystemBarsOverDark = null;
+        }
+    }
+
+    // Móvil en horizontal (unos 914×411): la columna del menú de Inicio no cabía y «Ajustes»
+    // pisaba los créditos. Con poca altura (clase "short" de MainView) el menú se encoge.
+    [AvaloniaFact]
+    public void Home_menu_fits_a_landscape_phone()
+    {
+        using var app = ViewSmoke.StartMobile(914, 411);
+        var home = app.AssertShows<HomeView>();
+        var grid = home.GetVisualDescendants().OfType<Grid>().Single(g => g.Name == "MenuGrid");
+        var items = grid.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("menuItem")).ToList();
+        var credits = grid.GetVisualDescendants().OfType<TextBlock>().First(t => t.Text == L.Get("home.credit_dev"));
+        double Top(Visual v) => v.TranslatePoint(new Point(0, 0), grid)!.Value.Y;
+        double Bottom(Visual v) => v.TranslatePoint(new Point(0, v.Bounds.Height), grid)!.Value.Y;
+
+        Assert.True(Bottom(items[^1]) <= Top(credits),
+            $"El menú acaba en {Bottom(items[^1]):0} y los créditos empiezan en {Top(credits):0}");
+        Assert.True(Top(items[0]) >= 0, $"El menú empieza en {Top(items[0]):0}, por encima de la columna");
     }
 
     // Android: PdfRenderer da RGBA y la GPU del emulador (y de algunos móviles) no admite texturas

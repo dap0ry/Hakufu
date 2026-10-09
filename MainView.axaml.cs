@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Styling;
 using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
 
@@ -18,6 +19,13 @@ public partial class MainView : UserControl
     /// mínimo de la ventana de escritorio: en escritorio nunca se aplica.
     /// </summary>
     public const double NarrowWidth = 900;
+
+    /// <summary>
+    /// Por debajo de esta altura (móvil en horizontal) la clase "short": el menú de Inicio se
+    /// encoge. Por encima de lo que deja la ventana de escritorio más baja (600 menos la barra
+    /// de título): en escritorio nunca se aplica.
+    /// </summary>
+    public const double ShortHeight = 520;
 
     private MainWindowViewModel? _vm;
     private ReaderViewModel? _reader;
@@ -39,6 +47,8 @@ public partial class MainView : UserControl
                    RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(KeyUpEvent, (_, _) => CommandRequery.RequestInvalidate(),
                    RoutingStrategies.Tunnel, handledEventsToo: true);
+
+        ActualThemeVariantChanged += (_, _) => RefreshSystemBars();
 
         DataContextChanged += (_, _) =>
         {
@@ -72,6 +82,7 @@ public partial class MainView : UserControl
         base.OnSizeChanged(e);
         IsCompact = e.NewSize.Width < CompactWidth;
         Classes.Set("narrow", e.NewSize.Width < NarrowWidth);
+        Classes.Set("short", e.NewSize.Height < ShortHeight);
     }
 
     /// <summary>
@@ -94,6 +105,15 @@ public partial class MainView : UserControl
                 return false;
         }
     }
+
+    /// <summary>
+    /// Avisa a la plataforma de si debajo de las barras del sistema hay algo oscuro (el lector, o
+    /// el tema oscuro), para que sus iconos se vean. También al volver a la app: Android los
+    /// devuelve a lo que diga el tema.
+    /// </summary>
+    public void RefreshSystemBars()
+        => AppPlatform.SetSystemBarsOverDark?.Invoke(
+            _vm?.CurrentView is ReaderViewModel || ActualThemeVariant == ThemeVariant.Dark);
 
     /// <summary>Apunta el rato leído (al cerrar la app o pasar a segundo plano).</summary>
     public void FlushReader() => _reader?.FlushReadingTime();
@@ -133,6 +153,7 @@ public partial class MainView : UserControl
             reader.ZenModeChanged += Reader_ZenModeChanged;
             if (reader.OpenInZenMode) reader.IsZenMode = true;
         }
+        RefreshSystemBars();
     }
 
     private void Reader_ZenModeChanged(object? sender, bool isZen) => ZenModeChanged?.Invoke(this, isZen);

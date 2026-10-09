@@ -24,6 +24,19 @@ public static class AppPlatform
     /// </summary>
     public static Func<Task<string?>>? PickPhotoAsync { get; set; }
 
+    /// <summary>
+    /// Android: al dibujar debajo de las barras del sistema, Android (hasta la 14) les pone un
+    /// velo oscuro y se ven grises sobre el blanco de la app. Se llama justo después de pedir
+    /// dibujar debajo; null = nada que hacer.
+    /// </summary>
+    public static Action? ClearSystemBarScrim { get; set; }
+
+    /// <summary>
+    /// Android: iconos de las barras del sistema claros (true: lo de debajo es oscuro, el lector o
+    /// el tema oscuro) u oscuros (false). Lo llama MainView; null = nada que hacer.
+    /// </summary>
+    public static Action<bool>? SetSystemBarsOverDark { get; set; }
+
     /// <summary>Android: si Hakufu puede leer el almacenamiento (acceso a todos los archivos); null = no hace falta.</summary>
     public static Func<bool>? HasLibraryAccess { get; set; }
 

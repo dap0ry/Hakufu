@@ -102,6 +102,8 @@ public partial class App : Application
                 // Al volver (de dar el permiso, de copiar mangas con otra app…), se vuelve a leer la carpeta.
                 if (root?.Navigation.CurrentViewModel is LibraryViewModel library) _ = library.RefreshAsync();
                 else if (root is not null) _ = root.Scanner.ScanAsync();
+                // Android devuelve los iconos de las barras a lo que diga el tema: después de eso.
+                Avalonia.Threading.Dispatcher.UIThread.Post(view.RefreshSystemBars, Avalonia.Threading.DispatcherPriority.Background);
             };
         }
     }
@@ -197,6 +199,7 @@ public partial class App : Application
     {
         if (TopLevel.GetTopLevel(view)?.InsetsManager is not { } insets) return;
         insets.DisplayEdgeToEdgePreference = true;
+        AppPlatform.ClearSystemBarScrim?.Invoke();
         view.Padding = insets.SafeAreaPadding;
         insets.SafeAreaChanged += (_, e) => view.Padding = e.SafeAreaPadding;
     }

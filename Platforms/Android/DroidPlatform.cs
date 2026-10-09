@@ -29,6 +29,8 @@ internal static class DroidPlatform
         AppPlatform.OpenUrl = url => TryStart(activity, new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(url)));
         AppPlatform.OpenFolder = path => OpenFolder(activity, path);
         AppPlatform.PickPhotoAsync = () => PhotoPicker.PickAsync(activity);
+        AppPlatform.ClearSystemBarScrim = () => ClearSystemBarScrim(activity);
+        AppPlatform.SetSystemBarsOverDark = overDark => SetSystemBarIcons(activity, overDark);
     }
 
     // Los textos van en el APK (assets/i18n): se copian a una carpeta para el Localizer de siempre.
@@ -72,6 +74,33 @@ internal static class DroidPlatform
         var intent = new Intent(Intent.ActionView).SetDataAndType(uri, DocumentsContract.Document.MimeTypeDir)
                                                   .AddFlags(ActivityFlags.GrantReadUriPermission);
         TryStart(activity, intent);
+    }
+
+    // Avalonia dibuja debajo de las barras con las marcas «translúcidas», y Android (hasta la 14)
+    // les pone encima un velo oscuro: se veían grises sobre el blanco. Se sigue dibujando debajo
+    // (DecorFitsSystemWindows lo deja Avalonia en false), pero con las barras transparentes.
+    private static void ClearSystemBarScrim(Activity activity)
+    {
+        if (activity.Window is not { } window) return;
+        window.ClearFlags(global::Android.Views.WindowManagerFlags.TranslucentStatus |
+                          global::Android.Views.WindowManagerFlags.TranslucentNavigation);
+        window.AddFlags(global::Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
+        window.SetStatusBarColor(global::Android.Graphics.Color.Transparent);
+        window.SetNavigationBarColor(global::Android.Graphics.Color.Transparent);
+        if (OperatingSystem.IsAndroidVersionAtLeast(29))
+        {
+            window.StatusBarContrastEnforced = false;
+            window.NavigationBarContrastEnforced = false;
+        }
+    }
+
+    // Iconos claros sobre lo oscuro (lector, tema oscuro) y oscuros sobre lo claro.
+    private static void SetSystemBarIcons(Activity activity, bool overDark)
+    {
+        if (activity.Window is not { } window) return;
+        var bars = AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView);
+        bars.AppearanceLightStatusBars = !overDark;
+        bars.AppearanceLightNavigationBars = !overDark;
     }
 
     private static bool TryStart(Activity activity, Intent intent)

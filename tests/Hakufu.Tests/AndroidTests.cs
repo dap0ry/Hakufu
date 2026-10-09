@@ -180,6 +180,39 @@ public class AndroidTests
         Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
     }
 
+    // Android: al salir con atrás desde Inicio se cierra la actividad pero puede quedar el proceso;
+    // al volver a abrir Hakufu, la misma MainView pasa a otro TopLevel (actividad nueva) y App no
+    // vuelve a arrancar. Atrás tiene que seguir funcionando allí (antes cerraba la app).
+    [AvaloniaFact]
+    public void Back_keeps_working_when_the_view_moves_to_a_new_activity()
+    {
+        using var app = ViewSmoke.StartMobile(390, 844);
+        App.HookBack(app.View);
+
+        app.Host.Content = null;
+        app.Pump();
+        var second = new Window { Width = 390, Height = 844, SystemDecorations = SystemDecorations.None, Content = app.View };
+        second.Show();
+        app.Pump();
+        try
+        {
+            app.Root.Navigation.NavigateTo<LibraryViewModel>();
+            app.Pump();
+            var back = new Avalonia.Interactivity.RoutedEventArgs(TopLevel.BackRequestedEvent);
+            second.RaiseEvent(back);
+
+            Assert.True(back.Handled);
+            Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
+        }
+        finally
+        {
+            second.Content = null;
+            second.Close();
+            app.Pump();
+            app.Host.Content = app.View;
+        }
+    }
+
     // Android: el botón de atrás llega antes como tecla Escape (Avalonia: Keycode.Back → Key.Escape).
     // El lector se la quedaba siempre (atajo «salir del modo zen») y atrás no salía del lector.
     // Fuera del modo zen tiene que pasar; dentro, sale del modo zen.

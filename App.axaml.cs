@@ -174,18 +174,22 @@ public partial class App : Application
         => WhenShown(view, top => top.BackRequested += (_, e) => e.Handled = view.HandleBack());
 
     /// <summary>
-    /// Con su TopLevel, ya o en cuanto lo tenga: en Android la vista ya está puesta al asignar
-    /// MainView y AttachedToVisualTree no vuelve a saltar; en iOS llega después.
+    /// Con cada TopLevel en el que se ponga la vista, una vez por TopLevel: ya, si está puesta (en
+    /// Android lo está al asignar MainView y AttachedToVisualTree no salta), y cada vez que pase a
+    /// otro (iOS la pone después; Android crea una actividad nueva al volver a abrir Hakufu si el
+    /// proceso seguía vivo, y App no vuelve a arrancar).
     /// </summary>
     private static void WhenShown(Visual view, Action<TopLevel> action)
     {
-        if (TopLevel.GetTopLevel(view) is { } shown) { action(shown); return; }
-        void OnAttached(object? sender, VisualTreeAttachmentEventArgs e)
+        TopLevel? last = null;
+        void Run()
         {
-            view.AttachedToVisualTree -= OnAttached;
-            if (TopLevel.GetTopLevel(view) is { } top) action(top);
+            if (TopLevel.GetTopLevel(view) is not { } top || ReferenceEquals(top, last)) return;
+            last = top;
+            action(top);
         }
-        view.AttachedToVisualTree += OnAttached;
+        Run();
+        view.AttachedToVisualTree += (_, _) => Run();
     }
 
     private static void SetSystemBarVisible(Visual view, bool visible)

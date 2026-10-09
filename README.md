@@ -1,6 +1,6 @@
 # Hakufu
 
-Gestor y lector de manga para **Windows, macOS, Linux, iPhone e iPad** (Avalonia, .NET 10). Organiza PDF y CBR/CBZ en colecciones y guarda el progreso de lectura. Es **100 % offline**: sin cuentas, sin servidor y sin conexión a internet.
+Gestor y lector de manga para **Windows, macOS, Linux, iPhone, iPad y Android** (Avalonia, .NET 10). Organiza PDF y CBR/CBZ en colecciones y guarda el progreso de lectura. Es **100 % offline**: sin cuentas, sin servidor y sin conexión a internet.
 
 - **Versión actual:** 0.10.0 (primera multiplataforma). La 0.9.7 es la última de WPF, solo para Windows.
 - **Jira:** proyecto [HMR · Hakufu Manga Reader](https://dapory.atlassian.net/jira/software/projects/HMR)
@@ -12,8 +12,9 @@ Este es el **único repositorio de Hakufu**. Los antiguos `HakufuWeb`, `HakufuAP
 
 | Carpeta | Qué es | Estado |
 |---|---|---|
-| raíz (`Hakufu.csproj`, `MVVM/`, `Services/`, `Data/`…) | La app (Avalonia): escritorio, y con `-p:HakufuIos=true` iPhone/iPad | **En uso** |
+| raíz (`Hakufu.csproj`, `MVVM/`, `Services/`, `Data/`…) | La app (Avalonia): escritorio, con `-p:HakufuIos=true` iPhone/iPad y con `-p:HakufuAndroid=true` Android | **En uso** |
 | `Platforms/iOS/` | Lo propio de iOS (arranque, PDF con CoreGraphics, Info.plist, icono) | **En uso** |
+| `Platforms/Android/` | Lo propio de Android (actividad, permisos, PDF con PdfRenderer, fotos, manifiesto, icono) | **En uso** |
 | `tests/Hakufu.Tests` | Tests (xUnit + Avalonia headless) | **En uso** |
 | `scripts/` | Publicar e instalar en cada sistema | **En uso** |
 | `web/` | Landing estática en Vercel (antes repo `HakufuWeb`) | **En uso** |
@@ -86,6 +87,26 @@ La copia de seguridad y el perfil en PNG se guardan en esa misma carpeta (desde 
 ### Compilarla
 
 Solo en macOS con Xcode: `dotnet workload install ios` y luego `bash scripts/package-ipa.sh` (`.ipa` sin firmar) o `dotnet build Hakufu.csproj -p:HakufuIos=true -r iossimulator-arm64` para el simulador; `scripts/ios-simulator-shots.sh` hace las capturas que sube el CI.
+
+## Android
+
+La misma app, también 100 % offline, para móviles y tablets con Android 8.0 o superior. Diseño: [`docs/superpowers/specs/2026-10-09-android-design.md`](docs/superpowers/specs/2026-10-09-android-design.md).
+
+### Instalarla
+
+Descarga **`Hakufu-android.apk`** en el móvil (en cada release, o en la pestaña *Actions* → *Artifacts* → `Hakufu-android`) y ábrelo. Android pedirá permitir que el navegador (o el gestor de archivos) *instale apps de origen desconocido*: permítelo para esa app. Las versiones nuevas se instalan igual, encima de la anterior, y se conserva todo.
+
+La primera vez, Hakufu pide el permiso de **acceso a todos los archivos**: es para poder leer la carpeta de tus mangas (solo la lee; no copia, mueve ni borra nada, y no usa internet salvo para avisar de versiones nuevas).
+
+### Meter los mangas
+
+La biblioteca es, por defecto, la carpeta **`Hakufu`** del almacenamiento interno (se puede cambiar en *Ajustes → Carpeta de la biblioteca*). Igual que en escritorio, cada subcarpeta es una colección y sus `.cbz`, `.cbr` y `.pdf` son los tomos. Para meterlos: conecta el móvil al ordenador por USB en modo *Transferencia de archivos* y cópialos a esa carpeta, o usa cualquier gestor de archivos (descargas, Google Drive, LocalSend…). Al volver a Hakufu se leen solos.
+
+La copia de seguridad y el perfil en PNG se guardan en **Descargas**. Los datos de Hakufu van aparte, en la carpeta privada de la app.
+
+### Compilarla
+
+En Linux, Windows o macOS: `dotnet workload install android`, el SDK de Android y un JDK 17 (`ANDROID_HOME` y `JAVA_HOME`), y luego `bash scripts/package-apk.sh` (`publish/Hakufu-android.apk`; con `HAKUFU_KEYSTORE` y `HAKUFU_KEYSTORE_PASSWORD`, firmado con la clave de Hakufu). Con un emulador o un móvil conectado, `scripts/android-emulator-shots.sh` hace las capturas que sube el CI.
 
 ## `web/`: la landing (hakufu.vercel.app)
 

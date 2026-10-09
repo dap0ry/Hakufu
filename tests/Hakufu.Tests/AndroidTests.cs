@@ -159,6 +159,22 @@ public class AndroidTests
         Assert.False(Directory.Exists(chosen));
     }
 
+    // Android: PdfRenderer da RGBA y la GPU del emulador (y de algunos móviles) no admite texturas
+    // BGRA: la página del PDF salía en blanco. Se le pasa a Skia tal cual, en RGBA.
+    [AvaloniaFact]
+    public void Rgba_pixels_become_an_rgba_bitmap_with_the_same_colors()
+    {
+        byte[] red = [220, 10, 20, 255];
+        using var bmp = BitmapHelper.FromRgba(red, 1, 1);
+        Assert.Equal(Avalonia.Platform.PixelFormat.Rgba8888, ((Avalonia.Media.Imaging.WriteableBitmap)bmp).Format);
+
+        var back = new byte[4];
+        var pin = System.Runtime.InteropServices.GCHandle.Alloc(back, System.Runtime.InteropServices.GCHandleType.Pinned);
+        try { bmp.CopyPixels(new Avalonia.PixelRect(0, 0, 1, 1), pin.AddrOfPinnedObject(), 4, 4); }
+        finally { pin.Free(); }
+        Assert.Equal(red, back);
+    }
+
     [Fact]
     public void Desktop_never_asks_for_permission()
     {

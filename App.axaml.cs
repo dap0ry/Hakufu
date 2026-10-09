@@ -83,13 +83,8 @@ public partial class App : Application
         // Modo zen del lector: sin barra de estado.
         view.ZenModeChanged += (_, zen) => SetSystemBarVisible(view, !zen);
         view.ReaderClosed   += (_, _) => SetSystemBarVisible(view, true);
-        view.AttachedToVisualTree += (_, _) => FollowSafeArea(view);
-        // Botón o gesto de atrás (Android): lo que no resuelve Hakufu lo hace el sistema (salir).
-        view.AttachedToVisualTree += (_, _) =>
-        {
-            if (TopLevel.GetTopLevel(view) is { } top)
-                top.BackRequested += (_, e) => e.Handled = view.HandleBack();
-        };
+        WhenShown(view, _ => FollowSafeArea(view));
+        HookBack(view);
 
         if (TryGetFeature(typeof(IActivatableLifetime)) is IActivatableLifetime activatable)
         {
@@ -171,6 +166,25 @@ public partial class App : Application
         Text = $"Error al iniciar Hakufu:\n{ex.Message}",
         Margin = new Thickness(24)
     };
+
+    /// <summary>Botón o gesto de atrás (Android): lo que no resuelve Hakufu lo hace el sistema (salir).</summary>
+    internal static void HookBack(MainView view)
+        => WhenShown(view, top => top.BackRequested += (_, e) => e.Handled = view.HandleBack());
+
+    /// <summary>
+    /// Con su TopLevel, ya o en cuanto lo tenga: en Android la vista ya está puesta al asignar
+    /// MainView y AttachedToVisualTree no vuelve a saltar; en iOS llega después.
+    /// </summary>
+    private static void WhenShown(Visual view, Action<TopLevel> action)
+    {
+        if (TopLevel.GetTopLevel(view) is { } shown) { action(shown); return; }
+        void OnAttached(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            view.AttachedToVisualTree -= OnAttached;
+            if (TopLevel.GetTopLevel(view) is { } top) action(top);
+        }
+        view.AttachedToVisualTree += OnAttached;
+    }
 
     private static void SetSystemBarVisible(Visual view, bool visible)
     {

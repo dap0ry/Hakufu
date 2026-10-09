@@ -159,6 +159,23 @@ public class AndroidTests
         Assert.False(Directory.Exists(chosen));
     }
 
+    // En Android la vista ya está puesta cuando App engancha el botón de atrás (y las zonas
+    // seguras): esperar a AttachedToVisualTree no servía y atrás cerraba la app.
+    [AvaloniaFact]
+    public void Back_is_hooked_even_when_the_view_is_already_shown()
+    {
+        using var app = ViewSmoke.StartMobile(390, 844);
+        app.Root.Navigation.NavigateTo<LibraryViewModel>();
+        app.AssertShows<LibraryView>();
+
+        App.HookBack(app.View);
+        var back = new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.TopLevel.BackRequestedEvent);
+        app.Host.RaiseEvent(back);
+
+        Assert.True(back.Handled);
+        Assert.IsType<HomeViewModel>(app.Root.Navigation.CurrentViewModel);
+    }
+
     // Android: PdfRenderer da RGBA y la GPU del emulador (y de algunos móviles) no admite texturas
     // BGRA: la página del PDF salía en blanco. Se le pasa a Skia tal cual, en RGBA.
     [AvaloniaFact]

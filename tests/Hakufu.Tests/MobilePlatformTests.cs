@@ -24,6 +24,33 @@ public sealed class MobileMode : IDisposable
     }
 }
 
+/// <summary>
+/// Lo que pone Platforms/Android antes de arrancar: móvil, sin biblioteca fija, carpeta por
+/// defecto y Descargas dentro de <paramref name="storageRoot"/>. Al acabar, como en escritorio.
+/// </summary>
+public sealed class AndroidMode : IDisposable
+{
+    public AndroidMode(string storageRoot, bool hasAccess = true)
+    {
+        HasAccess = hasAccess;
+        AppPlatform.IsMobile = true;
+        AppPaths.DefaultLibraryRoot = Path.Combine(storageRoot, "Hakufu");
+        AppPaths.SaveDirOverride = Path.Combine(storageRoot, "Download");
+        AppPaths.VisibleRoot = (storageRoot, "files.android_storage");
+    }
+
+    public bool HasAccess { get; set; }
+    public int Requested { get; private set; }
+
+    public void Dispose()
+    {
+        AppPlatform.IsMobile = false;
+        AppPaths.DefaultLibraryRoot = null;
+        AppPaths.SaveDirOverride = null;
+        AppPaths.VisibleRoot = null;
+    }
+}
+
 public class MobilePlatformTests
 {
     private static JsonDataRepository NewRepo()

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Hakufu.Data;
 using Hakufu.I18n;
 using Hakufu.Services;
 
@@ -45,6 +46,12 @@ public class LibraryViewModel : BaseViewModel
     public bool IsEmpty => _hasRoot && _errorText is null && !IsScanning && Collections.Count == 0;
     /// <summary>iPhone/iPad: los mangas se meten con la app Archivos (texto de la biblioteca vacía).</summary>
     public bool IsMobile => AppPlatform.IsMobile;
+    /// <summary>Se puede elegir otra carpeta (escritorio y Android; en iOS es fija).</summary>
+    public bool CanPickRoot => AppPaths.FixedLibraryRoot is null;
+    /// <summary>Cómo se meten mangas cuando está vacía: iOS (app Archivos), Android (almacenamiento) o escritorio.</summary>
+    public bool ShowIosEmptyHelp     => AppPaths.FixedLibraryRoot is not null;
+    public bool ShowAndroidEmptyHelp => AppPlatform.IsMobile && AppPaths.FixedLibraryRoot is null;
+    public bool ShowDesktopEmptyHelp => !AppPlatform.IsMobile;
     public bool IsScanning { get => _isScanning; private set { SetProperty(ref _isScanning, value); RaiseState(); } }
 
     public LibraryViewModel(LibraryService library, LibraryScanner scanner, ICoverService cover,
@@ -101,7 +108,9 @@ public class LibraryViewModel : BaseViewModel
 
     public AsyncRelayCommand PickRootCommand => new(async () =>
     {
-        var folder = await _files.PickFolderAsync(L.Get("library.folder_picker_title"));
+        string? folder;
+        try { folder = await _files.PickFolderAsync(L.Get("library.folder_picker_title")); }
+        catch (FolderNotOnDeviceException) { ErrorText = L.Get("library.folder_not_on_device"); return; }
         if (folder is null) return;
         await ShowAsync(_scanner.SetRootAsync(folder));
     });

@@ -20,7 +20,7 @@ public interface IFilePickerService
     /// <summary>Una imagen (en iOS, de Fotos), o null si se cancela.</summary>
     Task<string?> PickImageAsync(string title);
 
-    /// <summary>Carpeta elegida, o null si se cancela.</summary>
+    /// <summary>Carpeta elegida, o null si se cancela. FolderNotOnDeviceException si no está en el dispositivo (Android).</summary>
     Task<string?> PickFolderAsync(string title);
 
     /// <summary>Ruta donde guardar, o null si se cancela.</summary>

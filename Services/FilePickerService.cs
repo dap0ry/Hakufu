@@ -8,6 +8,9 @@ using Hakufu.I18n;
 
 namespace Hakufu.Services;
 
+/// <summary>La carpeta elegida no está en el móvil (Drive, una carpeta virtual…): no tiene ruta.</summary>
+public sealed class FolderNotOnDeviceException() : Exception("La carpeta elegida no está en el almacenamiento del dispositivo.");
+
 public class FilePickerService : IFilePickerService
 {
     // La ventana en escritorio; en iOS, la vista única.
@@ -74,15 +77,20 @@ public class FilePickerService : IFilePickerService
     }
 
     /// <summary>
-    /// Cómo enseñar dónde se guardó algo: en iOS la ruta del contenedor no le dice nada
-    /// a nadie, así que se nombra la carpeta tal como sale en Archivos.
+    /// Cómo enseñar dónde está algo: en móvil la ruta real no le dice nada a nadie, así que se
+    /// nombra la carpeta tal como la ve el usuario (Archivos en iOS, almacenamiento interno en Android).
     /// </summary>
     public static string DisplayPath(string path)
     {
-        if (!AppPlatform.IsMobile || AppPaths.FixedLibraryRoot is not { } documents) return path;
-        var relative = Path.GetRelativePath(documents, path);
+        if (!AppPlatform.IsMobile) return path;
+        var visible = AppPaths.VisibleRoot
+                      ?? (AppPaths.FixedLibraryRoot is { } documents ? (documents, "settings.library_ios_location") : null);
+        if (visible is not { } shown) return path;
+        var (root, nameKey) = shown;
+        var relative = Path.GetRelativePath(root, path);
+        if (relative == ".") return L.Get(nameKey);
         if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative)) return path;
-        return string.Join(" → ", [L.Get("settings.library_ios_location"), .. relative.Split(Path.DirectorySeparatorChar)]);
+        return string.Join(" → ", [L.Get(nameKey), .. relative.Split(Path.DirectorySeparatorChar)]);
     }
 
     /// <summary>dir/name, o "name (2).ext", "name (3).ext"… si ya existe.</summary>
@@ -99,23 +107,27 @@ public class FilePickerService : IFilePickerService
     public async Task<string?> PickFolderAsync(string title)
     {
         // iOS: la biblioteca es siempre la carpeta de Hakufu en Archivos.
-        if (AppPlatform.IsMobile || Storage is not { } storage) return null;
+        if (AppPaths.FixedLibraryRoot is not null || Storage is not { } storage) return null;
         var folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title         = title,
             AllowMultiple = false
         });
-        return folders.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+        return folders.FirstOrDefault() is { } folder ? folder.TryGetLocalPath() ?? ToLocalFolder(folder.Path) : null;
     }
+
+    /// <summary>Android: la URI del selector, como ruta; si no es del dispositivo, FolderNotOnDeviceException.</summary>
+    internal static string ToLocalFolder(Uri uri)
+        => AndroidStorage.TreeUriToPath(uri) ?? throw new FolderNotOnDeviceException();
 
     public async Task<string?> SaveFileAsync(string title, string suggestedName, FileFilter filter)
     {
-        // iOS: directo a la carpeta de Hakufu en Archivos (desde allí se comparte o
-        // se mueve). El escáner solo mira .cbz/.cbr/.pdf: no la confunde con un tomo.
-        if (AppPlatform.IsMobile && AppPaths.FixedLibraryRoot is { } documents)
+        // Móvil: sin selector, a una carpeta que se ve desde fuera (iOS: la de Hakufu en
+        // Archivos; Android: Descargas). El escáner solo mira .cbz/.cbr/.pdf.
+        if (AppPlatform.IsMobile && AppPaths.SaveDir is { } saveDir)
         {
-            Directory.CreateDirectory(documents);
-            return UniquePath(documents, suggestedName);
+            Directory.CreateDirectory(saveDir);
+            return UniquePath(saveDir, suggestedName);
         }
         if (Storage is not { } storage) return null;
         var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions

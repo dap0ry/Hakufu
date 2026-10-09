@@ -25,6 +25,21 @@ public static class AppPaths
     /// </summary>
     public static string? FixedLibraryRoot { get; set; }
 
+    /// <summary>Android: la biblioteca mientras no se elija otra (Hakufu en el almacenamiento interno). Null en el resto.</summary>
+    public static string? DefaultLibraryRoot { get; set; }
+
+    /// <summary>Android: dónde se guarda sin selector (Descargas). iOS usa la carpeta de Hakufu en Archivos.</summary>
+    public static string? SaveDirOverride { get; set; }
+
+    /// <summary>Dónde se guarda sin selector en móvil (copia de seguridad, PNG del perfil); null en escritorio.</summary>
+    public static string? SaveDir => SaveDirOverride ?? FixedLibraryRoot;
+
+    /// <summary>
+    /// Android: la carpeta que el usuario reconoce y la clave de su nombre («Almacenamiento interno»).
+    /// iOS usa FixedLibraryRoot con «Archivos → En mi iPhone/iPad → Hakufu».
+    /// </summary>
+    public static (string Path, string NameKey)? VisibleRoot { get; set; }
+
     public static string DataFile         => Path.Combine(DataDir, "data.json");
     public static string CoversDir        => Path.Combine(DataDir, "covers");
     public static string ProfileDir       => Path.Combine(DataDir, "profile");

@@ -53,12 +53,14 @@ public class SettingsViewModel : BaseViewModel
     // ── Carpeta de la biblioteca ─────────────────────────────────────────────
 
     /// <summary>Ruta de la carpeta, o un aviso si aún no hay ninguna.</summary>
-    /// <summary>En iOS la biblioteca es siempre la carpeta de Hakufu en Archivos.</summary>
-    public bool CanPickLibraryRoot => !AppPlatform.IsMobile;
-    /// <summary>iOS no deja cerrar las apps desde dentro.</summary>
+    /// <summary>En iOS la biblioteca es siempre la carpeta de Hakufu en Archivos; en escritorio y Android se elige.</summary>
+    public bool CanPickLibraryRoot => AppPaths.FixedLibraryRoot is null;
+    /// <summary>En iPhone y Android las apps no se cierran desde dentro.</summary>
     public bool CanExit => !AppPlatform.IsMobile;
 
-    public string LibraryRootText => AppPlatform.IsMobile ? L.Get("settings.library_ios_location") : _scanner.Root ?? L.Get("settings.library_none");
+    public string LibraryRootText => AppPaths.FixedLibraryRoot is not null
+        ? L.Get("settings.library_ios_location")
+        : _scanner.Root is { } root ? FilePickerService.DisplayPath(root) : L.Get("settings.library_none");
     public bool   HasLibraryRoot  => _scanner.Root is not null;
 
     private string _libraryStatus = "";
@@ -70,7 +72,9 @@ public class SettingsViewModel : BaseViewModel
 
     public AsyncRelayCommand PickLibraryRootCommand => new(async () =>
     {
-        var folder = await _files.PickFolderAsync(L.Get("settings.library_folder"));
+        string? folder;
+        try { folder = await _files.PickFolderAsync(L.Get("settings.library_folder")); }
+        catch (FolderNotOnDeviceException) { LibraryStatus = L.Get("library.folder_not_on_device"); return; }
         if (folder is not null) await ScanAsync(_scanner.SetRootAsync(folder));
     }, () => !IsScanning);
 

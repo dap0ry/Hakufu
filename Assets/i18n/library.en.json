@@ -22,5 +22,7 @@
   "library.folder_picker_title": "Library folder",
   "library.scan_no_root": "Choose the folder where you keep your manga.",
   "library.scan_unreadable": "Can't read the folder “{0}”. Is the drive connected, or has it moved?",
-  "library.loose_collection": "No collection"
+  "library.loose_collection": "No collection",
+  "library.empty_body_android": "Copy your manga into the library folder (by default, \"Hakufu\" in internal storage) from your PC over USB or with any file manager: one folder per series with its PDF, CBR or CBZ files. Then come back and tap \"Refresh\".",
+  "library.folder_not_on_device": "That folder isn't on the phone (Drive and the like won't work). Choose one in internal storage or on the SD card."
 }

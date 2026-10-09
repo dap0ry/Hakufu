@@ -51,6 +51,7 @@ public class LibraryScanner
         {
             if (AppPaths.FixedLibraryRoot is { } fixedRoot) return fixedRoot;
             if (_repo.Current.LibraryRoot is { Length: > 0 } root) return root;
+            if (AppPaths.DefaultLibraryRoot is { } byDefault) return byDefault;
             return HasAnyFile(AppPaths.LibraryDir) ? AppPaths.LibraryDir : null;
         }
     }

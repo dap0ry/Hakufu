@@ -22,5 +22,7 @@
   "library.folder_picker_title": "Carpeta de la biblioteca",
   "library.scan_no_root": "Elige la carpeta donde tienes tus mangas.",
   "library.scan_unreadable": "No se puede leer la carpeta «{0}». ¿Está conectado el disco o se ha movido?",
-  "library.loose_collection": "Sin colección"
+  "library.loose_collection": "Sin colección",
+  "library.empty_body_android": "Copia tus mangas a la carpeta de la biblioteca (por defecto, «Hakufu» en el almacenamiento interno) desde el PC por USB o con cualquier gestor de archivos: una carpeta por serie con sus PDF, CBR o CBZ. Luego vuelve y toca «Actualizar».",
+  "library.folder_not_on_device": "Esa carpeta no está en el móvil (Drive y similares no valen). Elige una del almacenamiento interno o de la tarjeta SD."
 }

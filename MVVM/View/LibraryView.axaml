@@ -110,6 +110,22 @@
         <!-- ═══ COLECCIONES ═══ -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Panel>
+                <!-- Android sin permiso para leer el almacenamiento -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MaxWidth="400" Spacing="12" Margin="40,80"
+                            IsVisible="{Binding NeedsPermission}">
+                    <TextBlock Text="{i18n:T library.permission_title}"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="48" LineHeight="46" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{i18n:T library.permission_body}"
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <Button Classes="primary" Content="{i18n:T library.permission_button}" HorizontalAlignment="Left"
+                            Padding="22,11" Margin="0,12,0,0"
+                            Command="{Binding RequestPermissionCommand}"/>
+                </StackPanel>
+
                 <!-- Sin carpeta elegida -->
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                             MaxWidth="400" Spacing="12" Margin="40,80"

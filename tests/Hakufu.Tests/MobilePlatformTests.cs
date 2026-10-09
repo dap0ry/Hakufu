@@ -34,6 +34,8 @@ public sealed class AndroidMode : IDisposable
     {
         HasAccess = hasAccess;
         AppPlatform.IsMobile = true;
+        AppPlatform.HasLibraryAccess = () => HasAccess;
+        AppPlatform.RequestLibraryAccess = () => Requested++;
         AppPaths.DefaultLibraryRoot = Path.Combine(storageRoot, "Hakufu");
         AppPaths.SaveDirOverride = Path.Combine(storageRoot, "Download");
         AppPaths.VisibleRoot = (storageRoot, "files.android_storage");
@@ -45,6 +47,8 @@ public sealed class AndroidMode : IDisposable
     public void Dispose()
     {
         AppPlatform.IsMobile = false;
+        AppPlatform.HasLibraryAccess = null;
+        AppPlatform.RequestLibraryAccess = null;
         AppPaths.DefaultLibraryRoot = null;
         AppPaths.SaveDirOverride = null;
         AppPaths.VisibleRoot = null;

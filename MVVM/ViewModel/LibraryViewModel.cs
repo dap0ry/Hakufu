@@ -37,13 +37,15 @@ public class LibraryViewModel : BaseViewModel
     private string? _errorText;
     private bool _isScanning;
 
+    /// <summary>Android sin permiso para leer el almacenamiento: se explica y se ofrece darlo.</summary>
+    public bool NeedsPermission => AppPlatform.HasLibraryAccess is { } hasAccess && !hasAccess();
     /// <summary>No hay carpeta de biblioteca: se pide elegirla.</summary>
-    public bool NeedsRoot => !_hasRoot;
+    public bool NeedsRoot => !NeedsPermission && !_hasRoot;
     /// <summary>La carpeta no se puede leer (disco desconectado, sin permiso…).</summary>
     public string? ErrorText { get => _errorText; private set { SetProperty(ref _errorText, value); RaiseState(); } }
-    public bool HasError => _hasRoot && _errorText is not null;
+    public bool HasError => !NeedsPermission && _hasRoot && _errorText is not null;
     /// <summary>Carpeta leída y sin colecciones.</summary>
-    public bool IsEmpty => _hasRoot && _errorText is null && !IsScanning && Collections.Count == 0;
+    public bool IsEmpty => !NeedsPermission && _hasRoot && _errorText is null && !IsScanning && Collections.Count == 0;
     /// <summary>iPhone/iPad: los mangas se meten con la app Archivos (texto de la biblioteca vacía).</summary>
     public bool IsMobile => AppPlatform.IsMobile;
     /// <summary>Se puede elegir otra carpeta (escritorio y Android; en iOS es fija).</summary>
@@ -70,6 +72,7 @@ public class LibraryViewModel : BaseViewModel
 
     private void RaiseState()
     {
+        OnPropertyChanged(nameof(NeedsPermission));
         OnPropertyChanged(nameof(NeedsRoot));
         OnPropertyChanged(nameof(HasError));
         OnPropertyChanged(nameof(IsEmpty));
@@ -103,6 +106,8 @@ public class LibraryViewModel : BaseViewModel
     }
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
+
+    public RelayCommand RequestPermissionCommand => new(() => AppPlatform.RequestLibraryAccess?.Invoke());
 
     public AsyncRelayCommand RefreshCommand => new(RefreshAsync, () => !IsScanning);
 

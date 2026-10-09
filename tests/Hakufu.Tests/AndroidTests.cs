@@ -112,6 +112,41 @@ public class AndroidTests
         Assert.Equal(L.Get("library.folder_not_on_device"), vm.ErrorText);
     }
 
+    // Review Focus #1: sin permiso (o quitado) se explica y se ofrece darlo; al volver, se lee.
+    [Fact]
+    public async Task Without_permission_the_library_asks_for_it()
+    {
+        using var tmp = new TempDataDir();
+        using var android = new AndroidMode(tmp.Root, hasAccess: false);
+        var root = new CompositionRoot(NewRepo(), new FakeUpdateService());
+        root.Navigation.NavigateTo<LibraryViewModel>();
+        var vm = Assert.IsType<LibraryViewModel>(root.Navigation.CurrentViewModel);
+        await vm.RefreshAsync();
+
+        Assert.True(vm.NeedsPermission);
+        Assert.False(vm.NeedsRoot);
+        Assert.False(vm.HasError);
+        Assert.False(vm.IsEmpty);
+
+        vm.RequestPermissionCommand.Execute(null);
+        Assert.Equal(1, android.Requested);
+
+        android.HasAccess = true;
+        Directory.CreateDirectory(Path.Combine(tmp.Root, "Hakufu"));
+        await vm.RefreshAsync();
+        Assert.False(vm.NeedsPermission);
+        Assert.True(vm.IsEmpty);
+    }
+
+    [Fact]
+    public void Desktop_never_asks_for_permission()
+    {
+        using var tmp = new TempDataDir();
+        var root = new CompositionRoot(NewRepo(), new FakeUpdateService());
+        root.Navigation.NavigateTo<LibraryViewModel>();
+        Assert.False(Assert.IsType<LibraryViewModel>(root.Navigation.CurrentViewModel).NeedsPermission);
+    }
+
     private sealed class NotOnDevicePicker : IFilePickerService
     {
         public Task<string[]> PickFilesAsync(string title, FileFilter filter, bool multiSelect = true) => Task.FromResult<string[]>([]);

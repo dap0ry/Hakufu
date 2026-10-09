@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using System.Globalization;
 using Hakufu.Data;
 using Hakufu.I18n;
+using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
 
 namespace Hakufu;
@@ -64,9 +65,10 @@ public partial class App : Application
     {
         LoadData();
         var view = new MainView();
+        CompositionRoot? root = null;
         try
         {
-            var root = Compose();
+            root = Compose();
             view.DataContext = root.CreateMainViewModel();
             root.Theme.Transition = view.PlayThemeTransition;
             var scan = StartBackgroundWork(root);
@@ -94,7 +96,11 @@ public partial class App : Application
             // Lo que pasa en segundo plano no es tiempo de uso.
             activatable.Activated += (_, e) =>
             {
-                if (e.Kind == ActivationKind.Background) _sessionStart = DateTime.Now;
+                if (e.Kind != ActivationKind.Background) return;
+                _sessionStart = DateTime.Now;
+                // Al volver (de dar el permiso, de copiar mangas con otra app…), se vuelve a leer la carpeta.
+                if (root?.Navigation.CurrentViewModel is LibraryViewModel library) _ = library.RefreshAsync();
+                else if (root is not null) _ = root.Scanner.ScanAsync();
             };
         }
     }

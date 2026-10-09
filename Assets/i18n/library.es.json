@@ -24,5 +24,8 @@
   "library.scan_unreadable": "No se puede leer la carpeta «{0}». ¿Está conectado el disco o se ha movido?",
   "library.loose_collection": "Sin colección",
   "library.empty_body_android": "Copia tus mangas a la carpeta de la biblioteca (por defecto, «Hakufu» en el almacenamiento interno) desde el PC por USB o con cualquier gestor de archivos: una carpeta por serie con sus PDF, CBR o CBZ. Luego vuelve y toca «Actualizar».",
-  "library.folder_not_on_device": "Esa carpeta no está en el móvil (Drive y similares no valen). Elige una del almacenamiento interno o de la tarjeta SD."
+  "library.folder_not_on_device": "Esa carpeta no está en el móvil (Drive y similares no valen). Elige una del almacenamiento interno o de la tarjeta SD.",
+  "library.permission_title": "Hakufu necesita ver tus mangas",
+  "library.permission_body": "Para leer la carpeta de la biblioteca, Android pide el permiso de acceso a todos los archivos. Hakufu solo lee: no copia, mueve ni borra nada, y no usa internet salvo para avisar de versiones nuevas.",
+  "library.permission_button": "Dar permiso"
 }

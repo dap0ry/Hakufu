@@ -94,6 +94,10 @@ public class LibraryScanner
     {
         var root = Root;
         if (root is null) return new(ScanStatus.NoRoot);
+        // Android: la carpeta por defecto es de Hakufu y se crea vacía (al dar el permiso aún no
+        // existe). Una carpeta elegida que falta no se crea: puede ser una tarjeta SD quitada.
+        if (root == AppPaths.DefaultLibraryRoot)
+            try { Directory.CreateDirectory(root); } catch { /* sin permiso: se verá como ilegible */ }
 
         // Recorrer el disco fuera del hilo de UI; los cambios en los datos, en
         // el hilo que llama (la UI puede estar enumerando las listas).

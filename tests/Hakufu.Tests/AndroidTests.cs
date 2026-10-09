@@ -140,6 +140,25 @@ public class AndroidTests
         Assert.True(vm.IsEmpty);
     }
 
+    // Al volver de dar el permiso, la carpeta por defecto aún no existe: leerla la crea (vacía)
+    // en vez de decir que no se puede leer. Una carpeta elegida que falta sí es un error.
+    [Fact]
+    public async Task Scanning_creates_the_missing_default_folder_but_not_a_chosen_one()
+    {
+        using var tmp = new TempDataDir();
+        using var android = new AndroidMode(tmp.Root);
+        var repo = NewRepo();
+
+        var result = await new LibraryScanner(repo).ScanAsync();
+        Assert.Equal(ScanStatus.Ok, result.Status);
+        Assert.True(Directory.Exists(Path.Combine(tmp.Root, "Hakufu")));
+
+        var chosen = Path.Combine(tmp.Root, "SD", "Mangas");
+        repo.Current.LibraryRoot = chosen;
+        Assert.Equal(ScanStatus.Unreadable, (await new LibraryScanner(repo).ScanAsync()).Status);
+        Assert.False(Directory.Exists(chosen));
+    }
+
     [Fact]
     public void Desktop_never_asks_for_permission()
     {

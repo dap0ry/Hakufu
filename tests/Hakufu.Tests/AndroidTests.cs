@@ -243,6 +243,8 @@ public class AndroidTests
         Assert.True(vm.NeedsPermission);
         Assert.False(vm.ShowCollections);
         Assert.False(vm.HasError);
+        // Ni «0 colecciones»: los tomos siguen ahí, solo que no se pueden ver.
+        Assert.Equal("", vm.SummaryText);
     }
 
     // Los iconos de la barra de estado tienen que verse: claros sobre el lector (siempre oscuro)

@@ -24,6 +24,7 @@ public class LibraryViewModel : BaseViewModel, IGoBack
     {
         get
         {
+            if (NeedsPermission) return ""; // los tomos siguen ahí, solo que no se pueden ver
             if (IsScanning && Collections.Count == 0) return L.Get("library.reading_folder");
             var cols  = Collections.Count;
             var tomos = Collections.Sum(c => c.MangaCount);

@@ -108,6 +108,12 @@ public class LibraryScanner
         // Carpeta no accesible (disco desconectado…): no se toca nada, para no
         // perder el progreso por un USB sin enchufar.
         if (folder is null) return new(ScanStatus.Unreadable, root);
+        // Escritorio: si la carpeta de repente está vacía del todo y los tomos eran de ella,
+        // casi seguro es un disco sin montar (en Linux, el punto de montaje de fstab se
+        // queda como carpeta vacía). Leerla así quitaría todos los tomos y su progreso.
+        if (!AppPlatform.IsMobile && folder.Count == 0 &&
+            _repo.Current.Mangas.Any(m => RelativeTo(root, m.FilePath) is not null))
+            return new(ScanStatus.Unreadable, root);
         // Se eligió otra carpeta mientras se leía esta: ya la leerá la lectura siguiente.
         if (AppPaths.FixedLibraryRoot is null &&
             _repo.Current.LibraryRoot is { Length: > 0 } chosen && chosen != root) return new(ScanStatus.Ok, chosen);

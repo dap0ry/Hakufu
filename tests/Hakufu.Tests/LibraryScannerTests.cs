@@ -219,6 +219,48 @@ public class LibraryScannerTests
         Assert.Single(repo.Current.Progress);
     }
 
+    // Linux: un disco que se monta en una carpeta fija (fstab) deja esa carpeta vacía
+    // mientras no está montado. Leída así, se quitaban todos los tomos y su progreso.
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public async Task An_empty_folder_that_had_the_volumes_is_like_a_disconnected_drive()
+    {
+        using var tmp = new TempDataDir();
+        var root = Path.Combine(tmp.Root, "Mis mangas");
+        Fixtures.MakeCbz(Path.Combine(root, "Berserk"), "Tomo 1.cbz", "1.png");
+        var repo = await NewRepoAsync(root);
+        var scanner = new LibraryScanner(repo);
+        await scanner.ScanAsync();
+        repo.Current.Progress.Add(new ReadingProgress { MangaId = repo.Current.Mangas[0].Id, CurrentPage = 0 });
+
+        // El disco se desmonta y queda su carpeta, vacía (esto lo hace el test, no Hakufu).
+        Directory.Delete(root, recursive: true);
+        Directory.CreateDirectory(root);
+        var result = await scanner.ScanAsync();
+
+        Assert.Equal(ScanStatus.Unreadable, result.Status);
+        Assert.Single(repo.Current.Mangas);
+        Assert.Single(repo.Current.Collections);
+        Assert.Single(repo.Current.Progress);
+    }
+
+    // Pero elegir una carpeta vacía (otra biblioteca) sí la deja vacía.
+    [Fact]
+    public async Task Choosing_an_empty_folder_starts_an_empty_library()
+    {
+        using var tmp = new TempDataDir();
+        var root = Path.Combine(tmp.Root, "Mis mangas");
+        Fixtures.MakeCbz(Path.Combine(root, "Berserk"), "Tomo 1.cbz", "1.png");
+        var repo = await NewRepoAsync(root);
+        var scanner = new LibraryScanner(repo);
+        await scanner.ScanAsync();
+
+        var empty = Directory.CreateDirectory(Path.Combine(tmp.Root, "Vacía")).FullName;
+        Assert.True((await scanner.SetRootAsync(empty)).Ok);
+
+        Assert.Empty(repo.Current.Mangas);
+        Assert.Empty(repo.Current.Collections);
+    }
+
     [Fact]
     public async Task Choosing_another_folder_with_the_same_layout_keeps_progress()
     {

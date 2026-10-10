@@ -59,6 +59,25 @@ public class LibraryViewModel : BaseViewModel, IGoBack
     public bool ShowDesktopEmptyHelp => !AppPlatform.IsMobile;
     public bool IsScanning { get => _isScanning; private set { SetProperty(ref _isScanning, value); RaiseState(); } }
 
+    private bool _canClearLibrary;
+    private bool _isConfirmingClear;
+    private string _clearConfirmText = "";
+    /// <summary>La carpeta está vacía pero se recuerdan sus tomos: se ofrece «La he vaciado yo».</summary>
+    public bool CanClearLibrary
+    {
+        get => _canClearLibrary;
+        private set { SetProperty(ref _canClearLibrary, value); OnPropertyChanged(nameof(ShowEmptiedIt)); }
+    }
+    /// <summary>Se está pidiendo confirmación para vaciar la biblioteca.</summary>
+    public bool IsConfirmingClear
+    {
+        get => _isConfirmingClear;
+        private set { SetProperty(ref _isConfirmingClear, value); OnPropertyChanged(nameof(ShowEmptiedIt)); }
+    }
+    public bool ShowEmptiedIt => _canClearLibrary && !_isConfirmingClear;
+    /// <summary>"Hakufu dejará de recordar 14 tomos de esta carpeta…"</summary>
+    public string ClearConfirmText { get => _clearConfirmText; private set => SetProperty(ref _clearConfirmText, value); }
+
     public LibraryViewModel(LibraryService library, LibraryScanner scanner, ICoverService cover,
                             INavigationService nav, IFilePickerService files)
     {
@@ -105,9 +124,23 @@ public class LibraryViewModel : BaseViewModel, IGoBack
         var result = await scan;
         IsScanning = false;
         _hasRoot  = result.Status != ScanStatus.NoRoot;
-        ErrorText = result.Status == ScanStatus.Unreadable ? result.Message : null;
+        ErrorText = result.Status is ScanStatus.Unreadable or ScanStatus.EmptyFolder ? result.Message : null;
+        CanClearLibrary   = result.Status == ScanStatus.EmptyFolder;
+        IsConfirmingClear = false;
         LoadCollections();
     }
+
+    public RelayCommand ClearLibraryCommand => new(() =>
+    {
+        ClearConfirmText  = L.Format("library.clear_confirm",
+                                     CollectionCardViewModel.VolumesText(_library.GetAllMangas().Count));
+        IsConfirmingClear = true;
+    }, () => CanClearLibrary && !IsScanning);
+
+    public RelayCommand CancelClearCommand => new(() => IsConfirmingClear = false);
+
+    public AsyncRelayCommand ConfirmClearCommand => new(
+        () => ShowAsync(_scanner.AcceptEmptyFolderAsync()), () => IsConfirmingClear && !IsScanning);
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 

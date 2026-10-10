@@ -78,21 +78,29 @@ public class DataRepositoryTests
 
 public class PageLoaderTests
 {
-    // Review Focus #4: se mantiene el orden ordinal de siempre (10 antes que 2),
+    // Orden natural (2 antes que 10; hasta la 0.12 era ordinal y salían desordenadas),
     // y las imágenes dentro de subcarpetas cuentan como páginas.
     [AvaloniaFact]
-    public async Task Cbz_pages_keep_ordinal_order_and_decode()
+    public async Task Cbz_pages_go_in_natural_order_and_decode()
     {
         using var tmp = new TempDataDir();
-        var cbz = Fixtures.MakeCbz(Path.Combine(tmp.Root, "Ataque a los Titanes"), "Tomo 1.cbz",
-            "2.png", "10.png", "sub/1.png", "notas.txt");
+        var dir = Directory.CreateDirectory(Path.Combine(tmp.Root, "Ataque a los Titanes")).FullName;
+        var cbz = Path.Combine(dir, "Tomo 1.cbz");
+        using (var zip = ZipFile.Open(cbz, ZipArchiveMode.Create))
+            foreach (var (name, png) in new[] { ("10.png", Fixtures.WidePng), ("2.png", Fixtures.TallPng),
+                                                ("sub/1.png", Fixtures.TinyPng), ("notas.txt", Fixtures.TinyPng) })
+            {
+                using var s = zip.CreateEntry(name).Open();
+                s.Write(png);
+            }
 
         using var loader = new PageLoaderService(new Manga { FilePath = cbz });
 
         Assert.Equal(3, loader.TotalPages);
-        var page = await loader.LoadPageAsync(0);
-        Assert.NotNull(page);
-        Assert.Equal(1, page!.PixelSize.Width);
+        // 2.png (2x3), 10.png (4x2), sub/1.png (1x1)
+        var widths = new List<int>();
+        for (var i = 0; i < 3; i++) widths.Add((await loader.LoadPageAsync(i))!.PixelSize.Width);
+        Assert.Equal([2, 4, 1], widths);
         Assert.Null(await loader.LoadPageAsync(3));
     }
 

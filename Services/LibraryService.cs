@@ -102,6 +102,21 @@ public class LibraryService
     public ReadingProgress? GetProgress(Guid mangaId)
         => _repo.Current.Progress.FirstOrDefault(p => p.MangaId == mangaId);
 
+    /// <summary>
+    /// El progreso de un tomo para abrirlo en el lector. El guardado hasta la 0.12 contaba las
+    /// páginas en orden ordinal: se pasa a la misma página en el orden natural (una vez).
+    /// </summary>
+    public ReadingProgress? GetProgressForReading(Manga manga)
+    {
+        var p = GetProgress(manga.Id);
+        if (p is null || p.NaturalOrder) return p;
+        if (PageOrder.FromOrdinal(manga.FilePath, p.CurrentPage) is not { } page) return p; // sin archivo: más tarde
+        p.CurrentPage  = page;
+        p.NaturalOrder = true;
+        _ = _repo.SaveAsync();
+        return p;
+    }
+
     public async Task SaveProgressAsync(Guid mangaId, int page)
     {
         var p = _repo.Current.Progress.FirstOrDefault(x => x.MangaId == mangaId);
@@ -111,6 +126,7 @@ public class LibraryService
             _repo.Current.Progress.Add(p);
         }
         p.CurrentPage = page;
+        p.NaturalOrder = true;
         p.LastRead = DateTime.Now;
         await _repo.SaveAsync();
     }

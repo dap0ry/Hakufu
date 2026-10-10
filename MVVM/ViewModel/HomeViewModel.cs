@@ -74,7 +74,7 @@ public class HomeViewModel : BaseViewModel
     {
         var last = _library.GetLastReadManga();
         if (last is null) return;
-        var progress  = _library.GetProgress(last.Id);
+        var progress  = _library.GetProgressForReading(last);
         int startPage = Math.Max(0, (progress?.CurrentPage ?? 1) - 1);
         _nav.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(last, startPage));
     }, () => HasLastManga);

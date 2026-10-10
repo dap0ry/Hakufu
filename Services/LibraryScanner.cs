@@ -6,7 +6,8 @@ using SharpCompress.Readers;
 
 namespace Hakufu.Services;
 
-public enum ScanStatus { Ok, NoRoot, Unreadable }
+/// <summary>EmptyFolder: la carpeta está vacía del todo pero los tomos eran de ella (¿disco sin montar?).</summary>
+public enum ScanStatus { Ok, NoRoot, Unreadable, EmptyFolder }
 
 public sealed record ScanResult(ScanStatus Status, string Root = "")
 {
@@ -17,6 +18,7 @@ public sealed record ScanResult(ScanStatus Status, string Root = "")
     {
         ScanStatus.NoRoot     => L.Get("library.scan_no_root"),
         ScanStatus.Unreadable => L.Format("library.scan_unreadable", Root),
+        ScanStatus.EmptyFolder => L.Format("library.scan_empty_folder", Root),
         _                     => null,
     };
 }
@@ -84,13 +86,23 @@ public class LibraryScanner
         return await ScanAsync();
     }
 
-    private async Task<ScanResult> DoScanAsync()
+    /// <summary>
+    /// «La he vaciado yo»: se lee la carpeta aceptando que esté vacía, y la biblioteca se
+    /// queda vacía (Hakufu olvida esos tomos; los archivos ya no estaban).
+    /// </summary>
+    public async Task<ScanResult> AcceptEmptyFolderAsync()
     {
-        try { return await ScanCoreAsync(); }
+        if (_running is { IsCompleted: false } running) await running;
+        return await (_running = DoScanAsync(acceptEmpty: true));
+    }
+
+    private async Task<ScanResult> DoScanAsync(bool acceptEmpty = false)
+    {
+        try { return await ScanCoreAsync(acceptEmpty); }
         catch { return new(ScanStatus.Unreadable, Root ?? ""); } // nunca tumba la app
     }
 
-    private async Task<ScanResult> ScanCoreAsync()
+    private async Task<ScanResult> ScanCoreAsync(bool acceptEmpty)
     {
         var root = Root;
         if (root is null) return new(ScanStatus.NoRoot);
@@ -110,10 +122,11 @@ public class LibraryScanner
         if (folder is null) return new(ScanStatus.Unreadable, root);
         // Escritorio: si la carpeta de repente está vacía del todo y los tomos eran de ella,
         // casi seguro es un disco sin montar (en Linux, el punto de montaje de fstab se
-        // queda como carpeta vacía). Leerla así quitaría todos los tomos y su progreso.
-        if (!AppPlatform.IsMobile && folder.Count == 0 &&
+        // queda como carpeta vacía). Leerla así quitaría todos los tomos y su progreso:
+        // no se toca nada hasta que el usuario diga que la vació él (AcceptEmptyFolderAsync).
+        if (!acceptEmpty && !AppPlatform.IsMobile && folder.Count == 0 &&
             _repo.Current.Mangas.Any(m => RelativeTo(root, m.FilePath) is not null))
-            return new(ScanStatus.Unreadable, root);
+            return new(ScanStatus.EmptyFolder, root);
         // Se eligió otra carpeta mientras se leía esta: ya la leerá la lectura siguiente.
         if (AppPaths.FixedLibraryRoot is null &&
             _repo.Current.LibraryRoot is { Length: > 0 } chosen && chosen != root) return new(ScanStatus.Ok, chosen);

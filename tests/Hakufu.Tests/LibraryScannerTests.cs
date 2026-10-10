@@ -1,5 +1,10 @@
+using Avalonia.Controls;
+using Avalonia.VisualTree;
 using Hakufu.Data;
+using Hakufu.I18n;
 using Hakufu.MVVM.Model;
+using Hakufu.MVVM.View;
+using Hakufu.MVVM.ViewModel;
 using Hakufu.Services;
 
 namespace Hakufu.Tests;
@@ -237,10 +242,58 @@ public class LibraryScannerTests
         Directory.CreateDirectory(root);
         var result = await scanner.ScanAsync();
 
-        Assert.Equal(ScanStatus.Unreadable, result.Status);
+        Assert.Equal(ScanStatus.EmptyFolder, result.Status);
+        Assert.Contains(root, result.Message);
         Assert.Single(repo.Current.Mangas);
         Assert.Single(repo.Current.Collections);
         Assert.Single(repo.Current.Progress);
+
+        // «La he vaciado yo» (confirmado): ahora sí se queda vacía.
+        Assert.True((await scanner.AcceptEmptyFolderAsync()).Ok);
+        Assert.Empty(repo.Current.Mangas);
+        Assert.Empty(repo.Current.Collections);
+        Assert.Empty(repo.Current.Progress);
+    }
+
+    // En la biblioteca, el aviso ofrece «La he vaciado yo» y pide confirmación antes de vaciarla.
+    [Avalonia.Headless.XUnit.AvaloniaFact]
+    public void Emptied_it_asks_first_and_then_empties_the_library()
+    {
+        using var app = ViewSmoke.Start();
+        var store = app.Root.Repo.Current;
+        // La carpeta se queda vacía (esto lo hace el test, no Hakufu).
+        Directory.Delete(store.LibraryRoot, recursive: true);
+        Directory.CreateDirectory(store.LibraryRoot);
+
+        app.Root.Navigation.NavigateTo<LibraryViewModel>();
+        var view = app.AssertShows<LibraryView>();
+        var vm = Assert.IsType<LibraryViewModel>(app.Root.Navigation.CurrentViewModel);
+        WaitUntil(app, () => vm.HasError);
+        Assert.Equal(2, store.Mangas.Count); // no se ha quitado nada
+        Assert.Contains(view.GetVisualDescendants().OfType<Button>(),
+                        b => b.IsEffectivelyVisible && Equals(b.Content, L.Get("library.emptied_it")));
+
+        vm.ClearLibraryCommand.Execute(null);
+        Assert.True(vm.IsConfirmingClear);
+        Assert.False(vm.ShowEmptiedIt);
+        Assert.Equal(L.Format("library.clear_confirm", CollectionCardViewModel.VolumesText(2)), vm.ClearConfirmText);
+        vm.CancelClearCommand.Execute(null);
+        Assert.False(vm.IsConfirmingClear);
+        Assert.Equal(2, store.Mangas.Count);
+
+        vm.ClearLibraryCommand.Execute(null);
+        vm.ConfirmClearCommand.Execute(null);
+        WaitUntil(app, () => vm.IsEmpty);
+        Assert.Empty(store.Mangas);
+        Assert.False(vm.HasError);
+        Assert.False(vm.CanClearLibrary);
+    }
+
+    private static void WaitUntil(ViewSmoke app, Func<bool> done)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (!done() && sw.ElapsedMilliseconds < 5000) app.Pump();
+        Assert.True(done(), "No llegó a pasar en 5 s");
     }
 
     // Pero elegir una carpeta vacía (otra biblioteca) sí la deja vacía.

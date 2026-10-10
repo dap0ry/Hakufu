@@ -160,6 +160,21 @@
                                 IsVisible="{Binding CanPickRoot}"
                                 Command="{Binding PickRootCommand}"/>
                     </StackPanel>
+                    <!-- Carpeta vacía con tomos recordados: si la vació el usuario, que lo diga (con confirmación) -->
+                    <Button Classes="ghost" Content="{i18n:T library.emptied_it}" Padding="18,11"
+                            IsVisible="{Binding ShowEmptiedIt}"
+                            Command="{Binding ClearLibraryCommand}"/>
+                    <StackPanel IsVisible="{Binding IsConfirmingClear}">
+                        <Border Classes="notice" Margin="0,0,0,14">
+                            <TextBlock FontSize="12" TextWrapping="Wrap" Text="{Binding ClearConfirmText}"/>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button Classes="primary" Content="{i18n:T library.clear_yes}" Padding="22,10"
+                                    Command="{Binding ConfirmClearCommand}"/>
+                            <Button Classes="ghost" Content="{i18n:T library.clear_cancel}" Padding="22,10"
+                                    Command="{Binding CancelClearCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Vacía -->

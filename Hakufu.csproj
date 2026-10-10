@@ -11,7 +11,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Hakufu</AssemblyName>
     <RootNamespace>Hakufu</RootNamespace>
-    <Version>0.11.0</Version>
+    <Version>0.12.0</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- Bindings comprobados al compilar: cada vista declara x:DataType. -->
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>

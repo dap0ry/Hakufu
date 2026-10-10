@@ -11,7 +11,9 @@ public class JsonDataRepository : IDataRepository
     private readonly string _dataDir = AppPaths.DataDir;
     private string DataDir  => _dataDir;
     private string DataFile => Path.Combine(_dataDir, "data.json");
-    private string TmpFile  => DataFile + ".tmp"; // solo para limpieza en LoadAsync
+    // Donde se escribe antes de sustituir data.json (ver SaveAsync). Si queda uno
+    // al arrancar es de un guardado que no terminó: data.json es el bueno.
+    private string TmpFile  => DataFile + ".tmp";
 
     // Hasta la 0.9.x los datos vivían en %LOCALAPPDATA%\Hakufu (solo Windows).
     private static readonly string OldDataDir = Path.Combine(
@@ -67,8 +69,21 @@ public class JsonDataRepository : IDataRepository
         }
         catch
         {
+            // No se puede leer: se empieza de cero, pero el primer guardado lo pisaría
+            // (y con él progreso, favoritos y perfil). Se aparta una copia antes.
+            KeepUnreadable();
             Current = new AppDataStore();
         }
+    }
+
+    private void KeepUnreadable()
+    {
+        try
+        {
+            File.Copy(DataFile, Path.Combine(DataDir, $"data-ilegible-{DateTime.Now:yyyyMMdd-HHmmss}.json"),
+                      overwrite: false);
+        }
+        catch { /* sin copia: al menos que arranque */ }
     }
 
     public async Task SaveAsync()
@@ -77,15 +92,38 @@ public class JsonDataRepository : IDataRepository
         try
         {
             Directory.CreateDirectory(DataDir);
+            // Primero a data.json.tmp y después se sustituye data.json: si el guardado
+            // falla a mitad (una lista que cambia mientras se escribe, la app que se
+            // cierra…), data.json sigue entero. Escrito directamente quedaba cortado, al
+            // arrancar no se podía leer y se empezaba de cero.
             var stream = new FileStream(
-                DataFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite,
+                TmpFile, FileMode.Create, FileAccess.Write, FileShare.None,
                 bufferSize: 4096, useAsync: true);
             await using (stream.ConfigureAwait(false))
+            {
                 await JsonSerializer.SerializeAsync(stream, Current, JsonOptions).ConfigureAwait(false);
+                stream.Flush(flushToDisk: true);
+            }
+            ReplaceDataFile();
         }
         finally
         {
             _saveLock.Release();
+        }
+    }
+
+    private void ReplaceDataFile()
+    {
+        try
+        {
+            File.Move(TmpFile, DataFile, overwrite: true);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Windows no deja sustituir un archivo que otro tiene abierto (antivirus,
+            // indexador): se copia encima, como se hacía antes.
+            File.Copy(TmpFile, DataFile, overwrite: true);
+            try { File.Delete(TmpFile); } catch { }
         }
     }
 

@@ -222,7 +222,8 @@ public class BackupService(IDataRepository repo) : IBackupService
             if (backup.Progress.FirstOrDefault(p => p.MangaId == bm.Id) is { } bp)
             {
                 current.Progress.RemoveAll(p => p.MangaId == cm.Id);
-                current.Progress.Add(new ReadingProgress { MangaId = cm.Id, CurrentPage = bp.CurrentPage, LastRead = bp.LastRead });
+                current.Progress.Add(new ReadingProgress { MangaId = cm.Id, CurrentPage = bp.CurrentPage, LastRead = bp.LastRead,
+                                                           NaturalOrder = bp.NaturalOrder });
             }
             foreach (var h in backup.History.Where(h => h.MangaId == bm.Id))
                 if (!current.History.Any(x => x.MangaId == cm.Id && x.CompletedAt == h.CompletedAt))

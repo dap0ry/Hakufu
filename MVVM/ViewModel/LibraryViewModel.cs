@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Hakufu.Data;
 using Hakufu.I18n;
 using Hakufu.Services;
 
@@ -8,7 +9,7 @@ namespace Hakufu.MVVM.ViewModel;
 /// Biblioteca: las colecciones son las subcarpetas de la carpeta que eligió el
 /// usuario (ver LibraryScanner). Se vuelve a leer la carpeta al entrar.
 /// </summary>
-public class LibraryViewModel : BaseViewModel
+public class LibraryViewModel : BaseViewModel, IGoBack
 {
     private readonly LibraryService     _library;
     private readonly LibraryScanner     _scanner;
@@ -23,6 +24,7 @@ public class LibraryViewModel : BaseViewModel
     {
         get
         {
+            if (NeedsPermission) return ""; // los tomos siguen ahí, solo que no se pueden ver
             if (IsScanning && Collections.Count == 0) return L.Get("library.reading_folder");
             var cols  = Collections.Count;
             var tomos = Collections.Sum(c => c.MangaCount);
@@ -36,13 +38,25 @@ public class LibraryViewModel : BaseViewModel
     private string? _errorText;
     private bool _isScanning;
 
+    /// <summary>Android sin permiso para leer el almacenamiento: se explica y se ofrece darlo.</summary>
+    public bool NeedsPermission => AppPlatform.HasLibraryAccess is { } hasAccess && !hasAccess();
+    /// <summary>Sin permiso, el aviso va solo: lo que se recuerde de la carpeta no se puede abrir.</summary>
+    public bool ShowCollections => !NeedsPermission;
     /// <summary>No hay carpeta de biblioteca: se pide elegirla.</summary>
-    public bool NeedsRoot => !_hasRoot;
+    public bool NeedsRoot => !NeedsPermission && !_hasRoot;
     /// <summary>La carpeta no se puede leer (disco desconectado, sin permiso…).</summary>
     public string? ErrorText { get => _errorText; private set { SetProperty(ref _errorText, value); RaiseState(); } }
-    public bool HasError => _hasRoot && _errorText is not null;
+    public bool HasError => !NeedsPermission && _hasRoot && _errorText is not null;
     /// <summary>Carpeta leída y sin colecciones.</summary>
-    public bool IsEmpty => _hasRoot && _errorText is null && !IsScanning && Collections.Count == 0;
+    public bool IsEmpty => !NeedsPermission && _hasRoot && _errorText is null && !IsScanning && Collections.Count == 0;
+    /// <summary>iPhone/iPad: los mangas se meten con la app Archivos (texto de la biblioteca vacía).</summary>
+    public bool IsMobile => AppPlatform.IsMobile;
+    /// <summary>Se puede elegir otra carpeta (escritorio y Android; en iOS es fija).</summary>
+    public bool CanPickRoot => AppPaths.FixedLibraryRoot is null;
+    /// <summary>Cómo se meten mangas cuando está vacía: iOS (app Archivos), Android (almacenamiento) o escritorio.</summary>
+    public bool ShowIosEmptyHelp     => AppPaths.FixedLibraryRoot is not null;
+    public bool ShowAndroidEmptyHelp => AppPlatform.IsMobile && AppPaths.FixedLibraryRoot is null;
+    public bool ShowDesktopEmptyHelp => !AppPlatform.IsMobile;
     public bool IsScanning { get => _isScanning; private set { SetProperty(ref _isScanning, value); RaiseState(); } }
 
     public LibraryViewModel(LibraryService library, LibraryScanner scanner, ICoverService cover,
@@ -61,6 +75,8 @@ public class LibraryViewModel : BaseViewModel
 
     private void RaiseState()
     {
+        OnPropertyChanged(nameof(NeedsPermission));
+        OnPropertyChanged(nameof(ShowCollections));
         OnPropertyChanged(nameof(NeedsRoot));
         OnPropertyChanged(nameof(HasError));
         OnPropertyChanged(nameof(IsEmpty));
@@ -95,11 +111,15 @@ public class LibraryViewModel : BaseViewModel
 
     public RelayCommand GoBackCommand => new(() => _nav.NavigateTo<HomeViewModel>());
 
+    public RelayCommand RequestPermissionCommand => new(() => AppPlatform.RequestLibraryAccess?.Invoke());
+
     public AsyncRelayCommand RefreshCommand => new(RefreshAsync, () => !IsScanning);
 
     public AsyncRelayCommand PickRootCommand => new(async () =>
     {
-        var folder = await _files.PickFolderAsync(L.Get("library.folder_picker_title"));
+        string? folder;
+        try { folder = await _files.PickFolderAsync(L.Get("library.folder_picker_title")); }
+        catch (FolderNotOnDeviceException) { ErrorText = L.Get("library.folder_not_on_device"); return; }
         if (folder is null) return;
         await ShowAsync(_scanner.SetRootAsync(folder));
     });

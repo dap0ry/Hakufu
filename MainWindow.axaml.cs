@@ -12,25 +12,19 @@ namespace Hakufu;
 public partial class MainWindow : Window
 {
     private WindowState _preZenState;
-    private ReaderViewModel? _reader;
     private bool _zen;
 
     public MainWindow()
     {
         InitializeComponent();
 
-        // Equivalente al CommandManager de WPF: tras cada clic o tecla se
-        // reevalúa el CanExecute de los comandos (ver CommandRequery).
-        AddHandler(PointerReleasedEvent, (_, _) => CommandRequery.RequestInvalidate(),
-                   RoutingStrategies.Tunnel, handledEventsToo: true);
-        AddHandler(KeyUpEvent, (_, _) => CommandRequery.RequestInvalidate(),
-                   RoutingStrategies.Tunnel, handledEventsToo: true);
-
         DataContextChanged += (_, _) =>
         {
             if (DataContext is MainWindowViewModel mvm)
                 mvm.PropertyChanged += MainVm_PropertyChanged;
         };
+        MainView.ZenModeChanged += Reader_ZenModeChanged;
+        MainView.ReaderClosed   += Reader_Closed;
 
         foreach (var grip in ResizeGrips.Children)
             grip.PointerPressed += ResizeGrip_PointerPressed;
@@ -136,39 +130,24 @@ public partial class MainWindow : Window
     // Cerrar la app leyendo: apuntar el rato leído antes de que App guarde.
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        _reader?.FlushReadingTime();
+        MainView.FlushReader();
         base.OnClosing(e);
     }
 
+    // En el lector la barra de título va oscura, como la del lector.
     private void MainVm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(MainWindowViewModel.CurrentView) ||
-            DataContext is not MainWindowViewModel mvm) return;
+        if (e.PropertyName == nameof(MainWindowViewModel.CurrentView) && DataContext is MainWindowViewModel mvm)
+            TitleBar.Classes.Set("reader", mvm.CurrentView is ReaderViewModel);
+    }
 
-        if (_reader is not null)
-        {
-            _reader.ZenModeChanged -= Reader_ZenModeChanged;
-            // Cierra el documento de pdfium (Docnet no tiene finalizador: sin
-            // esto cada PDF abierto se quedaba abierto hasta cerrar la app).
-            _reader.Dispose();
-            _reader = null;
-            // Salir del lector estando en zen: volver al tamaño de antes (la
-            // pantalla completa del botón de la barra, si venía de ahí, se queda).
-            var wasZen = _zen;
-            _zen = false;
-            if (wasZen && WindowState == WindowState.FullScreen) WindowState = _preZenState;
-            UpdateChrome();
-        }
-
-        // En el lector la barra de título va oscura, como la del lector.
-        TitleBar.Classes.Set("reader", mvm.CurrentView is ReaderViewModel);
-
-        if (mvm.CurrentView is ReaderViewModel reader)
-        {
-            _reader = reader;
-            reader.ZenModeChanged += Reader_ZenModeChanged;
-            if (reader.OpenInZenMode) reader.IsZenMode = true;
-        }
+    // Salir del lector estando en zen: volver al tamaño de antes (la pantalla
+    // completa del botón de la barra, si venía de ahí, se queda).
+    private void Reader_Closed(object? sender, bool wasZen)
+    {
+        _zen = false;
+        if (wasZen && WindowState == WindowState.FullScreen) WindowState = _preZenState;
+        UpdateChrome();
     }
 
     // Modo zen del lector = pantalla completa nativa del sistema.
@@ -185,11 +164,5 @@ public partial class MainWindow : Window
             WindowState = _preZenState == WindowState.FullScreen ? WindowState.Normal : _preZenState;
         }
         UpdateChrome(); // si ya estaba en pantalla completa, WindowState no cambia
-    }
-
-    private void Overlay_PointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel mvm)
-            mvm.CloseModalCommand.Execute(null);
     }
 }

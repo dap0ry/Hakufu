@@ -7,10 +7,22 @@
              x:Class="Hakufu.MVVM.View.ProfileView"
              x:DataType="vm:ProfileViewModel">
 
+    <UserControl.Styles>
+        <Style Selector="Viewbox#CardTall">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector=".narrow Viewbox#CardTall">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector=".narrow Viewbox#CardWide">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+    </UserControl.Styles>
+
     <Grid RowDefinitions="Auto,*">
 
         <!-- ═══ CABECERA ═══ -->
-        <c:PageHeader Grid.Row="0"
+        <c:PageHeader Grid.Row="0" Classes="stackActions"
                       Title="{i18n:T profile.title}"
                       Subtitle="{i18n:T profile.subtitle}"
                       BackText="{i18n:T common.back_home}"
@@ -35,8 +47,12 @@
         <!-- ═══ TARJETA ═══
              Se encoge si la ventana es pequeña (Viewbox solo hacia abajo). -->
         <Panel Grid.Row="1">
-            <Viewbox Stretch="Uniform" StretchDirection="DownOnly" Margin="36,32">
+            <Viewbox Name="CardWide" Stretch="Uniform" StretchDirection="DownOnly" Margin="36,32">
                 <v:ProfileCardHorizontal/>
+            </Viewbox>
+            <!-- iPhone e iPad en vertical: la tarjeta vertical, que llena la pantalla -->
+            <Viewbox Name="CardTall" Stretch="Uniform" StretchDirection="DownOnly" Margin="16,16,16,24">
+                <v:ProfileCardVertical/>
             </Viewbox>
 
             <!-- Las que se exportan: fuera de la vista y maquetadas ya al doble de

@@ -49,7 +49,9 @@ public class LibraryScanner
     {
         get
         {
+            if (AppPaths.FixedLibraryRoot is { } fixedRoot) return fixedRoot;
             if (_repo.Current.LibraryRoot is { Length: > 0 } root) return root;
+            if (AppPaths.DefaultLibraryRoot is { } byDefault) return byDefault;
             return HasAnyFile(AppPaths.LibraryDir) ? AppPaths.LibraryDir : null;
         }
     }
@@ -92,6 +94,13 @@ public class LibraryScanner
     {
         var root = Root;
         if (root is null) return new(ScanStatus.NoRoot);
+        // Android sin permiso: se ven las carpetas pero no sus archivos. Leer así quitaría todos
+        // los tomos y su progreso: como con un disco desconectado, no se toca nada.
+        if (AppPlatform.HasLibraryAccess is { } hasAccess && !hasAccess()) return new(ScanStatus.Unreadable, root);
+        // Android: la carpeta por defecto es de Hakufu y se crea vacía (al dar el permiso aún no
+        // existe). Una carpeta elegida que falta no se crea: puede ser una tarjeta SD quitada.
+        if (root == AppPaths.DefaultLibraryRoot)
+            try { Directory.CreateDirectory(root); } catch { /* sin permiso: se verá como ilegible */ }
 
         // Recorrer el disco fuera del hilo de UI; los cambios en los datos, en
         // el hilo que llama (la UI puede estar enumerando las listas).
@@ -100,7 +109,8 @@ public class LibraryScanner
         // perder el progreso por un USB sin enchufar.
         if (folder is null) return new(ScanStatus.Unreadable, root);
         // Se eligió otra carpeta mientras se leía esta: ya la leerá la lectura siguiente.
-        if (_repo.Current.LibraryRoot is { Length: > 0 } chosen && chosen != root) return new(ScanStatus.Ok, chosen);
+        if (AppPaths.FixedLibraryRoot is null &&
+            _repo.Current.LibraryRoot is { Length: > 0 } chosen && chosen != root) return new(ScanStatus.Ok, chosen);
 
         _repo.Current.LibraryRoot = root; // la antigua "biblioteca" queda fijada como carpeta
         Apply(_repo.Current, root, folder);
@@ -184,9 +194,8 @@ public class LibraryScanner
                 CoverService.PdfLock.Wait();
                 try
                 {
-                    using var doc = Docnet.Core.DocLib.Instance.GetDocReader(
-                        path, new Docnet.Core.Models.PageDimensions(100, 150));
-                    return doc.GetPageCount();
+                    using var doc = PdfDocument.Open(path, 100, 150);
+                    return doc.PageCount;
                 }
                 finally { CoverService.PdfLock.Release(); }
             }

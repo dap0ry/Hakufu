@@ -13,6 +13,9 @@ public sealed class Localizer
 {
     public static Localizer Instance { get; } = new();
 
+    /// <summary>Carpeta de los textos; null = &lt;app&gt;/i18n. Android la fija (los saca del APK al arrancar).</summary>
+    public static string? TextsDirOverride { get; set; }
+
     private readonly Dictionary<string, Dictionary<string, string>> _byLanguage = [];
     private readonly List<KeyObserver> _observers = [];
     private Dictionary<string, string> _current = [];
@@ -69,7 +72,7 @@ public sealed class Localizer
     {
         if (_byLanguage.TryGetValue(lang, out var cached)) return cached;
         var all = new Dictionary<string, string>();
-        var dir = Path.Combine(AppContext.BaseDirectory, "i18n");
+        var dir = TextsDirOverride ?? Path.Combine(AppContext.BaseDirectory, "i18n");
         string[] files;
         try { files = Directory.Exists(dir) ? Directory.GetFiles(dir, $"*.{lang}.json") : []; }
         catch { files = []; }

@@ -1,19 +1,60 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <!-- Escritorio (Windows, macOS, Linux). Con -p:HakufuIos=true, iPhone/iPad en su
+         lugar: necesita macOS, Xcode y el workload "ios" (lo hace el CI). Con
+         -p:HakufuAndroid=true, Android: JDK 17 y el workload "android" (vale en Linux). -->
     <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework Condition="'$(HakufuIos)' == 'true'">net10.0-ios</TargetFramework>
+    <TargetFramework Condition="'$(HakufuAndroid)' == 'true'">net10.0-android</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Hakufu</AssemblyName>
     <RootNamespace>Hakufu</RootNamespace>
-    <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <Version>0.11.0</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- Bindings comprobados al compilar: cada vista declara x:DataType. -->
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>HakufuLogo.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <!-- iPhone e iPad (ver docs/superpowers/specs/2026-10-08-ios-design.md). Lo propio de
+       iOS está en Platforms/iOS/. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <OutputType>Exe</OutputType>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <ApplicationId>com.dapory.hakufu</ApplicationId>
+    <ApplicationTitle>Hakufu</ApplicationTitle>
+    <!-- iOS solo admite números en la versión: 0.11.0-beta.4 → 0.11.0 -->
+    <ApplicationDisplayVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(Version)', '-.*$', ''))</ApplicationDisplayVersion>
+    <ApplicationVersion>$(ApplicationDisplayVersion)</ApplicationVersion>
+    <!-- Platforms/iOS/Assets.xcassets/AppIcon.appiconset (un PNG de 1024×1024) -->
+    <AppIcon>AppIcon</AppIcon>
+  </PropertyGroup>
+
+  <!-- Móviles y tablets Android (ver docs/superpowers/specs/2026-10-09-android-design.md). Lo propio
+       de Android está en Platforms/Android/. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+    <OutputType>Exe</OutputType>
+    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+    <ApplicationId>com.dapory.hakufu</ApplicationId>
+    <ApplicationTitle>Hakufu</ApplicationTitle>
+    <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
+    <!-- versionCode: mayor·10000 + menor·100 + parche (0.11.0 → 1100; las beta, el de su versión) -->
+    <_HakufuVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(Version)', '-.*$', ''))</_HakufuVersion>
+    <ApplicationVersion>$([MSBuild]::Add($([MSBuild]::Add($([MSBuild]::Multiply($([System.Version]::Parse('$(_HakufuVersion)').Major), 10000)), $([MSBuild]::Multiply($([System.Version]::Parse('$(_HakufuVersion)').Minor), 100)))), $([System.Version]::Parse('$(_HakufuVersion)').Build)))</ApplicationVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <AndroidManifest>Platforms/Android/AndroidManifest.xml</AndroidManifest>
+    <MonoAndroidResourcePrefix>Platforms/Android/Resources</MonoAndroidResourcePrefix>
+    <!-- Android recoge cualquier .so del repo como biblioteca nativa: fuera las compilaciones de
+         escritorio (publish/) y lo que no es la app. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);web/**;tests/**;publish/**;Releases/**;promo/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- El resto del repo (web/, tests/) no forma parte de la app. -->
@@ -21,6 +62,21 @@
     <Compile Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
     <AvaloniaXaml Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
     <None Remove="web/**;tests/**;publish/**;Releases/**;promo/**" />
+  </ItemGroup>
+
+  <!-- Cada plataforma compila solo lo suyo. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Compile Remove="Platforms/**" />
+    <None Remove="Platforms/**" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <!-- Program.cs es el arranque de escritorio (Velopack + ventana); Docnet no tiene binarios para iOS. -->
+    <Compile Remove="Program.cs;Services/PdfDocument.Docnet.cs;Platforms/Android/**" />
+    <None Remove="Platforms/Android/**" />
+    <!-- Se mezcla con el Info.plist que genera .NET (Archivos, orientaciones, pantalla de arranque…) -->
+    <PartialAppManifest Include="Platforms/iOS/Info.plist" />
+    <!-- Los textos van dentro de la app, en <app>/i18n/ como en escritorio (ver I18n/Localizer) -->
+    <BundleResource Include="Assets/i18n/*.json" LogicalName="i18n/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,20 +87,40 @@
     <AvaloniaResource Include="Assets\Help\*.png" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <!-- Textos de la app (ver I18n/Localizer): archivos junto al ejecutable, sin depender de Avalonia. -->
     <Content Include="Assets\i18n\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="i18n\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.22" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.22" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22" Condition="'$(Configuration)' == 'Debug'" />
-    <PackageReference Include="Docnet.Core" Version="2.6.0" />
     <PackageReference Include="SharpCompress" Version="0.50.4" />
     <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.22" Condition="'$(Configuration)' == 'Debug'" />
+    <PackageReference Include="Docnet.Core" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+    <PackageReference Include="Avalonia.iOS" Version="11.3.22" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+    <!-- Program.cs es el arranque de escritorio; Docnet no tiene binarios para Android. -->
+    <Compile Remove="Program.cs;Services/PdfDocument.Docnet.cs;Platforms/iOS/**" />
+    <None Remove="Platforms/iOS/**" />
+    <!-- Los textos van dentro del APK; DroidPlatform los saca a una carpeta al arrancar. -->
+    <AndroidAsset Include="Assets/i18n/*.json" Link="i18n/%(Filename)%(Extension)" />
+    <PackageReference Include="Avalonia.Android" Version="11.3.22" />
+    <!-- Los using globales de Android chocan con Avalonia en el código común (Application,
+         Button…): los archivos de Platforms/Android ya ponen los suyos. -->
+    <Using Remove="Android.App" />
+    <Using Remove="Android.Widget" />
   </ItemGroup>
 
   <ItemGroup>

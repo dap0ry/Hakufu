@@ -1,6 +1,4 @@
 using Avalonia.Media.Imaging;
-using Docnet.Core;
-using Docnet.Core.Models;
 using Hakufu.Data;
 using Hakufu.MVVM.Model;
 using SharpCompress.Archives;
@@ -63,12 +61,8 @@ public class CoverService : ICoverService
         {
             await Task.Run(() =>
             {
-                using var docReader = DocLib.Instance.GetDocReader(
-                    pdfPath, new PageDimensions(300, 450));
-                using var pageReader = docReader.GetPageReader(0);
-
-                using var bmp = BitmapHelper.FromBgra(
-                    pageReader.GetImage(), pageReader.GetPageWidth(), pageReader.GetPageHeight());
+                using var doc = PdfDocument.Open(pdfPath, 300, 450);
+                using var bmp = doc.RenderPage(0);
                 bmp.Save(cachePath);
             });
         }

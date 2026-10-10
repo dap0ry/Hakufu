@@ -10,10 +10,19 @@ internal static class BitmapHelper
 {
     /// <summary>pdfium (Docnet) devuelve BGRA sin premultiplicar, 4 bytes por píxel.</summary>
     public static Bitmap FromBgra(byte[] raw, int width, int height)
+        => FromPixels(raw, width, height, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+
+    /// <summary>
+    /// Android (PdfRenderer): RGBA premultiplicado, el orden nativo de Skia allí. En BGRA la GPU de
+    /// algunos Android no sube la textura y la página sale en blanco.
+    /// </summary>
+    public static Bitmap FromRgba(byte[] raw, int width, int height)
+        => FromPixels(raw, width, height, PixelFormat.Rgba8888, AlphaFormat.Premul);
+
+    private static Bitmap FromPixels(byte[] raw, int width, int height, PixelFormat format, AlphaFormat alpha)
     {
         var bmp = new WriteableBitmap(
-            new PixelSize(width, height), new Vector(96, 96),
-            PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+            new PixelSize(width, height), new Vector(96, 96), format, alpha);
         using var fb = bmp.Lock();
         var rowBytes = width * 4;
         if (fb.RowBytes == rowBytes)

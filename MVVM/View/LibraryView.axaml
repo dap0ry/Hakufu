@@ -78,17 +78,17 @@
     <Grid RowDefinitions="Auto,*">
 
         <!-- ═══ CABECERA ═══ -->
-        <Border Grid.Row="0" Padding="40,26,40,22"
+        <Border Grid.Row="0" Classes="pageHeader"
                 BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto">
+            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
                 <Button Grid.Column="0" Classes="ghost" Content="{i18n:T common.back_home}"
                         VerticalAlignment="Center"
                         Command="{Binding GoBackCommand}"/>
 
-                <StackPanel Grid.Column="1" Margin="28,0,0,0" VerticalAlignment="Center">
+                <StackPanel Classes="pageTitle" VerticalAlignment="Center">
                     <TextBlock Text="{i18n:T library.title}"
+                               Classes="pageTitleText"
                                FontFamily="{DynamicResource DisplayFont}"
-                               FontSize="52" LineHeight="50"
                                Foreground="{DynamicResource TextPrimary}"/>
                     <TextBlock Text="{Binding SummaryText}"
                                FontSize="12" Margin="1,4,0,0"
@@ -110,6 +110,22 @@
         <!-- ═══ COLECCIONES ═══ -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Panel>
+                <!-- Android sin permiso para leer el almacenamiento -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            MaxWidth="400" Spacing="12" Margin="40,80"
+                            IsVisible="{Binding NeedsPermission}">
+                    <TextBlock Text="{i18n:T library.permission_title}"
+                               FontFamily="{DynamicResource DisplayFont}"
+                               FontSize="48" LineHeight="46" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{i18n:T library.permission_body}"
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <Button Classes="primary" Content="{i18n:T library.permission_button}" HorizontalAlignment="Left"
+                            Padding="22,11" Margin="0,12,0,0"
+                            Command="{Binding RequestPermissionCommand}"/>
+                </StackPanel>
+
                 <!-- Sin carpeta elegida -->
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                             MaxWidth="400" Spacing="12" Margin="40,80"
@@ -141,6 +157,7 @@
                         <Button Classes="primary" Content="{i18n:T library.reread}" Padding="22,11"
                                 Command="{Binding RefreshCommand}"/>
                         <Button Classes="ghost" Content="{i18n:T library.pick_other}" Padding="18,11"
+                                IsVisible="{Binding CanPickRoot}"
                                 Command="{Binding PickRootCommand}"/>
                     </StackPanel>
                 </StackPanel>
@@ -154,6 +171,15 @@
                                FontSize="48" LineHeight="46" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextPrimary}"/>
                     <TextBlock Text="{i18n:T library.empty_body}"
+                               IsVisible="{Binding ShowDesktopEmptyHelp}"
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <TextBlock Text="{i18n:T library.empty_body_ios}"
+                               IsVisible="{Binding ShowIosEmptyHelp}"
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource TextSecondary}"/>
+                    <TextBlock Text="{i18n:T library.empty_body_android}"
+                               IsVisible="{Binding ShowAndroidEmptyHelp}"
                                TextWrapping="Wrap" FontSize="14"
                                Foreground="{DynamicResource TextSecondary}"/>
                     <Button Classes="primary" Content="{i18n:T library.open_folder}" HorizontalAlignment="Left"
@@ -161,7 +187,8 @@
                             Command="{Binding OpenFolderCommand}"/>
                 </StackPanel>
 
-                <ItemsControl ItemsSource="{Binding Collections}" Margin="34,36,34,40">
+                <ItemsControl ItemsSource="{Binding Collections}" Margin="34,36,34,40"
+                              IsVisible="{Binding ShowCollections}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"/>

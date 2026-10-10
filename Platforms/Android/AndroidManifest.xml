@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- La biblioteca es una carpeta del usuario (ver la spec): acceso a todos los archivos en Android 11+,
+       y los permisos de siempre en 8-10. -->
+  <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+  <!-- Solo para avisar de versiones nuevas (Services/UpdateService). -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <application android:label="Hakufu" android:icon="@mipmap/ic_launcher" android:supportsRtl="true"
+               android:requestLegacyExternalStorage="true" />
+</manifest>

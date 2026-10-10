@@ -1,6 +1,7 @@
 {
   "reader.close": "Close",
   "reader.zen_hint": "Press ESC to exit zen mode",
+  "reader.zen_hint_touch": "Tap the middle to show the bars",
   "reader.prev_page": "Previous page",
   "reader.next_page": "Next page",
   "reader.one_page": "1 page",

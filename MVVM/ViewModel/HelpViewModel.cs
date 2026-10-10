@@ -25,7 +25,7 @@ public record HelpQuestion(string Question, string Answer);
 /// Ayuda: guía "Cómo usar Hakufu". El texto está en la vista; aquí el índice,
 /// los atajos actuales del lector y las preguntas frecuentes.
 /// </summary>
-public class HelpViewModel : BaseViewModel
+public class HelpViewModel : BaseViewModel, IGoBack
 {
     private readonly INavigationService _nav;
 

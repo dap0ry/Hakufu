@@ -1,6 +1,7 @@
 {
   "reader.close": "Cerrar",
   "reader.zen_hint": "Pulsa ESC para salir del modo zen",
+  "reader.zen_hint_touch": "Toca en el centro para ver las barras",
   "reader.prev_page": "Página anterior",
   "reader.next_page": "Página siguiente",
   "reader.one_page": "1 pág.",

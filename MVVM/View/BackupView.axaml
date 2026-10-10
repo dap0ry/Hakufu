@@ -131,7 +131,7 @@
                                        VerticalAlignment="Center"
                                        Text="{Binding SummaryText}"/>
                         </StackPanel>
-                        <Grid ColumnDefinitions="*,Auto">
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding ShowDataFolder}">
                             <TextBlock Grid.Column="0" Classes="body"
                                        VerticalAlignment="Center" Margin="0,0,16,0">
                                 <Run Text="{i18n:T backup.data_folder}"/>
@@ -211,13 +211,15 @@
                             </StackPanel>
                         </Border>
 
-                        <StackPanel Orientation="Horizontal" Spacing="16">
-                            <Button Classes="primary"
+                        <!-- Grid y no StackPanel horizontal: en el iPhone el resumen baja de línea -->
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Button Grid.Column="0" Classes="primary"
                                     Content="{i18n:T backup.export_button}"
                                     Padding="22,10"
                                     Command="{Binding ExportCommand}"/>
-                            <TextBlock Classes="body" Text="{Binding ExportSummary}" VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <TextBlock Grid.Column="1" Classes="body" Text="{Binding ExportSummary}"
+                                       TextWrapping="Wrap" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
                     </StackPanel>
                 </Border>
 

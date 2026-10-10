@@ -1,6 +1,8 @@
 name: build
 
-# Compila, pasa los tests y genera la app en los tres sistemas en cada push o PR.
+# Compila, pasa los tests y genera la app en los tres sistemas en cada push o PR,
+# la de iPhone/iPad (job ios: .ipa sin firmar y capturas en el simulador) y la de
+# Android (job android: APK firmado y capturas en el emulador).
 # Los paquetes quedan como "artifacts" de la ejecución (pestaña Actions).
 # Al subir un tag vX.Y.Z además publica la release en GitHub con los cuatro
 # paquetes portables, los instaladores de Velopack y sus archivos de
@@ -78,9 +80,128 @@ jobs:
             publish/velopack/*
           if-no-files-found: error
 
+  # iPhone/iPad (ver docs/superpowers/specs/2026-10-08-ios-design.md): capturas en el
+  # simulador (la prueba de que arranca y pinta en iOS) y el .ipa sin firmar.
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # Workload de iOS fijo a la versión que va con el Xcode del runner (26.5.10318 pide
+      # Xcode 26.6): la última (27.x) pide Xcode 27 y macos-latest trae hasta la 26.6. Al subir Xcode en el
+      # runner, subir las dos a la vez (versiones en nuget.org:
+      # microsoft.net.sdk.ios.manifest-10.0.100).
+      - name: Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.6.app
+          xcodebuild -version
+          xcrun simctl list runtimes
+
+      - name: Workload de iOS
+        run: |
+          dotnet workload config --update-mode manifests
+          echo '{ "microsoft.net.sdk.ios": "26.5.10318/10.0.100" }' > "${RUNNER_TEMP}/ios-rollback.json"
+          dotnet workload install ios --from-rollback-file "${RUNNER_TEMP}/ios-rollback.json"
+          dotnet workload list
+
+      - name: Compilar para el simulador
+        run: dotnet build Hakufu.csproj -p:HakufuIos=true -r iossimulator-arm64
+
+      - name: Capturas en el simulador
+        run: |
+          python3 -m venv /tmp/py && /tmp/py/bin/pip install -q pillow
+          PATH="/tmp/py/bin:$PATH" bash scripts/ios-simulator-shots.sh \
+            bin/Debug/net10.0-ios/iossimulator-arm64/Hakufu.app publish/ios-shots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capturas-ios
+          path: publish/ios-shots
+          if-no-files-found: ignore
+
+      - name: .ipa sin firmar
+        run: bash scripts/package-ipa.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hakufu-ios
+          path: publish/Hakufu-ios.ipa
+          if-no-files-found: error
+
+  # Android (ver docs/superpowers/specs/2026-10-09-android-design.md): APK firmado y capturas en
+  # el emulador (la prueba de que arranca y pinta en Android).
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Workload de Android
+        run: dotnet workload install android
+
+      # Sin el secret (forks, o hasta que se añada en Settings → Secrets), clave temporal de depuración.
+      - name: Clave de firma
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "${KEYSTORE_B64}" ]; then
+            echo "${KEYSTORE_B64}" | base64 -d > "${RUNNER_TEMP}/hakufu.keystore"
+            echo "HAKUFU_KEYSTORE=${RUNNER_TEMP}/hakufu.keystore" >> "${GITHUB_ENV}"
+          else
+            echo "::warning::Sin ANDROID_KEYSTORE_BASE64: el APK va firmado con una clave temporal"
+          fi
+
+      - name: APK
+        env:
+          HAKUFU_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: bash scripts/package-apk.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hakufu-android
+          path: publish/Hakufu-android.apk
+          if-no-files-found: error
+
+      - name: KVM para el emulador
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          python3 -m venv /tmp/py && /tmp/py/bin/pip install -q pillow
+
+      - name: Capturas en el emulador
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          script: PATH="/tmp/py/bin:$PATH" bash scripts/android-emulator-shots.sh publish/Hakufu-android.apk publish/android-shots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capturas-android
+          path: publish/android-shots
+          if-no-files-found: ignore
+
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    # Espera al .ipa y al APK, pero si el job de iOS o el de Android falla (p. ej. GitHub cambia
+    # el Xcode del runner) la release de escritorio sale igual, sin ellos.
+    if: startsWith(github.ref, 'refs/tags/v') && !cancelled() && needs.build.result == 'success'
+    needs: [build, ios, android]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -98,6 +219,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
+          pattern: Hakufu-*   # los paquetes; no las capturas del simulador
           merge-multiple: true
 
       - name: Crear la release

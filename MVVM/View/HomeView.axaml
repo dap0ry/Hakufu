@@ -89,27 +89,152 @@
             <Setter Property="FontSize"   Value="76"/>
             <Setter Property="LineHeight" Value="76"/>
         </Style>
+        <Style Selector="TextBlock#MenuTitle">
+            <Setter Property="FontSize" Value="44"/>
+        </Style>
+        <Style Selector="StackPanel#MenuItems">
+            <Setter Property="Margin" Value="-18,24,0,24"/>
+        </Style>
+        <Style Selector="TextBlock.menuCredit">
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
 
+
+        <!-- ── Continuar leyendo: grande a la derecha; en iPhone, barra abajo ── -->
+        <Style Selector="Grid#MenuGrid">
+            <Setter Property="Margin" Value="48,40,32,28"/>
+        </Style>
+        <Style Selector="Grid#ContinuePanel">
+            <Setter Property="Grid.Column" Value="1"/>
+        </Style>
+        <Style Selector="Grid#ContinueCard">
+            <Setter Property="Width" Value="300"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Grid#ContinueCard > :is(Control).continueText">
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+        </Style>
+        <Style Selector="Border#ContinueCover">
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+            <Setter Property="Width" Value="236"/>
+            <Setter Property="Height" Value="334"/>
+            <Setter Property="Margin" Value="8,0,0,40"/>
+            <Setter Property="BoxShadow" Value="12 12 0 0 #E5001A"/>
+        </Style>
+        <Style Selector="TextBlock#ContinueTitle">
+            <Setter Property="FontSize" Value="46"/>
+            <Setter Property="LineHeight" Value="44"/>
+            <Setter Property="MaxLines" Value="2"/>
+            <Setter Property="Margin" Value="0,2,0,14"/>
+        </Style>
+        <Style Selector="Button#ContinueButton">
+            <Setter Property="Padding" Value="26,11"/>
+            <Setter Property="Margin" Value="0,22,0,0"/>
+        </Style>
+
+        <!-- iPad en vertical e iPhone (MainView.narrow): una columna; el menú arriba y
+             la barra de «Continuar leyendo» abajo. En iPhone (compact), además, letra
+             más pequeña. -->
+        <Style Selector=".narrow Border#MenuPanel">
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector=".compact Grid#MenuGrid">
+            <Setter Property="Margin" Value="24,20,24,16"/>
+        </Style>
+        <Style Selector=".compact TextBlock.menuLabel">
+            <Setter Property="FontSize"   Value="34"/>
+            <Setter Property="LineHeight" Value="36"/>
+        </Style>
+        <Style Selector=".compact Button.big TextBlock.menuLabel">
+            <Setter Property="FontSize"   Value="52"/>
+            <Setter Property="LineHeight" Value="52"/>
+        </Style>
+        <!-- Móvil en horizontal (MainView.short, poca altura): el menú entero tiene que caber
+             entre el título y los créditos. Después de .compact para ganarle. -->
+        <Style Selector=".short Grid#MenuGrid">
+            <Setter Property="Margin" Value="32,14,24,10"/>
+        </Style>
+        <Style Selector=".short TextBlock#MenuTitle">
+            <Setter Property="FontSize" Value="28"/>
+        </Style>
+        <Style Selector=".short StackPanel#MenuItems">
+            <Setter Property="Margin" Value="-18,6,0,6"/>
+        </Style>
+        <Style Selector=".short Button.menuItem">
+            <Setter Property="Padding" Value="18,2,26,3"/>
+        </Style>
+        <Style Selector=".short TextBlock.menuLabel">
+            <Setter Property="FontSize"   Value="26"/>
+            <Setter Property="LineHeight" Value="28"/>
+        </Style>
+        <Style Selector=".short Button.big TextBlock.menuLabel">
+            <Setter Property="FontSize"   Value="38"/>
+            <Setter Property="LineHeight" Value="38"/>
+        </Style>
+        <Style Selector=".short TextBlock.menuCredit">
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <!-- Sin nada empezado no hay barra (Biblioteca ya está en el menú) -->
+        <Style Selector=".narrow Grid#ContinuePanel" x:DataType="vm:HomeViewModel">
+            <Setter Property="IsVisible" Value="{Binding HasLastManga}"/>
+            <Setter Property="Grid.Column" Value="0"/>
+            <Setter Property="Grid.ColumnSpan" Value="2"/>
+            <Setter Property="Grid.Row" Value="1"/>
+            <Setter Property="Height" Value="150"/>
+        </Style>
+        <Style Selector=".narrow Panel#HomeEmpty">
+            <Setter Property="IsVisible" Value="False"/>
+        </Style>
+        <Style Selector=".narrow Grid#ContinueCard">
+            <Setter Property="Width" Value="NaN"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="24,0"/>
+        </Style>
+        <Style Selector=".narrow Border#ContinueCover">
+            <Setter Property="Grid.ColumnSpan" Value="1"/>
+            <Setter Property="Grid.RowSpan" Value="5"/>
+            <Setter Property="Width" Value="72"/>
+            <Setter Property="Height" Value="102"/>
+            <Setter Property="Margin" Value="4,0,22,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BoxShadow" Value="6 6 0 0 #E5001A"/>
+        </Style>
+        <Style Selector=".narrow Grid#ContinueCard > :is(Control).continueText">
+            <Setter Property="Grid.Column" Value="1"/>
+            <Setter Property="Grid.ColumnSpan" Value="1"/>
+        </Style>
+        <Style Selector=".narrow TextBlock#ContinueTitle">
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="LineHeight" Value="26"/>
+            <Setter Property="MaxLines" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+        <Style Selector=".narrow Button#ContinueButton">
+            <Setter Property="Padding" Value="18,8"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+        </Style>
 
     </UserControl.Styles>
 
-    <Grid ColumnDefinitions="5*,6*">
+    <Grid ColumnDefinitions="5*,6*" RowDefinitions="*,Auto">
 
         <!-- ═══ IZQUIERDA — logo + menú ═══ -->
-        <Border Grid.Column="0"
+        <Border Grid.Column="0" Name="MenuPanel"
                 Background="{DynamicResource SidebarBackground}"
                 BorderBrush="{DynamicResource DividerBrush}"
                 BorderThickness="0,0,1,0">
-            <Grid Margin="48,40,32,28" RowDefinitions="Auto,*,Auto">
+            <Grid Name="MenuGrid" RowDefinitions="Auto,*,Auto">
 
                 <!-- Título -->
-                <TextBlock Grid.Row="0"
+                <TextBlock Grid.Row="0" Name="MenuTitle"
                            Text="Hakufu"
-                           FontSize="44" FontWeight="Black"
+                           FontWeight="Black"
                            LetterSpacing="-1.5"
                            Foreground="{DynamicResource TextPrimary}"/>
 
-                <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2" Margin="-18,24,0,24">
+                <StackPanel Grid.Row="1" Name="MenuItems" VerticalAlignment="Center" Spacing="2">
                     <!-- Biblioteca -->
                     <Button Classes="menuItem big" Command="{Binding NavLibraryCommand}">
                         <StackPanel>
@@ -156,22 +281,21 @@
 
                 <!-- Sin enlace: la app no abre URLs de red -->
                 <StackPanel Grid.Row="2" Spacing="2">
-                    <TextBlock Text="{i18n:T home.credit_dev}"
+                    <TextBlock Classes="menuCredit" Text="{i18n:T home.credit_dev}"
                                FontFamily="{DynamicResource DisplayFont}"
-                               FontSize="16"
                                Foreground="{DynamicResource TextMuted}"/>
-                    <TextBlock Text="{i18n:T home.credit_design}"
+                    <TextBlock Classes="menuCredit" Text="{i18n:T home.credit_design}"
                                FontFamily="{DynamicResource DisplayFont}"
-                               FontSize="16"
                                Foreground="{DynamicResource TextMuted}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- ═══ DERECHA — continuar leyendo ═══ -->
-        <Grid Grid.Column="1" Background="{DynamicResource AppBackground}" ClipToBounds="True">
+        <Grid Name="ContinuePanel" Background="{DynamicResource AppBackground}" ClipToBounds="True">
 
-            <!-- Estado vacío -->
+            <!-- Estado vacío (en iPhone no: Biblioteca ya está en el menú) -->
+            <Panel Name="HomeEmpty">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         MaxWidth="340" Spacing="12"
                         IsVisible="{Binding !HasLastManga}">
@@ -188,6 +312,7 @@
                         Padding="24,11" Margin="0,12,0,0"
                         Command="{Binding NavLibraryCommand}"/>
             </StackPanel>
+            </Panel>
 
             <!-- Manga en curso -->
             <Grid IsVisible="{Binding HasLastManga}">
@@ -205,14 +330,12 @@
                 </Image>
                 <Border Background="{DynamicResource AppBackground}" Opacity="0.55"/>
 
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
+                <Grid Name="ContinueCard" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 
                     <!-- Portada con sombra dura roja. La sombra va en el Border de
                          fuera: el de dentro recorta la imagen. -->
-                    <Border Width="236" Height="334"
-                            BoxShadow="12 12 0 0 #E5001A"
+                    <Border Name="ContinueCover"
                             HorizontalAlignment="Left"
-                            Margin="8,0,0,40"
                             RenderTransform="rotate(-3deg)">
                         <Border Background="{DynamicResource CardBackground}" ClipToBounds="True">
                             <Image Source="{Binding LastMangaCover}"
@@ -221,20 +344,19 @@
                         </Border>
                     </Border>
 
-                    <TextBlock Text="{i18n:T home.continue_label}"
+                    <TextBlock Grid.Row="1" Classes="continueText"
+                               Text="{i18n:T home.continue_label}"
                                FontFamily="{DynamicResource DisplayFontSemi}"
                                FontSize="15"
                                Foreground="{DynamicResource TextSecondary}"/>
-                    <TextBlock Text="{Binding LastMangaTitle}"
+                    <TextBlock Name="ContinueTitle" Grid.Row="2" Classes="continueText"
+                               Text="{Binding LastMangaTitle}"
                                FontFamily="{DynamicResource DisplayFont}"
-                               FontSize="46" LineHeight="44"
-                               MaxLines="2"
                                TextWrapping="Wrap"
                                TextTrimming="CharacterEllipsis"
-                               Foreground="{DynamicResource TextPrimary}"
-                               Margin="0,2,0,14"/>
+                               Foreground="{DynamicResource TextPrimary}"/>
 
-                    <StackPanel Spacing="6" IsVisible="{Binding LastMangaPageText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <StackPanel Grid.Row="3" Classes="continueText" Spacing="6" IsVisible="{Binding LastMangaPageText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                         <TextBlock Text="{Binding LastMangaPageText}"
                                    FontSize="12"
                                    Foreground="{DynamicResource TextSecondary}"/>
@@ -244,12 +366,11 @@
                                      Foreground="{DynamicResource BrandRed}"/>
                     </StackPanel>
 
-                    <Button Classes="primary"
+                    <Button Name="ContinueButton" Grid.Row="4" Classes="primary continueText"
                             Content="{i18n:T home.continue_button}"
                             HorizontalAlignment="Left"
-                            Padding="26,11" Margin="0,22,0,0"
                             Command="{Binding ContinueReadingCommand}"/>
-                </StackPanel>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

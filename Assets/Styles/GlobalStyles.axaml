@@ -9,7 +9,8 @@
     (Foreground = TextPrimary) y se hereda.
 -->
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Hakufu.MVVM.View.Controls">
 
     <!-- ===================== TYPOGRAPHY ===================== -->
     <Style Selector="TextBlock.title">
@@ -163,6 +164,45 @@
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="Margin" Value="0,0,3,0"/>
         <Setter Property="Background" Value="{DynamicResource AppBackground}"/>
+    </Style>
+
+    <!-- ===================== CABECERA DE PANTALLA =====================
+         La de Biblioteca/Colección y PageHeader: volver · título · acciones.
+         En iPhone (MainView.compact) el título baja a una segunda fila. -->
+    <Style Selector="Border.pageHeader">
+        <Setter Property="Padding" Value="40,26,40,22"/>
+    </Style>
+    <Style Selector="StackPanel.pageTitle">
+        <Setter Property="Grid.Column" Value="1"/>
+        <Setter Property="Margin" Value="28,0,24,0"/>
+    </Style>
+    <Style Selector="ContentPresenter.headerActions">
+        <Setter Property="Grid.Column" Value="2"/>
+    </Style>
+    <Style Selector="TextBlock.pageTitleText">
+        <Setter Property="FontSize" Value="52"/>
+        <Setter Property="LineHeight" Value="50"/>
+    </Style>
+    <Style Selector=".compact Border.pageHeader">
+        <Setter Property="Padding" Value="16,12,16,14"/>
+    </Style>
+    <Style Selector=".compact StackPanel.pageTitle">
+        <Setter Property="Grid.Row" Value="1"/>
+        <Setter Property="Grid.Column" Value="0"/>
+        <Setter Property="Grid.ColumnSpan" Value="3"/>
+        <Setter Property="Margin" Value="0,14,0,0"/>
+    </Style>
+    <Style Selector=".compact TextBlock.pageTitleText">
+        <Setter Property="FontSize" Value="34"/>
+        <Setter Property="LineHeight" Value="34"/>
+    </Style>
+    <!-- Acciones que no caben junto a «volver» (Perfil): debajo del título -->
+    <Style Selector=".compact c|PageHeader.stackActions ContentPresenter.headerActions">
+        <Setter Property="Grid.Row" Value="2"/>
+        <Setter Property="Grid.Column" Value="0"/>
+        <Setter Property="Grid.ColumnSpan" Value="3"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="0,14,0,0"/>
     </Style>
 
 </Styles>

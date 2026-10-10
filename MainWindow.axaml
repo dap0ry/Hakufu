@@ -3,6 +3,7 @@
         xmlns:i18n="using:Hakufu.I18n"
         xmlns:vm="using:Hakufu.MVVM.ViewModel"
         xmlns:ctl="using:Hakufu.Controls"
+        xmlns:local="using:Hakufu"
         x:Class="Hakufu.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Hakufu" Icon="avares://Hakufu/HakufuLogo.ico"
@@ -121,45 +122,8 @@
             </Grid>
         </Border>
 
-        <!-- Page content -->
-        <Border Grid.Row="1" Background="{DynamicResource AppBackground}" ClipToBounds="True">
-            <ContentControl Content="{Binding CurrentView}"/>
-        </Border>
-
-        <!-- Versión nueva: abajo y centrada, encima de la página (debajo del modal) -->
-        <Border Name="UpdateBar" Grid.Row="1" ZIndex="50"
-                IsVisible="{Binding UpdateBanner.IsVisible, FallbackValue=False}"
-                Classes="card" Padding="16,10" Margin="0,0,0,20"
-                HorizontalAlignment="Center" VerticalAlignment="Bottom">
-            <Grid ColumnDefinitions="Auto,Auto,Auto">
-                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                    <TextBlock Text="{Binding UpdateBanner.Message, FallbackValue=''}" FontWeight="SemiBold"/>
-                    <ProgressBar IsVisible="{Binding UpdateBanner.IsDownloading, FallbackValue=False}"
-                                 Value="{Binding UpdateBanner.Progress, FallbackValue=0}" Maximum="100"
-                                 Height="3" MinHeight="3" MinWidth="200" Margin="0,6,0,0"/>
-                </StackPanel>
-                <Button Grid.Column="1" Classes="primary" Padding="16,8"
-                        Content="{Binding UpdateBanner.PrimaryText, FallbackValue=''}"
-                        Command="{Binding UpdateBanner.PrimaryCommand}"/>
-                <Button Grid.Column="2" Classes="ghost" Padding="12,8" Margin="8,0,0,0"
-                        Content="{i18n:T updates.later}"
-                        Command="{Binding UpdateBanner.LaterCommand}"
-                        IsVisible="{Binding !UpdateBanner.IsDownloading, FallbackValue=False}"/>
-            </Grid>
-        </Border>
-
-        <!-- Modal overlay -->
-        <Grid Grid.Row="1" IsVisible="{Binding IsModalOpen}" ZIndex="100">
-            <Rectangle Fill="{DynamicResource OverlayBackground}"
-                       PointerPressed="Overlay_PointerPressed"/>
-            <Border Classes="card"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    MinWidth="420" MaxWidth="560"
-                    Padding="32">
-                <ContentControl Content="{Binding ModalContent}"/>
-            </Border>
-        </Grid>
+        <!-- Todo lo de dentro (pantalla, barra de versión nueva, modal): compartido con iOS -->
+        <local:MainView Name="MainView" Grid.Row="1"/>
 
         <!-- Bordes para redimensionar (solo Linux sin decoraciones). Tag = WindowEdge. -->
         <Panel Name="ResizeGrips" Grid.RowSpan="2" ZIndex="200" IsVisible="False">

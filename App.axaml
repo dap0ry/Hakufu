@@ -36,6 +36,7 @@
             <conv:PercentageWidthConverter x:Key="PercentageWidth"/>
             <conv:BoolToOpacityConverter x:Key="BoolToOpacity"/>
             <conv:PathToBitmapConverter x:Key="PathToBitmap"/>
+            <conv:CompactColumnsConverter x:Key="CompactColumns"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

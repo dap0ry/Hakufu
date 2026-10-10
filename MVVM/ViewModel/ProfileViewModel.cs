@@ -11,7 +11,7 @@ namespace Hakufu.MVVM.ViewModel;
 /// gráfica semanal (estilo Strava), manga favorito y las 3 últimas colecciones leídas.
 /// La vista la puede exportar a PNG ("Guardar imagen").
 /// </summary>
-public class ProfileViewModel : BaseViewModel
+public class ProfileViewModel : BaseViewModel, IGoBack
 {
     public const int Weeks = 12;
     private const double MaxBarHeight = 120;

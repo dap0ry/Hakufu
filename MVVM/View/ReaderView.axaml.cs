@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -31,9 +32,27 @@ public partial class ReaderView : UserControl
     private enum Slot { Single, Left, Right }
     private enum Ease { In, Out, InOut }
 
+    // Con el dedo (ver ReaderGestures): el toque en curso y el zoom de la página.
+    private readonly PageZoom _zoom = new();
+    private IPointer? _touch;
+    private Point _touchStart, _touchLast;
+    private DateTime _touchStartTime;
+    private bool _pinching;
+
     public ReaderView()
     {
         InitializeComponent();
+
+        PageArea.GestureRecognizers.Add(new PinchGestureRecognizer());
+        PageArea.AddHandler(Gestures.PinchEvent, PageArea_Pinch);
+        PageArea.AddHandler(Gestures.PinchEndedEvent, (_, _) => _pinching = false);
+        PageArea.PointerCaptureLost += (_, e) => { if (e.Pointer == _touch) _touch = null; };
+        PageArea.AddHandler(Gestures.DoubleTappedEvent, (_, e) =>
+        {
+            if (!_zoom.IsZoomed || e.Pointer.Type == PointerType.Mouse) return;
+            _zoom.Reset();
+            ApplyZoom();
+        });
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -80,6 +99,9 @@ public partial class ReaderView : UserControl
         // Teclas configurables en Ajustes → Atajos de teclado.
         var command = vm.CommandForKey(e);
         if (command is null) return;
+        // Android: el botón de atrás llega como Escape. Si no hay nada que hacer con él (fuera
+        // del modo zen), se deja pasar y Android lo trata como atrás (sale del lector).
+        if (e.Key == Key.Escape && !command.CanExecute(null)) return;
 
         if (command.CanExecute(null)) command.Execute(null);
         e.Handled = true;
@@ -88,6 +110,74 @@ public partial class ReaderView : UserControl
     private void PageArea_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         Focus(); // mantener el foco en el lector tras hacer clic en la página
+
+        // Un dedo principal nuevo empieza siempre otro gesto: si el anterior nunca se
+        // levantó (fuera de la página, gesto cancelado por el sistema) no bloquea nada.
+        // El segundo dedo (no principal) es el de pellizcar: no cuenta.
+        if (e.Pointer.Type == PointerType.Mouse || !e.Pointer.IsPrimary) return;
+        _pinching = false;
+        _touch = e.Pointer;
+        _touchStart = _touchLast = e.GetPosition(PageArea);
+        _touchStartTime = DateTime.UtcNow;
+    }
+
+    // Un dedo con la página ampliada: moverla.
+    private void PageArea_PointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (e.Pointer != _touch || _pinching) return;
+        var p = e.GetPosition(PageArea);
+        if (_zoom.IsZoomed)
+        {
+            _zoom.PanBy(p - _touchLast, PageArea.Bounds.Size);
+            ApplyZoom();
+        }
+        _touchLast = p;
+    }
+
+    private void PageArea_PointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.Pointer != _touch) return;
+        _touch = null;
+        if (_pinching || DataContext is not ReaderViewModel vm) return;
+
+        var gesture = ReaderGestures.Classify(_touchStart, e.GetPosition(PageArea),
+            DateTime.UtcNow - _touchStartTime, PageArea.Bounds.Size, _zoom.IsZoomed);
+        ICommand? command = gesture switch
+        {
+            ReaderGesture.Prev       => vm.PrevPageCommand,
+            ReaderGesture.Next       => vm.NextPageCommand,
+            ReaderGesture.ToggleBars => vm.ToggleZenModeCommand,
+            _                        => null,
+        };
+        if (command?.CanExecute(null) == true) command.Execute(null);
+    }
+
+    // Dos dedos: ampliar (1×–4×). Ese toque ya no cuenta como toque ni deslizamiento.
+    private void PageArea_Pinch(object? sender, PinchEventArgs e)
+    {
+        if (!_pinching)
+        {
+            _pinching = true;
+            _touch = null;
+            _zoom.PinchStarted();
+        }
+        _zoom.Pinch(e.Scale);
+        _zoom.PanBy(default, PageArea.Bounds.Size); // al reducir, que no quede fuera
+        ApplyZoom();
+    }
+
+    private void ApplyZoom()
+    {
+        PageZoomHost.RenderTransform = _zoom.IsZoomed
+            ? new TransformGroup
+              {
+                  Children =
+                  {
+                      new ScaleTransform(_zoom.Scale, _zoom.Scale),
+                      new TranslateTransform(_zoom.Offset.X, _zoom.Offset.Y),
+                  }
+              }
+            : null;
     }
 
     // ── Pasar la hoja ────────────────────────────────────────────────────
@@ -99,7 +189,16 @@ public partial class ReaderView : UserControl
     // página, la segunda mitad del giro la hace el reverso de la hoja (la
     // página nueva del otro lado). Hacia atrás es lo mismo al revés.
 
-    private void Vm_PagesLoaded(object? sender, int page) => _pagesShown?.TrySetResult();
+    private void Vm_PagesLoaded(object? sender, int page)
+    {
+        _pagesShown?.TrySetResult();
+        // Página nueva: a tamaño normal.
+        if (_zoom.IsZoomed)
+        {
+            _zoom.Reset();
+            ApplyZoom();
+        }
+    }
 
     private async void Vm_PageTurning(object? sender, int direction)
     {

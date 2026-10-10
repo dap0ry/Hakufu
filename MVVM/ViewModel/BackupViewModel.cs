@@ -10,7 +10,7 @@ namespace Hakufu.MVVM.ViewModel;
 /// usuario, con su perfil y, si quiere, las colecciones que elija (progreso,
 /// favoritos…); los mangas no, son su carpeta. Al restaurar se combina.
 /// </summary>
-public class BackupViewModel : BaseViewModel
+public class BackupViewModel : BaseViewModel, IGoBack
 {
     private readonly IBackupService     _backup;
     private readonly IFilePickerService _files;
@@ -37,6 +37,10 @@ public class BackupViewModel : BaseViewModel
         _scanner   = scanner;
         LoadCollectionOptions();
     }
+
+    /// <summary>iOS: la carpeta de datos no está en Archivos; no se enseña.</summary>
+
+    public bool ShowDataFolder => !AppPlatform.IsMobile;
 
     public string DataFolder => AppPaths.DataDir;
 
@@ -146,7 +150,7 @@ public class BackupViewModel : BaseViewModel
         await RunAsync(async p =>
         {
             await _backup.ExportAsync(path, options, p);
-            return (true, L.Format("backup.export_done", what.ToLower(L.Culture), path));
+            return (true, L.Format("backup.export_done", what.ToLower(L.Culture), FilePickerService.DisplayPath(path)));
         }, "backup.export_failed");
     }, () => IsIdle);
 

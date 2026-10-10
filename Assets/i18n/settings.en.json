@@ -7,6 +7,8 @@
   "settings.dark_theme_hint": "Switch between light and dark mode",
   "settings.library_folder": "Library folder",
   "settings.library_folder_hint": "Each folder inside is a collection and its PDF, CBR and CBZ files are the volumes. Hakufu only reads it: it never copies, moves or deletes anything.",
+  "settings.library_ios_location": "Files → On My iPhone/iPad → Hakufu",
+  "settings.library_ios_hint": "On iPhone and iPad your library is the Hakufu folder in the Files app. Each folder inside is a collection and its PDF, CBR and CBZ files are the volumes.",
   "settings.library_none": "None yet",
   "settings.choose_folder": "Choose folder…",
   "settings.open_folder": "Open folder",

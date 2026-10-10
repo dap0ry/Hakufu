@@ -69,6 +69,9 @@ public class ReaderViewModel : BaseViewModel, IDisposable
 
     public string MangaTitle { get; }
 
+    /// <summary>iPhone/iPad: el aviso del modo zen habla de tocar, no de la tecla Esc.</summary>
+    public bool IsMobile => AppPlatform.IsMobile;
+
     // Ajustes → Lectura
     /// <summary>La ventana entra en zen nada más abrir el lector (lo aplica MainWindow).</summary>
     public bool   OpenInZenMode       { get; }
@@ -187,7 +190,7 @@ public class ReaderViewModel : BaseViewModel, IDisposable
             _             => null,
         };
     public RelayCommand ToggleZenModeCommand => new(() => IsZenMode = !IsZenMode);
-    public RelayCommand ExitZenModeCommand   => new(() => { if (IsZenMode) IsZenMode = false; });
+    public RelayCommand ExitZenModeCommand   => new(() => IsZenMode = false, () => IsZenMode);
 
     public RelayCommand CloseReaderCommand => new(async () =>
     {

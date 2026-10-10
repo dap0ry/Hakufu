@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 **Hakufu** is an offline manga manager/reader built with **Avalonia 11.3** on **.NET 10**, running on
-Windows, macOS and Linux. Built by Daniel Poza and friends. It manages PDF and CBR/CBZ files locally —
+Windows, macOS, Linux, iPhone, iPad and Android. Built by Daniel Poza and friends. It manages PDF and CBR/CBZ files locally —
 **no backend, no accounts, no network access** — the only exception is `Services/UpdateService`, which
 checks/downloads updates from GitHub Releases (Velopack; opt-out in Ajustes → Acerca de). Don't add any other
 network use: it's a product decision.
@@ -21,7 +21,47 @@ dotnet test tests/Hakufu.Tests        # tests (xUnit + Avalonia.Headless, real S
 .\scripts\publish.ps1 [-Rid win-x64]  # Windows self-contained publish + zip
 ./scripts/pack-velopack.sh <rid>     # after publish.sh: Velopack installer + update feed (publish/velopack)
 .\scripts\pack-velopack.ps1          # Windows: Setup.exe + feed, channel "win" (same packId/channel as 0.9.7)
+bash scripts/package-ipa.sh          # macOS + `dotnet workload install ios`: unsigned publish/Hakufu-ios.ipa
+bash scripts/package-apk.sh          # `dotnet workload install android` + Android SDK + JDK 17: publish/Hakufu-android.apk
 ```
+
+### iOS (iPhone/iPad)
+
+Same project, opt-in target: `-p:HakufuIos=true` switches `TargetFramework` to `net10.0-ios` (needs macOS,
+Xcode and the `ios` workload — CI job `ios` does it; it can't build on Linux/Windows). Without that property
+nothing changes for desktop. Spec: `docs/superpowers/specs/2026-10-08-ios-design.md`.
+- iOS-only code lives in `Platforms/iOS/` (excluded from desktop); `Program.cs` and `Services/PdfDocument.Docnet.cs`
+  are excluded from iOS. PDF goes through `PdfDocument` (pdfium/Docnet on desktop, CoreGraphics on iOS).
+- `Platforms/iOS/IosPlatform.Configure()` sets `AppPlatform` (IsMobile, OpenFolder → Files app, OpenUrl) and
+  `AppPaths` (`FixedLibraryRoot` = Documents, shown in Files as "On My iPhone → Hakufu"; `DataDirOverride` =
+  Library/Application Support/Hakufu). Use `AppPlatform.IsMobile` for things that don't apply (Quit, pick folder).
+- The library folder can't be changed on iOS; saves (backup .zip, profile PNG) go to Documents; picked files are
+  copied to temp first. `ContainerPaths.Rebase` fixes stored paths when iOS moves the app container.
+- `HAKUFU_START_SCREEN` (library/collection/reader/settings/profile) opens a screen after the first scan: only
+  for CI screenshots in the simulator (`scripts/ios-simulator-shots.sh`).
+- Distribution: unsigned .ipa → sideloaded with a free Apple ID (7-day signature). No App Store/TestFlight.
+
+### Android
+
+Same project, opt-in target: `-p:HakufuAndroid=true` → `net10.0-android` (builds on Linux too: workload `android`,
+Android SDK and JDK 17 via `ANDROID_HOME`/`JAVA_HOME` or `-p:AndroidSdkDirectory`/`-p:JavaSdkDirectory`). Spec:
+`docs/superpowers/specs/2026-10-09-android-design.md`.
+- Android-only code lives in `Platforms/Android/` with namespace `Hakufu.Platforms.Droid` (not `…Android`: it would
+  shadow .NET's `Android.*`). `MainActivity` (`com.dapory.hakufu.MainActivity`) calls `DroidPlatform.Configure` before
+  Avalonia starts; PDF via `PdfRenderer` (`PdfDocument.Android.cs`, RGBA → `BitmapHelper.FromRgba`).
+- `AppPlatform.IsMobile` means touch/no Quit; `AppPaths.FixedLibraryRoot` (iOS only) means the library can't be
+  chosen. On Android the library is chosen like on desktop (default `/storage/emulated/0/Hakufu`,
+  `AppPaths.DefaultLibraryRoot`) and needs "All files access" (`AppPlatform.HasLibraryAccess`); without it the scanner
+  reads nothing (Android shows folders without their files) and the library shows the permission notice.
+  The system folder picker returns `content://` URIs → `AndroidStorage.TreeUriToPath`. Saves go to Downloads (`AppPaths.SaveDir`).
+- Back button/gesture: `TopLevel.BackRequested` → `MainView.HandleBack` (modal → reader → the page's `IGoBack`).
+  Avalonia maps Android's back key to `Key.Escape`: don't mark Escape handled unless it did something.
+- Status/navigation bars: transparent (`AppPlatform.ClearSystemBarScrim`), icons follow `MainView.RefreshSystemBars`.
+  `MainView` class `short` (< 520 px tall: phone in landscape) shrinks the home menu.
+- The `start_screen` intent extra = `HAKUFU_START_SCREEN` (CI screenshots: `scripts/android-emulator-shots.sh`).
+- Signing: release key `hakufu-release.keystore` (alias `hakufu`) outside the repo; CI uses secrets
+  `ANDROID_KEYSTORE_BASE64` + `ANDROID_KEYSTORE_PASSWORD` (without them, a temporary debug key that can't update a
+  signed install). Local Debug APK for `adb install`: add `-p:EmbedAssembliesIntoApk=true`.
 
 Releases: `git tag vX.Y.Z && git push origin vX.Y.Z` (must match `<Version>`); CI uploads portable zips + Velopack
 installers/feeds; a tag with `-` is a pre-release. Velopack: packId `Hakufu`, channels `win`, `osx-arm64`, `osx-x64`,
@@ -47,7 +87,10 @@ and by the view smoke tests).
 Program.cs / App.axaml(.cs)  ← Avalonia bootstrap; loads data.json, builds CompositionRoot, shows MainWindow
 CompositionRoot.cs           ← creates all services + the ViewModel factory for NavigationService
 ViewLocator.cs               ← XxxViewModel → XxxView by naming convention (no registration needed)
-MainWindow.axaml(.cs)        ← shell: ContentControl + modal overlay; zen mode = WindowState.FullScreen;
+MainView.axaml(.cs)          ← everything inside the window: page ContentControl, update bar, modal overlay,
+                               reader lifecycle (ZenModeChanged/ReaderClosed); classes "compact" (< 700 px, iPhone)
+                               and "narrow" (< 900 px = desktop MinWidth, iPad portrait). On iOS it's the single view
+MainWindow.axaml(.cs)        ← desktop shell around MainView; zen mode = WindowState.FullScreen;
                                on Linux its own title bar (OwnTitleBar: minimize / full screen / close);
                                theme changes play the ink transition (ThemeService.Transition → PlayThemeTransition)
 Controls/InkTransition       ← InkShadow-style ink wipe between themes: SkSL shader on OpenGL, Skia paths
@@ -110,7 +153,16 @@ corrupt file opens with 0 pages instead of throwing.
 
 `tests/Hakufu.Tests`: service tests plus view smoke tests. `ViewSmoke.Start()` boots the real `App` +
 `MainWindow` headless with a sample library; `AssertShows<TView>()` checks that a screen actually
-renders. Add one for every new view.
+renders. Add one for every new view. `ViewSmoke.StartMobile(w, h)` hosts `MainView` alone like iOS
+(with `AppPlatform.IsMobile`); `MobileLayoutTests` walks every screen at iPhone/iPad sizes, saves screenshots to
+`bin/…/mobile-shots/` and fails if a button or text sticks out sideways.
+
+### Phone/tablet layouts
+
+Views adapt with styles under `.compact …` / `.narrow …` (classes on `MainView`). A style can't override a value
+set directly in XAML (local value wins), so anything that changes per size (Grid.Column/Span, Margin, Width,
+FontSize…) goes in a named style instead of an attribute. Shared page header: `Border.pageHeader`,
+`StackPanel.pageTitle`, `TextBlock.pageTitleText` (GlobalStyles); on iPhone the title drops to a second row.
 
 ## Languages (i18n)
 

@@ -2,7 +2,8 @@
 
 Gestor y lector de manga para **Windows, macOS, Linux, iPhone, iPad y Android** (Avalonia, .NET 10). Organiza PDF y CBR/CBZ en colecciones y guarda el progreso de lectura. Es **100 % offline**: sin cuentas, sin servidor y sin conexión a internet.
 
-- **Versión actual:** 0.10.0 (primera multiplataforma). La 0.9.7 es la última de WPF, solo para Windows.
+- **Web y descargas:** [Hakufu Manga Reader · hakufu.vercel.app](https://hakufu.vercel.app/) (en inglés: [hakufu.vercel.app/en](https://hakufu.vercel.app/en/))
+- **Versión actual:** 0.12.0 (llega a iPhone, iPad y Android). La 0.10.0 fue la primera multiplataforma; la 0.9.7, la última de WPF, solo para Windows.
 - **Jira:** proyecto [HMR · Hakufu Manga Reader](https://dapory.atlassian.net/jira/software/projects/HMR)
 - **Discord:** categoría *Hakufu* en Dapory´s WorkSpace (tickets, avances, documentos)
 

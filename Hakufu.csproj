@@ -55,6 +55,8 @@
     <!-- Android recoge cualquier .so del repo como biblioteca nativa: fuera las compilaciones de
          escritorio (publish/) y lo que no es la app. -->
     <DefaultItemExcludes>$(DefaultItemExcludes);web/**;tests/**;publish/**;Releases/**;promo/**</DefaultItemExcludes>
+    <!-- Android va con SkiaSharp 3 (ver los PackageReference de abajo); InkTransition lo mira. -->
+    <DefineConstants>$(DefineConstants);SKIASHARP3</DefineConstants>
   </PropertyGroup>
 
   <!-- El resto del repo (web/, tests/) no forma parte de la app. -->
@@ -117,6 +119,12 @@
     <!-- Los textos van dentro del APK; DroidPlatform los saca a una carpeta al arrancar. -->
     <AndroidAsset Include="Assets/i18n/*.json" Link="i18n/%(Filename)%(Extension)" />
     <PackageReference Include="Avalonia.Android" Version="11.3.22" />
+    <!-- La libSkiaSharp.so de la 2.88.9 (la de Avalonia 11.3) va alineada a 4 KB y no carga en los
+         móviles con páginas de 16 KB (Android 15+, aviso XA0141). La 3.119 va a 16 KB; Avalonia 11.3
+         ya funciona con SkiaSharp 3 (así lo recomienda Avalonia para Android hasta su v12). Solo en
+         Android: escritorio e iOS siguen con la 2.88. -->
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Android" Version="3.119.4" />
     <!-- Los using globales de Android chocan con Avalonia en el código común (Application,
          Button…): los archivos de Platforms/Android ya ponen los suyos. -->
     <Using Remove="Android.App" />

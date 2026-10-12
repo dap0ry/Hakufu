@@ -182,6 +182,9 @@
     section { padding-block: 88px; }
     h2 { font-size: clamp(42px, 5.6vw, 72px); }
     .lead { margin-top: 18px; max-width: 46ch; font-size: 19px; color: var(--muted-d); }
+    /* Debajo del título grande, lo que es en palabras de buscador (como «Manga Reader» en el h1). */
+    .h2-sub { display: block; margin-top: .5em; font-size: max(15px, .3em); font-weight: 600; letter-spacing: -.01em; line-height: 1.35; color: var(--muted-d); }
+    .lead b { font-weight: 600; color: var(--paper); }
 
     /* ── Botones ─────────────────────────────────────────── */
     .btn {
@@ -435,7 +438,6 @@
     .toast-close { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--muted-d); font-size: 20px; line-height: 1; cursor: pointer; }
     .toast-close:hover { background: #2C2C30; color: var(--paper); }
 
-    /* ── Responsive ──────────────────────────────────────── */
     /* ── Preguntas ───────────────────────────────────────── */
     .split.top { align-items: start; }
     .faq { border-top: 1px solid var(--line-d); }
@@ -447,6 +449,7 @@
     .faq h3 { font-size: 19px; font-weight: 600; letter-spacing: -.01em; line-height: 1.35; }
     .faq details p { padding-bottom: 22px; max-width: 60ch; color: var(--muted-d); }
 
+    /* ── Responsive ──────────────────────────────────────── */
     @media (max-width: 960px) {
       .nav nav a:not(.btn) { display: none; }
       .nav nav .lang a { display: inline; }
@@ -509,8 +512,8 @@
     <section class="soft" id="biblioteca">
       <div class="wrap split">
         <div data-reveal>
-          <h2 class="display">Tu biblioteca</h2>
-          <p class="lead">Elige una carpeta y Hakufu la convierte en tu estantería: cada subcarpeta es una colección, con sus portadas apiladas y lo que llevas leído.</p>
+          <h2 class="display">Tu biblioteca <span class="h2-sub">Tu manga en PDF, CBR y CBZ, como en una estantería</span></h2>
+          <p class="lead">Elige una carpeta y Hakufu la convierte en <b>tu estantería</b>: cada subcarpeta es una colección, con sus portadas apiladas y lo que llevas leído.</p>
         </div>
         <img class="shot zoomable" data-reveal tabindex="0" src="/img/real-library.webp" width="1600" height="974" loading="lazy"
              alt="La Biblioteca de Hakufu con 17 colecciones y 167 tomos, cada serie como un montón de portadas.">
@@ -520,8 +523,8 @@
     <section id="colecciones">
       <div class="wrap split flip">
         <div data-reveal>
-          <h2 class="display">Todas tus colecciones</h2>
-          <p class="lead">Abre cualquier colección y tendrás todos sus tomos en orden, con las páginas de cada uno. Ordénalos por nombre, por fecha o a mano.</p>
+          <h2 class="display">Todas tus colecciones <span class="h2-sub">Cada serie con sus tomos en orden</span></h2>
+          <p class="lead">Abre cualquier colección y tendrás todos sus tomos en orden, con las páginas de cada uno. Ordénalos <b>por nombre, por fecha o a mano</b>.</p>
         </div>
         <img class="shot zoomable" data-reveal tabindex="0" src="/img/real-collection.webp" width="1600" height="974" loading="lazy"
              alt="La colección de Chainsaw Man abierta, con sus tomos en orden y las páginas de cada uno.">
@@ -531,8 +534,8 @@
     <section id="perfil">
       <div class="wrap split">
         <div data-reveal>
-          <h2 class="display">Tu perfil de lector</h2>
-          <p class="lead">Hakufu apunta lo que lees sin que hagas nada. Mira tu progreso como en una app de deporte y compártelo.</p>
+          <h2 class="display">Tu perfil de lector <span class="h2-sub">Horas, páginas y tomos de manga leídos</span></h2>
+          <p class="lead">Hakufu apunta lo que lees sin que hagas nada. Mira tu progreso <b>como en una app de deporte</b> y compártelo.</p>
           <ul class="points">
             <li><b>Horas, páginas y tomos</b> terminados, desde el primer día</li>
             <li><b>Tus últimas 12 semanas</b> en una gráfica, con tu racha</li>
@@ -550,8 +553,8 @@
     <section id="lectura">
       <div class="wrap split flip">
         <div data-reveal>
-          <h2 class="display">Una página o dos</h2>
-          <p class="lead">Lee página a página o con el tomo abierto como en papel. Hakufu recuerda por dónde ibas.</p>
+          <h2 class="display">Una página o dos <span class="h2-sub">Un lector de manga que pasa la hoja como el papel</span></h2>
+          <p class="lead">Lee página a página o con el tomo abierto <b>como en papel</b>. Hakufu recuerda por dónde ibas.</p>
           <div class="modes" role="group" aria-label="Modo de lectura de la maqueta">
             <button type="button" data-mode="1" aria-pressed="true">Una página</button>
             <button type="button" data-mode="2" aria-pressed="false">Dos páginas</button>
@@ -575,7 +578,7 @@
     <section id="historia">
       <div class="wrap split">
         <div data-reveal>
-          <h2 class="display">Cómo se hizo</h2>
+          <h2 class="display">Cómo se hizo <span class="h2-sub">De una app de Windows a todos tus dispositivos</span></h2>
           <p class="lead">Empecé Hakufu hace meses como una app solo para Windows. Este otoño la he reescrito entera, aprendiendo sobre la marcha con ayuda de la IA, para que funcione en cualquier ordenador y se mantenga al día sola.</p>
         </div>
         <ol class="timeline" data-reveal>
@@ -587,12 +590,12 @@
           <li>
             <div class="v">0.10</div>
             <div class="when">Octubre de 2026</div>
-            <p>Migrada a Avalonia: la misma app en Windows, macOS y Linux. Sin cuentas ni servidores: tu biblioteca no sale de tu ordenador.</p>
+            <p>Migrada a <a href="https://avaloniaui.net/">Avalonia</a> y <a href="https://dotnet.microsoft.com/es-es/">.NET</a>: la misma app en Windows, macOS y Linux. Sin cuentas ni servidores: tu biblioteca no sale de tu ordenador.</p>
           </li>
           <li>
             <div class="v">0.11</div>
             <div class="when">Octubre de 2026</div>
-            <p>Se actualiza sola con un clic en los tres sistemas y ya habla español e inglés.</p>
+            <p>Se actualiza sola con un clic en los tres sistemas, gracias a <a href="https://velopack.io/">Velopack</a>, y ya habla español e inglés.</p>
           </li>
           <li>
             <div class="v">0.12</div>
@@ -605,7 +608,7 @@
 
     <section class="downloads" id="descargas">
       <div class="wrap">
-        <h2 class="display" data-reveal>Descargar</h2>
+        <h2 class="display" data-reveal>Descargar Hakufu <span class="h2-sub">Gratis para Windows, macOS y Linux</span></h2>
         <p class="lead" data-reveal>Se instala con un doble clic y <b>se actualiza sola</b>: cuando haya versión nueva, Hakufu te avisa y se pone al día con un clic. Si te pierdes, abre la guía paso a paso de tu sistema.</p>
 
         <div class="platforms">
@@ -657,13 +660,13 @@
     <section id="preguntas">
       <div class="wrap split top">
         <div data-reveal>
-          <h2 class="display">Preguntas</h2>
+          <h2 class="display">Preguntas frecuentes</h2>
           <p class="lead">Lo que más se pregunta antes de descargar Hakufu.</p>
         </div>
         <div class="faq" data-reveal>
           <details>
             <summary><h3>¿Con qué programa leo manga en CBZ, CBR o PDF en el ordenador?</h3></summary>
-            <p>Con Hakufu: un lector de manga y cómic gratis que abre archivos CBZ, CBR y PDF en Windows, macOS y Linux. Eliges la carpeta donde los tienes y cada subcarpeta aparece como una colección, con sus portadas y lo que llevas leído.</p>
+            <p>Con Hakufu: un lector de manga y cómic gratis que abre archivos <a href="https://en.wikipedia.org/wiki/Comic_book_archive" hreflang="en">CBZ, CBR</a> y PDF en Windows, macOS y Linux. Eliges la carpeta donde los tienes y cada subcarpeta aparece como una colección, con sus portadas y lo que llevas leído.</p>
           </details>
           <details>
             <summary><h3>¿Hakufu es gratis? ¿Tiene anuncios o pide una cuenta?</h3></summary>

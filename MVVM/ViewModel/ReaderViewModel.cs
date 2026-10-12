@@ -95,13 +95,24 @@ public class ReaderViewModel : BaseViewModel, IDisposable
             if (!SetProperty(ref _currentPage, value)) return;
             OnPropertyChanged(nameof(PageDisplay));
             _ = LoadCurrentPageAsync();
-            _ = _library.SaveProgressAsync(_mangaId, value);
+            _ = _library.SaveProgressAsync(_mangaId, ProgressPage);
 
-            // Mark completed when reaching last page
-            if (value >= TotalPages - 1)
+            // Terminado en cuanto se ve la última página.
+            if (LastVisiblePage >= TotalPages - 1)
                 _ = _profile.AddHistoryEntryAsync(_mangaId);
         }
     }
+
+    /// <summary>La última página que se ve: con doble página, la de la derecha.</summary>
+    private int LastVisiblePage =>
+        IsTwoPageMode ? Math.Min(_currentPage + 1, Math.Max(0, TotalPages - 1)) : _currentPage;
+
+    /// <summary>
+    /// Lo que se guarda como progreso: la página actual, o la última si ya se ve. Con doble
+    /// página y un número par de páginas, el último pliego empieza en la penúltima: guardada
+    /// esa, el tomo no salía como terminado.
+    /// </summary>
+    private int ProgressPage => LastVisiblePage >= TotalPages - 1 ? LastVisiblePage : _currentPage;
 
     public string PageDisplay => $"{CurrentPage + 1} / {TotalPages}";
 
@@ -148,7 +159,7 @@ public class ReaderViewModel : BaseViewModel, IDisposable
     /// <summary>Página apaisada: una doble página escaneada como una sola imagen.</summary>
     public static bool IsWide(Bitmap? page) => page is not null && page.PixelSize.Width > page.PixelSize.Height;
 
-    public RelayCommand NextPageCommand => new(async () => await TurnPageAsync(+1), () => CurrentPage < TotalPages - 1);
+    public RelayCommand NextPageCommand => new(async () => await TurnPageAsync(+1), () => LastVisiblePage < TotalPages - 1);
 
     public RelayCommand PrevPageCommand => new(async () => await TurnPageAsync(-1), () => CurrentPage > 0);
 
@@ -160,6 +171,7 @@ public class ReaderViewModel : BaseViewModel, IDisposable
         _turning = true;
         try
         {
+            if (direction > 0 && LastVisiblePage >= TotalPages - 1) return; // ya se ve la última
             var step   = IsTwoPageMode ? 2 : 1;
             var target = Math.Clamp(CurrentPage + direction * step, 0, Math.Max(0, TotalPages - 1));
             if (target == CurrentPage) return;
@@ -194,7 +206,7 @@ public class ReaderViewModel : BaseViewModel, IDisposable
 
     public RelayCommand CloseReaderCommand => new(async () =>
     {
-        await _library.SaveProgressAsync(_mangaId, _currentPage);
+        await _library.SaveProgressAsync(_mangaId, ProgressPage);
         _nav.NavigateTo<HomeViewModel>();
     });
 

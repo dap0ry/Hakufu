@@ -54,13 +54,7 @@ public class PageLoaderService : IPageLoaderService
     {
         // Open once just to enumerate entry keys; re-open per-page to support RAR sequential reads
         using var archive = ArchiveFactory.OpenArchive(_filePath, new ReaderOptions());
-        _entryKeys = archive.Entries
-            .Where(e => !e.IsDirectory &&
-                        CoverService.ImageExtensions.Contains(
-                            Path.GetExtension(e.Key ?? "").ToLowerInvariant()))
-            .OrderBy(e => e.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(e => e.Key!)
-            .ToList();
+        _entryKeys = PageOrder.ImageKeys(archive);
         TotalPages = _entryKeys.Count;
     }
 

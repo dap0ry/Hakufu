@@ -79,12 +79,9 @@ public class CoverService : ICoverService
         // ArchiveFactory.OpenArchive handles both RAR and ZIP automatically
         using var archive = ArchiveFactory.OpenArchive(archivePath, new ReaderOptions());
 
-        var entry = archive.Entries
-            .Where(e => !e.IsDirectory &&
-                        ImageExtensions.Contains(
-                            Path.GetExtension(e.Key ?? "").ToLowerInvariant()))
-            .OrderBy(e => e.Key, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
+        // La portada es la primera página.
+        var first = PageOrder.ImageKeys(archive).FirstOrDefault();
+        var entry = first is null ? null : archive.Entries.FirstOrDefault(e => e.Key == first);
 
         if (entry is null) return;
 

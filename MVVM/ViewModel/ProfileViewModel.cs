@@ -136,7 +136,7 @@ public class ProfileViewModel : BaseViewModel, IGoBack
     public RelayCommand<MangaCardViewModel> OpenMangaCommand => new(card =>
     {
         if (card is null) return;
-        var progress  = _library.GetProgress(card.Model.Id);
+        var progress  = _library.GetProgressForReading(card.Model);
         int startPage = Math.Max(0, (progress?.CurrentPage ?? 1) - 1);
         _nav.NavigateTo<ReaderViewModel>(new ReaderNavigationParam(card.Model, startPage));
     });

@@ -56,6 +56,68 @@
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
         "author": { "@type": "Person", "name": "Daniel Poza Rivera", "url": "https://danielpozarivera.es/" },
         "sameAs": ["https://github.com/dap0ry/Hakufu"]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://hakufu.vercel.app/#preguntas",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Con qué programa leo manga en CBZ, CBR o PDF en el ordenador?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Con Hakufu: un lector de manga y cómic gratis que abre archivos CBZ, CBR y PDF en Windows, macOS y Linux. Eliges la carpeta donde los tienes y cada subcarpeta aparece como una colección, con sus portadas y lo que llevas leído."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Hakufu es gratis? ¿Tiene anuncios o pide una cuenta?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Es gratis, sin anuncios y sin cuentas. Lo descargas, lo abres y ya puedes leer."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Funciona sin internet?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí. Hakufu lee tus archivos en tu ordenador y no los sube a ningún sitio. Lo único que usa la red es el aviso de versión nueva, y se puede desactivar en Ajustes → Acerca de."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Copia, mueve o borra mis mangas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Hakufu solo lee la carpeta tal cual. Para añadir mangas, mete los archivos en esa carpeta o crea una subcarpeta nueva para una serie."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Puedo leer a doble página o a pantalla completa?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí: a una página o a dos, como un tomo abierto, y en modo zen, a pantalla completa y sin barras. Si quieres, la hoja gira al pasar página como en un manga de papel. Hakufu recuerda la página de cada tomo para que sigas donde lo dejaste."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Puedo pasar mi biblioteca y mi progreso a otro ordenador?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí, con la copia de seguridad: Hakufu crea un .zip con tu perfil y el progreso de las colecciones que elijas, y en el otro equipo lo restauras desde la misma pantalla. El .zip se queda donde tú lo guardes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Hay versión para el móvil?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Desde la 0.12, Hakufu también funciona en iPhone, iPad y Android. Todavía no está en las tiendas: de momento se instala desde la página de versiones de GitHub."
+            }
+          }
+        ]
       }
     ]
   }
@@ -374,6 +436,17 @@
     .toast-close:hover { background: #2C2C30; color: var(--paper); }
 
     /* ── Responsive ──────────────────────────────────────── */
+    /* ── Preguntas ───────────────────────────────────────── */
+    .split.top { align-items: start; }
+    .faq { border-top: 1px solid var(--line-d); }
+    .faq details { border-bottom: 1px solid var(--line-d); }
+    .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: baseline; gap: 24px; padding: 20px 0; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; flex: none; font-size: 24px; line-height: 1; color: var(--muted-d); transition: transform 200ms var(--ease); }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq h3 { font-size: 19px; font-weight: 600; letter-spacing: -.01em; line-height: 1.35; }
+    .faq details p { padding-bottom: 22px; max-width: 60ch; color: var(--muted-d); }
+
     @media (max-width: 960px) {
       .nav nav a:not(.btn) { display: none; }
       .nav nav .lang a { display: inline; }
@@ -578,6 +651,44 @@
         <div class="upgrade">
           <h3>¿Usabas la 0.9 en Windows?</h3>
           <p>Descarga la versión nueva y ábrela: lee la misma carpeta de datos, así que tus colecciones y tu progreso siguen ahí. Las cuentas y los amigos ya no existen; para pasar tu biblioteca a otro ordenador, usa la copia de seguridad en .zip.</p>
+        </div>
+      </div>
+    </section>
+    <section id="preguntas">
+      <div class="wrap split top">
+        <div data-reveal>
+          <h2 class="display">Preguntas</h2>
+          <p class="lead">Lo que más se pregunta antes de descargar Hakufu.</p>
+        </div>
+        <div class="faq" data-reveal>
+          <details>
+            <summary><h3>¿Con qué programa leo manga en CBZ, CBR o PDF en el ordenador?</h3></summary>
+            <p>Con Hakufu: un lector de manga y cómic gratis que abre archivos CBZ, CBR y PDF en Windows, macOS y Linux. Eliges la carpeta donde los tienes y cada subcarpeta aparece como una colección, con sus portadas y lo que llevas leído.</p>
+          </details>
+          <details>
+            <summary><h3>¿Hakufu es gratis? ¿Tiene anuncios o pide una cuenta?</h3></summary>
+            <p>Es gratis, sin anuncios y sin cuentas. Lo descargas, lo abres y ya puedes leer.</p>
+          </details>
+          <details>
+            <summary><h3>¿Funciona sin internet?</h3></summary>
+            <p>Sí. Hakufu lee tus archivos en tu ordenador y no los sube a ningún sitio. Lo único que usa la red es el aviso de versión nueva, y se puede desactivar en Ajustes → Acerca de.</p>
+          </details>
+          <details>
+            <summary><h3>¿Copia, mueve o borra mis mangas?</h3></summary>
+            <p>No. Hakufu solo lee la carpeta tal cual. Para añadir mangas, mete los archivos en esa carpeta o crea una subcarpeta nueva para una serie.</p>
+          </details>
+          <details>
+            <summary><h3>¿Puedo leer a doble página o a pantalla completa?</h3></summary>
+            <p>Sí: a una página o a dos, como un tomo abierto, y en modo zen, a pantalla completa y sin barras. Si quieres, la hoja gira al pasar página como en un manga de papel. Hakufu recuerda la página de cada tomo para que sigas donde lo dejaste.</p>
+          </details>
+          <details>
+            <summary><h3>¿Puedo pasar mi biblioteca y mi progreso a otro ordenador?</h3></summary>
+            <p>Sí, con la copia de seguridad: Hakufu crea un .zip con tu perfil y el progreso de las colecciones que elijas, y en el otro equipo lo restauras desde la misma pantalla. El .zip se queda donde tú lo guardes.</p>
+          </details>
+          <details>
+            <summary><h3>¿Hay versión para el móvil?</h3></summary>
+            <p>Desde la 0.12, Hakufu también funciona en iPhone, iPad y Android. Todavía no está en las tiendas: de momento se instala desde la página de versiones de GitHub.</p>
+          </details>
         </div>
       </div>
     </section>

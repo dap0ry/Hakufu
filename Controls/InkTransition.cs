@@ -197,7 +197,11 @@ public sealed class InkTransition : Control
         // Skia nuevo lee un shader hijo con .eval(); el de SkiaSharp 2.88, con sample().
         foreach (var sample in new[] { "old.eval(p)", "sample(old, p)" })
         {
+#if SKIASHARP3
+            var effect = SKRuntimeEffect.CreateShader(Sksl.Replace("SAMPLE", sample), out var errors);
+#else
             var effect = SKRuntimeEffect.Create(Sksl.Replace("SAMPLE", sample), out var errors);
+#endif
             if (effect is not null) { ShaderErrors = ""; return effect; }
             ShaderErrors += $"[{sample}] {errors}\n";
         }
@@ -323,7 +327,11 @@ public sealed class InkTransition : Control
                 ["reverse"]  = rightToLeft ? 1f : 0f
             };
             var children = new SKRuntimeEffectChildren(InkEffect!) { ["old"] = photo };
+#if SKIASHARP3
+            using var shader = InkEffect!.ToShader(uniforms, children);
+#else
             using var shader = InkEffect!.ToShader(false, uniforms, children);
+#endif
             using var paint  = new SKPaint { Shader = shader };
             canvas.DrawRect(0, 0, (float)bounds.Width, (float)bounds.Height, paint);
         }

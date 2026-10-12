@@ -74,6 +74,44 @@ public class DataRepositoryTests
 
         Assert.Empty(repo.Current.Mangas);
     }
+
+    // data.json se escribía directamente: si el guardado fallaba a mitad (una lista
+    // que cambia mientras se escribe, la app que se cierra…) quedaba cortado, al
+    // arrancar no se podía leer y se empezaba de cero sin progreso ni favoritos.
+    [Fact]
+    public async Task A_save_that_fails_halfway_keeps_the_previous_data_file()
+    {
+        using var tmp = new TempDataDir();
+        var repo = new JsonDataRepository();
+        repo.Current.Mangas.Add(new Manga { Title = "Tomo 1", FilePath = "/m/1.cbz" });
+        await repo.SaveAsync();
+        Assert.False(File.Exists(AppPaths.DataFile + ".tmp"));
+
+        // NaN no se puede escribir en JSON: el guardado falla a mitad.
+        repo.Current.ReadingLog.Add(new ReadingDay { Date = new DateOnly(2026, 10, 10), Seconds = double.NaN });
+        await Assert.ThrowsAnyAsync<Exception>(repo.SaveAsync);
+
+        var again = new JsonDataRepository();
+        await again.LoadAsync();
+        Assert.Equal("Tomo 1", Assert.Single(again.Current.Mangas).Title);
+    }
+
+    // Si aun así no se puede leer, se empieza de cero (Corrupt_data_file_starts_empty…),
+    // pero el primer guardado lo pisaba: ahora queda una copia al lado.
+    [Fact]
+    public async Task An_unreadable_data_file_is_kept_aside_before_starting_empty()
+    {
+        using var tmp = new TempDataDir();
+        Directory.CreateDirectory(tmp.DataDir);
+        await File.WriteAllTextAsync(AppPaths.DataFile, "{ esto no es json");
+
+        var repo = new JsonDataRepository();
+        await repo.LoadAsync();
+        await repo.SaveAsync();
+
+        var kept = Assert.Single(Directory.GetFiles(tmp.DataDir, "data-ilegible-*.json"));
+        Assert.Equal("{ esto no es json", await File.ReadAllTextAsync(kept));
+    }
 }
 
 public class PageLoaderTests

@@ -1,9 +1,9 @@
 {
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "hakufuweb.vercel.app" }],
-      "destination": "https://hakufu.vercel.app/:path*",
+      "destination": "https://hakufu.vercel.app/$1",
       "permanent": true
     }
   ]

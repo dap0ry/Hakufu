@@ -1,5 +1,7 @@
 # Genera mangas de ejemplo inventados (.cbz) para las capturas de la landing:
 #   python3 scripts/landing-demo-mangas.py /tmp/demo  (ver tests/Hakufu.Tests/LandingScreenshots.cs)
+# Con "promo" genera una biblioteca grande (muchas colecciones, una con 24 tomos) para el vídeo:
+#   python3 scripts/landing-demo-mangas.py /tmp/demo-promo promo  (ver tests/Hakufu.Tests/PromoCapture.cs)
 import random, math, zipfile, io, os, sys
 from PIL import Image, ImageDraw, ImageFont
 OUT=sys.argv[1]
@@ -13,6 +15,22 @@ SERIES=[ # name, bg, ink, accent, vols
  ("ÚLTIMO TREN",(138,138,138),(255,255,255),(20,20,20), 1),
  ("RAIJIN CLUB",(244,196,48), (20,20,20),  (38,52,92),  2),
 ]
+if len(sys.argv)>2 and sys.argv[2]=="promo":
+    SERIES[0]=("KUROGANE",(20,20,20),(240,240,240),(229,0,26),24)
+    SERIES+=[
+     ("YORU NO HANA",(18,24,60),   (240,236,226),(229,0,26),  5),
+     ("NEÓN 99",     (229,0,26),   (20,20,20),   (240,236,226),4),
+     ("SHIRO",       (240,240,240),(20,20,20),   (38,52,92),  6),
+     ("KAMINARI",    (244,196,48), (20,20,20),   (229,0,26),  3),
+     ("GINGA EXPRESS",(38,52,92),  (255,255,255),(244,196,48),7),
+     ("HIBANA",      (20,20,20),   (244,196,48), (229,0,26),  2),
+     ("TSUKI 404",   (138,138,138),(20,20,20),   (255,255,255),4),
+     ("KAGEROU",     (240,236,226),(38,52,92),   (229,0,26),  3),
+     ("AKANE",       (229,0,26),   (255,255,255),(38,52,92),  5),
+     ("KAZE NO MICHI",(20,20,20),  (240,236,226),(38,52,92),  2),
+     ("SAKURA SHIFT",(240,236,226),(229,0,26),   (20,20,20),  4),
+     ("ZERO GRAVITY",(38,52,92),   (240,236,226),(138,138,138),3),
+    ]
 def tone(d,box,color,step=9,r=2.2):
     x0,y0,x1,y1=box
     for yy in range(int(y0),int(y1),step):
